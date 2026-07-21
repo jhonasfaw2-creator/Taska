@@ -39,7 +39,7 @@ export const sendOtp = asyncHandler(async (req: Request, res: Response) => {
  * POST /api/v1/auth/verify-otp
  *
  * Request:  { "phoneNumber": "+251XXXXXXXXX", "code": "123456" }
- * Response: { "user": { "phoneNumber": "+251..." }, "accessToken": "xxxxx" }
+ * Response: { "user": { "phoneNumber": "+251..." }, "accessToken": "xxxxx", "refreshToken": "yyyyy" }
  */
 export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
   console.log('[AuthController] POST /auth/verify-otp received body:', JSON.stringify(req.body));
@@ -57,6 +57,7 @@ export const verifyOtp = asyncHandler(async (req: Request, res: Response) => {
   res.status(200).json({
     user: { phoneNumber: result.user.phoneNumber },
     accessToken: result.tokens.accessToken,
+    refreshToken: result.tokens.refreshToken,
   });
   console.log('[AuthController] Verify response sent successfully');
 });

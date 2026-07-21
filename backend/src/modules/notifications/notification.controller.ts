@@ -17,11 +17,7 @@ export const registerDevice = asyncHandler(async (req: Request, res: Response) =
     throw new AppError('platform is required and must be a string.', 400);
   }
 
-  const result = await notificationService.registerDevice(
-    req.user.userId,
-    pushToken,
-    platform,
-  );
+  const result = await notificationService.registerDevice(req.user.userId, pushToken, platform);
 
   res.status(200).json(result);
 });

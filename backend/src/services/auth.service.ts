@@ -49,9 +49,7 @@ function verifyToken(token: string): JwtPayload {
  * @todo Integrate an SMS provider (e.g. Twilio, Vonage, Africa's Talking)
  *       to deliver the OTP to the user in production.
  */
-export async function sendOtp(
-  phoneNumber: string,
-): Promise<{ message: string; otp?: string }> {
+export async function sendOtp(phoneNumber: string): Promise<{ message: string; otp?: string }> {
   console.log('[AuthService.sendOtp] Received request for:', phoneNumber);
 
   // ── Invalidate any previous unverified OTPs for this number ──
@@ -128,10 +126,7 @@ export async function verifyOtp(
       where: { id: otpRecord.id },
       data: { expiresAt: new Date() },
     });
-    throw new AppError(
-      'Too many failed attempts. Please request a new OTP.',
-      429,
-    );
+    throw new AppError('Too many failed attempts. Please request a new OTP.', 429);
   }
 
   // ── Verify the code ───────────────────────────────────
@@ -162,8 +157,8 @@ export async function verifyOtp(
     user = await prisma.user.create({
       data: {
         phoneNumber,
-        firstName: 'User',   // Placeholder — updated during profile setup
-        lastName: '',         // Placeholder — updated during profile setup
+        firstName: 'User', // Placeholder — updated during profile setup
+        lastName: '', // Placeholder — updated during profile setup
         isVerified: true,
       },
     });
@@ -200,9 +195,7 @@ export async function verifyOtp(
 /**
  * Issue a new access token from a valid refresh token.
  */
-export async function refreshToken(
-  token: string,
-): Promise<{ accessToken: string }> {
+export async function refreshToken(token: string): Promise<{ accessToken: string }> {
   const decoded = verifyToken(token);
 
   // Ensure the user still exists

@@ -142,17 +142,11 @@ export async function updateProfile(
  * Triggers creation of a TaskerProfile when switching to TASKER for the
  * first time.
  */
-export async function updateRole(
-  user: JwtPayload,
-  role: string,
-): Promise<{ role: string }> {
+export async function updateRole(user: JwtPayload, role: string): Promise<{ role: string }> {
   const normalizedRole = role?.toUpperCase();
 
   if (!isValidRole(normalizedRole)) {
-    throw new AppError(
-      `Invalid role "${role}". Allowed values: ${VALID_ROLES.join(', ')}.`,
-      400,
-    );
+    throw new AppError(`Invalid role "${role}". Allowed values: ${VALID_ROLES.join(', ')}.`, 400);
   }
 
   const dbUser = await prisma.user.update({

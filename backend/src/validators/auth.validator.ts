@@ -14,10 +14,7 @@ export function validatePhoneNumber(phoneNumber: string): void {
   }
 
   if (!phoneRegex.test(phoneNumber.trim())) {
-    throw new AppError(
-      'Invalid phone number format. Use E.164 format (e.g. +251XXXXXXXXX).',
-      400,
-    );
+    throw new AppError('Invalid phone number format. Use E.164 format (e.g. +251XXXXXXXXX).', 400);
   }
 }
 

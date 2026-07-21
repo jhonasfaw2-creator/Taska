@@ -190,7 +190,7 @@ export default function SearchingTaskerScreen() {
         {/* Subtitle */}
         <View className="mt-sm">
           <Typography variant="body" color="secondary" className="text-center leading-relaxed">
-            We're notifying nearby verified taskers.
+            We&apos;re notifying nearby verified taskers.
           </Typography>
         </View>
 

@@ -61,10 +61,7 @@ function mapTaskToResult(task: any): TaskResult {
   };
 }
 
-export async function createTask(
-  customerId: string,
-  input: CreateTaskInput,
-): Promise<TaskResult> {
+export async function createTask(customerId: string, input: CreateTaskInput): Promise<TaskResult> {
   const category = await prisma.category.findUnique({
     where: { id: input.categoryId },
     select: { id: true },
@@ -107,9 +104,7 @@ export async function createTask(
 /**
  * Fetch a single task by ID (with category name).
  */
-export async function getTaskById(
-  taskId: string,
-): Promise<TaskResult & { categoryName: string }> {
+export async function getTaskById(taskId: string): Promise<TaskResult & { categoryName: string }> {
   const task = await prisma.task.findUnique({
     where: { id: taskId },
     include: { category: { select: { name: true } } },
@@ -125,9 +120,7 @@ export async function getTaskById(
   };
 }
 
-export async function getMyTasks(
-  customerId: string,
-): Promise<MyTaskResult[]> {
+export async function getMyTasks(customerId: string): Promise<MyTaskResult[]> {
   const tasks = await prisma.task.findMany({
     where: { customerId },
     orderBy: { createdAt: 'desc' },

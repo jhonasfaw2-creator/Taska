@@ -42,4 +42,3 @@ v1Router.use('/notifications', notificationRoutes);
 
 export { v1Router };
 export default v1Router;
-

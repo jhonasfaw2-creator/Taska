@@ -35,7 +35,9 @@ export function createApp(): express.Application {
   // ── Body guard: reject null/undefined bodies for mutation methods ──
   app.use((req: Request, _res: Response, next: NextFunction) => {
     if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body === undefined) {
-      return next(new AppError('Request body is required. Ensure Content-Type is application/json.', 400));
+      return next(
+        new AppError('Request body is required. Ensure Content-Type is application/json.', 400),
+      );
     }
     next();
   });

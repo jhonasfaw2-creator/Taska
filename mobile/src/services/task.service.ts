@@ -131,12 +131,12 @@ export async function updateTaskStatus(
  */
 export async function getTaskStatusHistory(
   taskId: string,
-): Promise<Array<{ status: string; changedBy: string; createdAt: string }>> {
-  const response = await api.get<Array<{
+): Promise<{ status: string; changedBy: string; createdAt: string }[]> {
+  const response = await api.get<{
     status: string;
     changedBy: string;
     createdAt: string;
-  }>>(`/tasks/${taskId}/status-history`);
+  }[]>(`/tasks/${taskId}/status-history`);
   return response.data;
 }
 

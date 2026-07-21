@@ -4,12 +4,14 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { VEHICLES } from '@/data/vehicles';
+import { applyAsTasker, refreshAccessToken, ApiError } from '@/services';
 
 interface FormState {
   vehicleType: string | null;
@@ -30,6 +32,7 @@ export default function TaskerApplyScreen() {
     bio: '',
   });
   const [touched, setTouched] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const errors = validate(form, touched);
   const isValid = !errors.vehicleType && form.vehicleType !== null;
@@ -38,18 +41,33 @@ export default function TaskerApplyScreen() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     setTouched(true);
-    if (!isValid) return;
-    // TODO: Call applyAsTasker API when connected
-    // import { applyAsTasker } from '@/services/tasker.service';
-    // const result = await applyAsTasker({
-    //   vehicleType: form.vehicleType!,
-    //   experience: form.experience ? Number(form.experience) : undefined,
-    //   bio: form.bio || undefined,
-    // });
-    router.replace('/tasker-dashboard');
-  }, [isValid, form, router]);
+    if (!isValid || !form.vehicleType || submitting) return;
+
+    setSubmitting(true);
+    try {
+      await applyAsTasker({
+        vehicleType: form.vehicleType.toUpperCase(),
+        experience: form.experience ? Number(form.experience) : undefined,
+        bio: form.bio.trim() || undefined,
+      });
+
+      // The user's role is now TASKER on the server. Refresh the access
+      // token so subsequent tasker-only requests carry the new role.
+      await refreshAccessToken();
+
+      router.replace('/tasker-dashboard');
+    } catch (error) {
+      const message =
+        error instanceof ApiError
+          ? error.message
+          : 'Could not submit your application. Please try again.';
+      Alert.alert('Application failed', message);
+    } finally {
+      setSubmitting(false);
+    }
+  }, [isValid, form, router, submitting]);
 
   return (
     <View className="flex-1 bg-background">
@@ -182,10 +200,10 @@ export default function TaskerApplyScreen() {
 
       <View className="gap-md border-t border-border bg-background px-screen-padding pb-xl pt-lg">
         <Button
-          label="Submit Application"
+          label={submitting ? 'Submitting…' : 'Submit Application'}
           radius="lg"
           shadow={isValid ? 'lg' : 'none'}
-          disabled={!isValid}
+          disabled={!isValid || submitting}
           onPress={handleSubmit}
           testID="tasker-apply-submit"
         />

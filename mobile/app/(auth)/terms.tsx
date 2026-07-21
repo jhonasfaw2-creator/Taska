@@ -49,9 +49,9 @@ export default function TermsScreen() {
           2. Description of Service
         </Typography>
         <Typography variant="body" color="secondary" className="mb-md leading-relaxed">
-          Taska connects users who need tasks completed ("Customers") with verified individuals who
-          can perform those tasks ("Taskers"). Taska is a marketplace platform and is not a party to
-          any agreement between Customers and Taskers.
+          Taska connects users who need tasks completed (&quot;Customers&quot;) with verified
+          individuals who can perform those tasks (&quot;Taskers&quot;). Taska is a marketplace
+          platform and is not a party to any agreement between Customers and Taskers.
         </Typography>
 
         <Typography variant="body" className="mb-xs text-text-primary" weight="semibold">

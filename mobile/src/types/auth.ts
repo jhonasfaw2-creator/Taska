@@ -19,6 +19,7 @@ export interface VerifyOtpResponse {
     phoneNumber: string;
   };
   accessToken: string;
+  refreshToken?: string;
 }
 
 // ─── Auth error shape ───────────────────────────────────
