@@ -15,10 +15,27 @@ type TaskEventPayload =
   | { event: 'task_created'; taskId: string; title: string }
   | { event: 'task_matched'; taskId: string; taskerId: string; taskerName: string }
   | { event: 'task_accepted'; taskId: string; taskerId: string; taskerName: string }
-  | { event: 'task_status_changed'; taskId: string; status: string; previousStatus: string; changedBy: string }
+  | {
+      event: 'task_status_changed';
+      taskId: string;
+      status: string;
+      previousStatus: string;
+      changedBy: string;
+    }
   | { event: 'task_cancelled'; taskId: string; reason?: string }
-  | { event: 'new_message'; taskId: string; messageId: string; senderId: string; text: string; createdAt: string }
-  | { event: 'notification_created'; userId: string; notification: { id: string; title: string; message: string; type: string } };
+  | {
+      event: 'new_message';
+      taskId: string;
+      messageId: string;
+      senderId: string;
+      text: string;
+      createdAt: string;
+    }
+  | {
+      event: 'notification_created';
+      userId: string;
+      notification: { id: string; title: string; message: string; type: string };
+    };
 
 // ─── Singleton ───────────────────────────────────────────────────────────────
 
@@ -41,7 +58,8 @@ export function initSocketServer(httpServer: HttpServer): Server {
 
   // ── JWT authentication middleware ─────────────────────
   io.use((socket: Socket, next) => {
-    const token = socket.handshake.auth?.token ?? socket.handshake.query?.token as string | undefined;
+    const token =
+      socket.handshake.auth?.token ?? (socket.handshake.query?.token as string | undefined);
 
     if (!token) {
       return next(new Error('Authentication required. No token provided.'));
@@ -70,13 +88,17 @@ export function initSocketServer(httpServer: HttpServer): Server {
 
     // ── Client can join a task room to receive live updates ──
     socket.on('join:task', (taskId: string) => {
-      if (typeof taskId !== 'string') return;
+      if (typeof taskId !== 'string') {
+        return;
+      }
       socket.join(`task:${taskId}`);
       console.log(`[Socket] ${userId} joined task:${taskId}`);
     });
 
     socket.on('leave:task', (taskId: string) => {
-      if (typeof taskId !== 'string') return;
+      if (typeof taskId !== 'string') {
+        return;
+      }
       socket.leave(`task:${taskId}`);
     });
 

@@ -21,7 +21,9 @@ export function validateApply(body: Record<string, unknown> | null | undefined):
   const vehicleType = body.vehicleType;
   if (!vehicleType || typeof vehicleType !== 'string') {
     errors.push('vehicleType is required.');
-  } else if (!VALID_VEHICLE_TYPES.includes(vehicleType.toUpperCase() as typeof VALID_VEHICLE_TYPES[number])) {
+  } else if (
+    !VALID_VEHICLE_TYPES.includes(vehicleType.toUpperCase() as (typeof VALID_VEHICLE_TYPES)[number])
+  ) {
     errors.push(`vehicleType must be one of: ${VALID_VEHICLE_TYPES.join(', ')}.`);
   }
 
@@ -44,12 +46,11 @@ export function validateApply(body: Record<string, unknown> | null | undefined):
 
   return {
     vehicleType: (vehicleType as string).toUpperCase(),
-    experience: body.experience !== undefined && body.experience !== null
-      ? Number(body.experience)
-      : undefined,
-    bio: body.bio !== undefined && body.bio !== null
-      ? String(body.bio).trim()
-      : undefined,
+    experience:
+      body.experience !== undefined && body.experience !== null
+        ? Number(body.experience)
+        : undefined,
+    bio: body.bio !== undefined && body.bio !== null ? String(body.bio).trim() : undefined,
   };
 }
 

@@ -421,7 +421,7 @@ export default function VehicleRegistrationScreen() {
           {/* Subtitle */}
           <View className="mt-sm">
             <Typography variant="body" color="secondary" className="leading-relaxed">
-              Choose how you'll complete tasks.
+              Choose how you&apos;ll complete tasks.
             </Typography>
           </View>
         </View>

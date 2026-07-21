@@ -2,7 +2,7 @@
 
 > **Version:** 1.0
 > **Engine:** PostgreSQL 16+
-> **Status:** Design only — no schema or migration generated yet
+> **Status:** Implemented — Prisma schema and migrations live in [`backend/prisma`](../backend/prisma)
 
 ---
 

@@ -56,6 +56,29 @@ export function setTokenProvider(fn: () => Promise<string | null>): void {
   _getToken = fn;
 }
 
+// ─── Refresh handler ───────────────────────────────────
+// Registered by the auth layer. Called once when a request fails with 401
+// so a fresh access token can be obtained before retrying the request.
+// Returns the new access token, or null if the session could not be refreshed.
+let _refreshToken: (() => Promise<string | null>) | null = null;
+
+export function setRefreshHandler(fn: () => Promise<string | null>): void {
+  _refreshToken = fn;
+}
+
+// De-duplicate concurrent refreshes so a burst of 401s triggers a single call.
+let _refreshInFlight: Promise<string | null> | null = null;
+
+async function refreshOnce(): Promise<string | null> {
+  if (!_refreshToken) return null;
+  if (!_refreshInFlight) {
+    _refreshInFlight = _refreshToken().finally(() => {
+      _refreshInFlight = null;
+    });
+  }
+  return _refreshInFlight;
+}
+
 api.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   console.log('[API] Request:', config.method?.toUpperCase(), config.url, config.data);
   if (_getToken) {
@@ -84,8 +107,27 @@ api.interceptors.response.use(
     console.log('[API] Response:', response.status, response.config.url);
     return response;
   },
-  (error: AxiosError<{ error?: string; message?: string }>) => {
+  async (error: AxiosError<{ error?: string; message?: string }>) => {
     console.log('[API] Error:', error.message, 'code:', error.code, 'status:', error.response?.status);
+
+    // ── Attempt a one-time token refresh on 401 ──────────
+    const original = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
+    const isRefreshCall = original?.url?.includes('/auth/refresh-token');
+    if (
+      error.response?.status === 401 &&
+      original &&
+      !original._retry &&
+      !isRefreshCall
+    ) {
+      original._retry = true;
+      const newToken = await refreshOnce();
+      if (newToken) {
+        original.headers = original.headers ?? {};
+        original.headers.Authorization = `Bearer ${newToken}`;
+        return api(original);
+      }
+    }
+
     if (error.response) {
       const message =
         error.response.data?.error ??

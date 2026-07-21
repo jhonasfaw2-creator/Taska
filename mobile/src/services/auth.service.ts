@@ -1,5 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
-import api, { ApiError } from '../config/api';
+import api, { ApiError, setRefreshHandler } from '../config/api';
 import {
   SendOtpRequest,
   SendOtpResponse,
@@ -13,6 +13,7 @@ import {
 
 const SECURE_KEYS = {
   ACCESS_TOKEN: 'taska_access_token',
+  REFRESH_TOKEN: 'taska_refresh_token',
 } as const;
 
 const STORAGE_KEYS = {
@@ -67,11 +68,14 @@ export async function verifyOTP(
     const response = await api.post<VerifyOtpResponse>('/auth/verify-otp', body);
     console.log('[verifyOTP] Response received:', JSON.stringify(response.data));
 
-    const { accessToken } = response.data;
+    const { accessToken, refreshToken } = response.data;
 
-    // Persist session — access token goes to SecureStore, phone to AsyncStorage
+    // Persist session — tokens go to SecureStore, phone to AsyncStorage
     console.log('[verifyOTP] Persisting session to storage');
     await SecureStore.setItemAsync(SECURE_KEYS.ACCESS_TOKEN, accessToken);
+    if (refreshToken) {
+      await SecureStore.setItemAsync(SECURE_KEYS.REFRESH_TOKEN, refreshToken);
+    }
     const storage = await getStorage();
     await storage.setItem(STORAGE_KEYS.PHONE_NUMBER, phoneNumber);
     console.log('[verifyOTP] Session persisted successfully');
@@ -117,6 +121,48 @@ export async function getAccessToken(): Promise<string | null> {
 }
 
 /**
+ * Retrieve the stored refresh token.
+ */
+export async function getRefreshToken(): Promise<string | null> {
+  try {
+    return SecureStore.getItemAsync(SECURE_KEYS.REFRESH_TOKEN);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Exchange the stored refresh token for a fresh access token.
+ *
+ * Called automatically by the API layer when a request returns 401, and
+ * also after a role change (e.g. becoming a tasker) so the new token
+ * reflects the updated role. Returns the new access token, or null if the
+ * session could not be refreshed (in which case the local session is cleared).
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  const refreshToken = await getRefreshToken();
+  if (!refreshToken) {
+    return null;
+  }
+
+  try {
+    const response = await api.post<{ accessToken: string }>('/auth/refresh-token', {
+      refreshToken,
+    });
+    const { accessToken } = response.data;
+    await SecureStore.setItemAsync(SECURE_KEYS.ACCESS_TOKEN, accessToken);
+    return accessToken;
+  } catch {
+    // Refresh token is invalid/expired — force a clean sign-out.
+    await clearSession();
+    return null;
+  }
+}
+
+// Register the refresh handler so the API layer can recover from 401s.
+setRefreshHandler(refreshAccessToken);
+
+/**
  * Retrieve the stored phone number of the current session.
  */
 export async function getStoredPhoneNumber(): Promise<string | null> {
@@ -134,6 +180,7 @@ export async function getStoredPhoneNumber(): Promise<string | null> {
 export async function clearSession(): Promise<void> {
   try {
     await SecureStore.deleteItemAsync(SECURE_KEYS.ACCESS_TOKEN);
+    await SecureStore.deleteItemAsync(SECURE_KEYS.REFRESH_TOKEN);
     const storage = await getStorage();
     await storage.removeItem(STORAGE_KEYS.PHONE_NUMBER);
 

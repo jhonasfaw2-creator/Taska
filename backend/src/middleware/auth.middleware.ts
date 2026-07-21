@@ -20,11 +20,7 @@ declare global {
  *
  * On success, attaches the decoded `JwtPayload` to `req.user`.
  */
-export const requireAuth = (
-  req: Request,
-  _res: Response,
-  next: NextFunction,
-): void => {
+export const requireAuth = (req: Request, _res: Response, next: NextFunction): void => {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
@@ -34,10 +30,7 @@ export const requireAuth = (
   const parts = authHeader.split(' ');
 
   if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    throw new AppError(
-      'Invalid authorization header format. Use: Bearer <token>',
-      401,
-    );
+    throw new AppError('Invalid authorization header format. Use: Bearer <token>', 401);
   }
 
   const token = parts[1];

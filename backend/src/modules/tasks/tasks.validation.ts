@@ -17,7 +17,9 @@ export interface CreateTaskInput {
   estimatedPrice: number;
 }
 
-export function validateCreateTask(body: Record<string, unknown> | null | undefined): CreateTaskInput {
+export function validateCreateTask(
+  body: Record<string, unknown> | null | undefined,
+): CreateTaskInput {
   if (!body || typeof body !== 'object' || Array.isArray(body)) {
     throw new AppError('Request body must be a valid JSON object.', 400);
   }
@@ -71,7 +73,9 @@ export function validateCreateTask(body: Record<string, unknown> | null | undefi
   const vehicleType = body.vehicleType;
   if (!vehicleType || typeof vehicleType !== 'string') {
     errors.push('vehicleType is required.');
-  } else if (!VALID_VEHICLE_TYPES.includes(vehicleType.toUpperCase() as typeof VALID_VEHICLE_TYPES[number])) {
+  } else if (
+    !VALID_VEHICLE_TYPES.includes(vehicleType.toUpperCase() as (typeof VALID_VEHICLE_TYPES)[number])
+  ) {
     errors.push(`vehicleType must be one of: ${VALID_VEHICLE_TYPES.join(', ')}.`);
   }
 

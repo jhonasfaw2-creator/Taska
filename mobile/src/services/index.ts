@@ -5,6 +5,7 @@ export {
   getAccessToken,
   getStoredPhoneNumber,
   clearSession,
+  refreshAccessToken,
   getUserProfile,
   updateProfile,
   isProfileComplete,

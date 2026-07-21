@@ -6,7 +6,9 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 function getCorsOrigins(): string[] {
   const raw = process.env.CORS_ORIGINS;
-  if (!raw) return ['http://localhost:3000'];
+  if (!raw) {
+    return ['http://localhost:3000'];
+  }
   return raw
     .split(',')
     .map((o) => o.trim())

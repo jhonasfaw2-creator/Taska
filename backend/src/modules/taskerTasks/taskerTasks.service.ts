@@ -30,9 +30,7 @@ export interface AcceptResult {
   };
 }
 
-export async function getAvailableTasks(
-  taskerProfileId: string,
-): Promise<AvailableTaskResult[]> {
+export async function getAvailableTasks(taskerProfileId: string): Promise<AvailableTaskResult[]> {
   const offers = await prisma.taskOffer.findMany({
     where: {
       taskerId: taskerProfileId,
@@ -59,9 +57,7 @@ export async function getAvailableTasks(
   return offers.map((offer) => {
     const reviews = offer.task.customer.receivedReviews;
     const avgRating =
-      reviews.length > 0
-        ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        : null;
+      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
 
     return {
       id: offer.task.id,
@@ -81,10 +77,7 @@ export async function getAvailableTasks(
   });
 }
 
-export async function acceptTask(
-  taskerProfileId: string,
-  taskId: string,
-): Promise<AcceptResult> {
+export async function acceptTask(taskerProfileId: string, taskId: string): Promise<AcceptResult> {
   const offer = await prisma.taskOffer.findFirst({
     where: {
       taskId,
@@ -106,20 +99,11 @@ export async function acceptTask(
   }
 
   if (offer.task.status === 'ACCEPTED' || offer.task.taskerId !== null) {
-    throw new AppError(
-      'This task has already been accepted by another tasker.',
-      409,
-    );
+    throw new AppError('This task has already been accepted by another tasker.', 409);
   }
 
-  if (
-    offer.task.status !== 'PENDING' &&
-    offer.task.status !== 'SEARCHING'
-  ) {
-    throw new AppError(
-      `Cannot accept a task with status "${offer.task.status}".`,
-      400,
-    );
+  if (offer.task.status !== 'PENDING' && offer.task.status !== 'SEARCHING') {
+    throw new AppError(`Cannot accept a task with status "${offer.task.status}".`, 400);
   }
 
   const result = await prisma.$transaction(async (tx) => {
