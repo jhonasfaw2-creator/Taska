@@ -1,0 +1,28 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/*
+ * Centralized theme tokens (mirrors src/theme/tokens.ts).
+ * Values are "R G B" triplets so Tailwind's <alpha-value> works.
+ * Light is the default; .dark overrides for dark mode.
+ */
+:root {
+  --color-background: 255 255 255;
+  --color-surface: 248 249 250;
+  --color-primary: 79 70 229;
+  --color-primary-variant: 67 56 202;
+  --color-text-primary: 17 24 39;
+  --color-text-secondary: 107 114 128;
+  --color-border: 229 231 235;
+}
+
+.dark {
+  --color-background: 15 23 42;
+  --color-surface: 30 41 59;
+  --color-primary: 129 140 248;
+  --color-primary-variant: 99 102 241;
+  --color-text-primary: 249 250 251;
+  --color-text-secondary: 156 163 175;
+  --color-border: 55 65 81;
+}

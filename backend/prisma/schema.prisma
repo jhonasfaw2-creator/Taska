@@ -1,0 +1,619 @@
+// ────────────────────────────────────────────────────────
+//  Taska — Prisma Schema (PostgreSQL)
+//  Identity Module
+// ────────────────────────────────────────────────────────
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ─────────────────────────────────────────────
+enum UserRole {
+  CUSTOMER
+  TASKER
+  ADMIN
+
+  @@map("user_role")
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+
+  @@map("verification_status")
+}
+
+enum VehicleType {
+  WALKING
+  MOTORCYCLE
+  CAR
+  VAN
+  TRUCK
+
+  @@map("vehicle_type")
+}
+
+enum DocumentType {
+  ID_CARD
+  LICENSE
+  OTHER
+
+  @@map("document_type")
+}
+
+enum DocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("document_status")
+}
+
+enum TaskStatus {
+  PENDING
+  SEARCHING
+  ACCEPTED
+  PICKED_UP
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+
+  @@map("task_status")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
+
+  @@map("message_type")
+}
+
+enum NotificationType {
+  TASK_REQUEST
+  TASK_UPDATE
+  PAYMENT
+  SYSTEM
+
+  @@map("notification_type")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+
+  @@map("payment_status")
+}
+
+enum WalletTransactionType {
+  TASK_EARNING
+  WITHDRAWAL
+  REFUND
+  ADJUSTMENT
+  DEPOSIT
+  PAYMENT
+  FEE
+  PAYOUT
+  CREDIT
+  DEBIT
+
+  @@map("wallet_transaction_type")
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+
+  @@map("offer_status")
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+  SUPPORT
+
+  @@map("admin_role")
+}
+
+// ─── Models ────────────────────────────────────────────
+
+/// Registered user of the Taska platform.
+model User {
+  id           String    @id @default(uuid()) @map("id")
+  firstName    String    @map("first_name")
+  lastName     String    @map("last_name")
+  phoneNumber  String    @unique @map("phone_number")
+  email        String?   @unique
+  profileImage String?   @map("profile_image")
+  role         UserRole  @default(CUSTOMER)
+  isVerified   Boolean   @default(false) @map("is_verified")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  // ── Relations ───────────────────────────────────────
+  taskerProfile   TaskerProfile?
+  tasks           Task[]         @relation("CustomerTasks")
+  payments        Payment[]      @relation("CustomerPayments")
+  sentMessages    Message[]      @relation("SentMessages")
+  notifications   Notification[]
+  writtenReviews  Review[]       @relation("WrittenReviews")
+  receivedReviews Review[]       @relation("ReceivedReviews")
+  adminUser       AdminUser?
+  ratingSummary   RatingSummary?
+  devices         UserDevice[]
+  conversations   Conversation[]
+
+  @@index([role])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+/// One-time password for phone-based authentication.
+model OTPVerification {
+  id          String   @id @default(uuid()) @map("id")
+  phoneNumber String   @map("phone_number")
+  code        String   @db.VarChar(6)
+  expiresAt   DateTime @map("expires_at")
+  verified    Boolean  @default(false) @map("verified")
+  /// Validated at the application layer — max attempts enforced in service
+  attempts    Int      @default(0) @map("attempts")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([phoneNumber])
+  @@index([phoneNumber, createdAt(sort: Desc)])
+  @@map("otp_verifications")
+}
+
+// ─── Tasker Module ─────────────────────────────────────
+
+/// Extended profile for users who act as taskers on the platform.
+model TaskerProfile {
+  id                  String             @id @default(uuid()) @map("id")
+  userId              String             @unique @map("user_id")
+  verificationStatus  VerificationStatus @default(PENDING) @map("verification_status")
+  rating              Float              @default(0) @map("rating")
+  totalTasksCompleted Int                @default(0) @map("total_tasks_completed")
+  isOnline            Boolean            @default(false) @map("is_online")
+  bio                 String?            @map("bio")
+  experience          Int?               @map("experience")
+  lastActiveAt        DateTime?          @map("last_active_at")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  user                  User                   @relation(fields: [userId], references: [id])
+  vehicles              Vehicle[]
+  tasks                 Task[]
+  conversations         Conversation[]
+  verificationDocuments VerificationDocument[]
+  wallet                Wallet?
+  offers                TaskOffer[]            @relation("TaskerOffers")
+
+  @@index([verificationStatus])
+  @@index([isOnline])
+  @@index([rating])
+  @@map("tasker_profiles")
+}
+
+/// A vehicle registered by a tasker for completing tasks.
+model Vehicle {
+  id           String      @id @default(uuid()) @map("id")
+  taskerId     String      @map("tasker_id")
+  type         VehicleType
+  licensePlate String?     @map("license_plate")
+  color        String?
+  vehicleImage String?     @map("vehicle_image")
+  isApproved   Boolean     @default(false) @map("is_approved")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  taskerProfile TaskerProfile @relation(fields: [taskerId], references: [id], onDelete: Cascade)
+
+  @@index([taskerId])
+  @@index([type])
+  @@index([isApproved])
+  @@map("vehicles")
+}
+
+/// A document uploaded by a tasker for identity or license verification.
+model VerificationDocument {
+  id           String         @id @default(uuid()) @map("id")
+  taskerId     String         @map("tasker_id")
+  documentType DocumentType   @map("document_type")
+  documentUrl  String         @map("document_url")
+  status       DocumentStatus @default(PENDING)
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  taskerProfile TaskerProfile @relation(fields: [taskerId], references: [id], onDelete: Cascade)
+
+  @@index([taskerId])
+  @@index([documentType])
+  @@index([status])
+  @@map("verification_documents")
+}
+
+// ─── Task Management Module ────────────────────────────
+
+/// A task posted by a customer on the Taska platform.
+model Task {
+  id                  String  @id @default(uuid()) @map("id")
+  customerId          String  @map("customer_id")
+  taskerId            String? @map("tasker_id")
+  categoryId          String  @map("category_id")
+  title               String  @map("title")
+  description         String  @map("description")
+  specialInstructions String? @map("special_instructions")
+
+  // ── Location ────────────────────────────────────────
+  pickupAddress    String  @map("pickup_address")
+  pickupLatitude   Decimal @map("pickup_latitude")
+  pickupLongitude  Decimal @map("pickup_longitude")
+  dropoffAddress   String  @map("dropoff_address")
+  dropoffLatitude  Decimal @map("dropoff_latitude")
+  dropoffLongitude Decimal @map("dropoff_longitude")
+
+  // ── Task details ────────────────────────────────────
+  category       Category    @relation(fields: [categoryId], references: [id])
+  vehicleType    VehicleType @map("vehicle_type")
+  estimatedPrice Decimal     @map("estimated_price") @db.Decimal(10, 2)
+  finalPrice     Decimal?    @map("final_price") @db.Decimal(10, 2)
+
+  // ── Status & timestamps ─────────────────────────────
+  status      TaskStatus @default(PENDING) @map("status")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+  completedAt DateTime?  @map("completed_at")
+
+  // ── Relations ───────────────────────────────────────
+  customer      User                @relation("CustomerTasks", fields: [customerId], references: [id])
+  tasker        TaskerProfile?      @relation(fields: [taskerId], references: [id])
+  payment       Payment?
+  images        TaskImage[]
+  statusHistory TaskStatusHistory[]
+  conversations Conversation[]
+  offers        TaskOffer[]
+  reviews       Review[]
+
+  @@index([status])
+  @@index([customerId])
+  @@index([taskerId])
+  @@index([categoryId])
+  /// B-tree index for basic location lookups. For production proximity
+  /// search, add a GiST index via a raw SQL migration:
+  ///   CREATE INDEX idx_tasks_pickup_location ON tasks USING GIST (
+  ///     ll_to_earth(pickup_latitude, pickup_longitude)
+  ///   );
+  @@index([pickupLatitude, pickupLongitude])
+  @@map("tasks")
+}
+
+/// An image attached to a task by the customer or tasker.
+model TaskImage {
+  id        String   @id @default(uuid()) @map("id")
+  taskId    String   @map("task_id")
+  imageUrl  String   @map("image_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@map("task_images")
+}
+
+/// Immutable log of every status change on a task.
+model TaskStatusHistory {
+  id        String     @id @default(uuid()) @map("id")
+  taskId    String     @map("task_id")
+  status    TaskStatus @map("status")
+  changedBy String     @map("changed_by")
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([taskId, createdAt(sort: Desc)])
+  @@map("task_status_history")
+}
+
+// ─── Communication Module ─────────────────────────────
+
+/// A conversation thread scoped to a single task between customer and tasker.
+model Conversation {
+  id         String   @id @default(uuid()) @map("id")
+  taskId     String   @unique @map("task_id")
+  customerId String   @map("customer_id")
+  taskerId   String   @map("tasker_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  task     Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  customer User          @relation(fields: [customerId], references: [id])
+  tasker   TaskerProfile @relation(fields: [taskerId], references: [id])
+  messages Message[]
+
+  /// taskId is already unique (creates its own index)
+  @@index([customerId])
+  @@index([taskerId])
+  @@map("conversations")
+}
+
+/// A single message within a conversation.
+model Message {
+  id             String      @id @default(uuid()) @map("id")
+  conversationId String      @map("conversation_id")
+  senderId       String      @map("sender_id")
+  content        String      @map("content")
+  messageType    MessageType @default(TEXT) @map("message_type")
+  isRead         Boolean     @default(false) @map("is_read")
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt(sort: Asc)])
+  @@map("messages")
+}
+
+/// A notification sent to a user via push or in-app.
+model Notification {
+  id        String           @id @default(uuid()) @map("id")
+  userId    String           @map("user_id")
+  title     String           @map("title")
+  message   String           @map("message")
+  type      NotificationType @map("type")
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("notifications")
+}
+
+// ─── Payment & Wallet Module ─────────────────────────
+
+/// Payment record for a completed task. Supports platform commission calculation
+/// and future payment gateway integration (e.g., Stripe, M-Pesa).
+model Payment {
+  id                   String        @id @default(uuid()) @map("id")
+  taskId               String        @unique @map("task_id")
+  customerId           String        @map("customer_id")
+  amount               Decimal       @db.Decimal(10, 2)
+  platformFee          Decimal       @map("platform_fee") @db.Decimal(10, 2)
+  taskerAmount         Decimal       @map("tasker_amount") @db.Decimal(10, 2)
+  paymentMethod        String        @map("payment_method")
+  paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
+  transactionReference String?       @map("transaction_reference")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  task     Task @relation(fields: [taskId], references: [id])
+  customer User @relation("CustomerPayments", fields: [customerId], references: [id])
+
+  @@index([taskId])
+  @@index([customerId])
+  @@index([transactionReference])
+  @@index([paymentStatus])
+  @@map("payments")
+}
+
+/// Wallet balance and earnings tracker for a tasker.
+model Wallet {
+  id             String   @id @default(uuid()) @map("id")
+  taskerId       String   @unique @map("tasker_id")
+  balance        Decimal  @default(0) @db.Decimal(10, 2)
+  totalEarned    Decimal  @default(0) @map("total_earned") @db.Decimal(10, 2)
+  totalWithdrawn Decimal  @default(0) @map("total_withdrawn") @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  tasker       TaskerProfile       @relation(fields: [taskerId], references: [id])
+  transactions WalletTransaction[]
+
+  @@index([taskerId])
+  @@map("wallets")
+}
+
+/// Immutable ledger tracking every wallet movement (append-only).
+model WalletTransaction {
+  id          String                @id @default(uuid()) @map("id")
+  walletId    String                @map("wallet_id")
+  type        WalletTransactionType @map("type")
+  amount      Decimal               @db.Decimal(10, 2)
+  description String?
+  referenceId String?               @map("reference_id")
+  createdAt   DateTime              @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([walletId, createdAt(sort: Desc)])
+  @@index([referenceId])
+  @@index([type])
+  @@map("wallet_transactions")
+}
+
+// ─── Category Module ───────────────────────────────────────
+
+/// Hierarchical task categories (e.g., Cleaning → Home Cleaning → Deep Cleaning).
+model Category {
+  id          String   @id @default(uuid()) @map("id")
+  name        String   @unique @map("name")
+  slug        String   @unique @map("slug")
+  description String?  @map("description")
+  iconUrl     String?  @map("icon_url")
+  parentId    String?  @map("parent_id")
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+  tasks    Task[]
+
+  @@index([parentId])
+  @@index([slug])
+  @@index([sortOrder])
+  @@map("categories")
+}
+
+// ─── Task Offers Module ────────────────────────────────────
+
+/// Tasker offers on open tasks.
+model TaskOffer {
+  id        String      @id @default(uuid()) @map("id")
+  taskId    String      @map("task_id")
+  taskerId  String      @map("tasker_id")
+  price     Decimal     @db.Decimal(10, 2)
+  message   String?     @map("message")
+  status    OfferStatus @default(PENDING) @map("status")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  task   Task          @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tasker TaskerProfile @relation("TaskerOffers", fields: [taskerId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, taskerId], name: "unique_task_tasker_offer")
+  @@index([taskId])
+  @@index([taskerId])
+  @@index([taskId, status])
+  @@map("task_offers")
+}
+
+// ─── Reviews & Ratings Module ──────────────────────────────
+
+/// Review left by one user for another after a completed task.
+/// Supports both: customer → tasker AND tasker → customer
+model Review {
+  id             String   @id @default(uuid()) @map("id")
+  taskId         String   @map("task_id")
+  reviewerId     String   @map("reviewer_id")
+  reviewedUserId String   @map("reviewed_user_id")
+  rating         Int      @db.SmallInt
+  comment        String?  @map("comment")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  task         Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reviewer     User @relation("WrittenReviews", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewedUser User @relation("ReceivedReviews", fields: [reviewedUserId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, reviewerId], name: "unique_task_reviewer")
+  @@index([reviewedUserId])
+  @@index([taskId])
+  @@index([reviewedUserId, rating])
+  @@index([reviewedUserId, createdAt(sort: Desc)])
+  @@map("reviews")
+}
+
+/// Denormalized rating summary per user for fast reads.
+model RatingSummary {
+  id            String   @id @default(uuid()) @map("id")
+  userId        String   @unique @map("user_id")
+  averageRating Decimal  @default(0) @map("average_rating") @db.Decimal(3, 2)
+  totalReviews  Int      @default(0) @map("total_reviews")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([averageRating(sort: Desc)])
+  @@index([totalReviews(sort: Desc)])
+  @@map("rating_summaries")
+}
+
+// ─── Admin Module ──────────────────────────────────────────
+
+/// Admin panel access control.
+model AdminUser {
+  id          String    @id @default(uuid()) @map("id")
+  userId      String    @unique @map("user_id")
+  role        AdminRole @default(MODERATOR) @map("role")
+  permissions Json      @default("[]") @map("permissions")
+  lastLoginAt DateTime? @map("last_login_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  // ── Relations ───────────────────────────────────────
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  auditLogs AuditLog[]
+
+  @@index([role])
+  @@map("admin_users")
+}
+
+/// Immutable audit log of admin actions.
+model AuditLog {
+  id         BigInt   @id @default(autoincrement()) @map("id")
+  adminId    String?  @map("admin_id")
+  action     String   @map("action")
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  changes    Json?    @map("changes")
+  ipAddress  String?  @map("ip_address")
+  userAgent  String?  @map("user_agent")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  admin AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([adminId])
+  @@index([createdAt(sort: Desc)])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// ─── User Devices (Push Notifications) ──────────────────────
+
+/// Push notification tokens per user device.
+model UserDevice {
+  id         String    @id @default(uuid()) @map("id")
+  userId     String    @map("user_id")
+  platform   String    @map("platform")
+  pushToken  String    @map("push_token")
+  isActive   Boolean   @default(true) @map("is_active")
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([pushToken], name: "unique_push_token")
+  @@index([userId])
+  @@index([pushToken])
+  @@map("user_devices")
+}

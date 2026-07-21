@@ -1,0 +1,25 @@
+{
+  "name": "taska",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Taska – Task management platform",
+  "scripts": {
+    "mobile": "npm run --prefix mobile",
+    "mobile:start": "npm run --prefix mobile start",
+    "mobile:android": "npm run --prefix mobile android",
+    "mobile:ios": "npm run --prefix mobile ios",
+    "mobile:web": "npm run --prefix mobile web",
+    "backend": "npm run --prefix backend",
+    "backend:dev": "npm run --prefix backend dev",
+    "backend:build": "npm run --prefix backend build",
+    "backend:start": "npm run --prefix backend start",
+    "backend:lint": "npm run --prefix backend lint",
+    "backend:typecheck": "npm run --prefix backend typecheck",
+    "lint": "npm run mobile lint && npm run backend lint",
+    "typecheck": "npm run backend typecheck",
+    "clean": "rm -rf mobile/node_modules backend/node_modules mobile/dist backend/dist"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
