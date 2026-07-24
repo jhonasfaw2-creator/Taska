@@ -29,6 +29,8 @@ export interface EnvConfig {
     secretAccessKey: string;
     endpoint: string;
   };
+  paymentProvider: string;
+  platformFeePercentage: number;
 }
 
 export interface JwtPayload {

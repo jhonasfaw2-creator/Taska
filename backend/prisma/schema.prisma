@@ -87,9 +87,13 @@ enum NotificationType {
 
 enum PaymentStatus {
   PENDING
+  PROCESSING
+  AUTHORIZED
   PAID
   FAILED
+  CANCELLED
   REFUNDED
+  PARTIALLY_REFUNDED
 
   @@map("payment_status")
 }
@@ -105,8 +109,30 @@ enum WalletTransactionType {
   PAYOUT
   CREDIT
   DEBIT
+  HOLD
+  RELEASE
 
   @@map("wallet_transaction_type")
+}
+
+enum PaymentProvider {
+  STRIPE
+  CHAPA
+  TELEBIRR
+  CASH
+
+  @@map("payment_provider")
+}
+
+enum RefundReason {
+  DUPLICATE
+  FRAUD
+  CUSTOMER_REQUEST
+  TASK_CANCELLED
+  SERVICE_ISSUE
+  OTHER
+
+  @@map("refund_reason")
 }
 
 enum OfferStatus {
@@ -151,18 +177,20 @@ model User {
   isOnboarded  Boolean   @default(false)
 
   // ── Relations ───────────────────────────────────────
-  taskerProfile   TaskerProfile?
-  tasks           Task[]         @relation("CustomerTasks")
-  payments        Payment[]      @relation("CustomerPayments")
-  sentMessages    Message[]      @relation("SentMessages")
-  notifications   Notification[]
-  writtenReviews  Review[]       @relation("WrittenReviews")
-  receivedReviews Review[]       @relation("ReceivedReviews")
-  adminUser       AdminUser?
-  ratingSummary   RatingSummary?
-  devices         UserDevice[]
-  conversations   Conversation[]
-  media           Media[]
+  taskerProfile     TaskerProfile?
+  tasks             Task[]            @relation("CustomerTasks")
+  payments          Payment[]         @relation("CustomerPayments")
+  sentMessages      Message[]         @relation("SentMessages")
+  notifications     Notification[]
+  writtenReviews    Review[]          @relation("WrittenReviews")
+  receivedReviews   Review[]          @relation("ReceivedReviews")
+  adminUser         AdminUser?
+  ratingSummary     RatingSummary?
+  devices           UserDevice[]
+  conversations     Conversation[]
+  media             Media[]
+  processedRefunds  PaymentRefund[] @relation("ProcessedRefunds")
+  savedPaymentMethods SavedPaymentMethod[]
 
   @@index([role])
   @@index([deletedAt])
@@ -408,40 +436,118 @@ model Notification {
 // ─── Payment & Wallet Module ─────────────────────────
 
 /// Payment record for a completed task. Supports platform commission calculation
-/// and future payment gateway integration (e.g., Stripe, M-Pesa).
+/// and future payment gateway integration (e.g., Stripe, Chapa, Telebirr).
 model Payment {
-  id                   String        @id @default(uuid()) @map("id")
-  taskId               String        @unique @map("task_id")
-  customerId           String        @map("customer_id")
-  amount               Decimal       @db.Decimal(10, 2)
-  platformFee          Decimal       @map("platform_fee") @db.Decimal(10, 2)
-  taskerAmount         Decimal       @map("tasker_amount") @db.Decimal(10, 2)
-  paymentMethod        String        @map("payment_method")
-  paymentStatus        PaymentStatus @default(PENDING) @map("payment_status")
-  transactionReference String?       @map("transaction_reference")
-  createdAt            DateTime      @default(now()) @map("created_at")
-  updatedAt            DateTime      @updatedAt @map("updated_at")
+  id                   String          @id @default(uuid()) @map("id")
+  taskId               String          @unique @map("task_id")
+  customerId           String          @map("customer_id")
+  amount               Decimal         @db.Decimal(10, 2)
+  platformFee          Decimal         @map("platform_fee") @db.Decimal(10, 2)
+  taskerAmount         Decimal         @map("tasker_amount") @db.Decimal(10, 2)
+  paymentMethod        String          @map("payment_method")
+  paymentStatus        PaymentStatus   @default(PENDING) @map("payment_status")
+  transactionReference String?         @map("transaction_reference")
+  provider             PaymentProvider @default(STRIPE) @map("provider")
+  providerPaymentId    String?         @map("provider_payment_id")
+  idempotencyKey       String?         @unique @map("idempotency_key")
+  metadata             Json?           @map("metadata")
+  description          String?         @map("description")
+  refundedAmount       Decimal         @default(0) @db.Decimal(10, 2) @map("refunded_amount")
+  paidAt               DateTime?       @map("paid_at")
+  createdAt            DateTime        @default(now()) @map("created_at")
+  updatedAt            DateTime        @updatedAt @map("updated_at")
 
   // ── Relations ───────────────────────────────────────
-  task     Task @relation(fields: [taskId], references: [id])
-  customer User @relation("CustomerPayments", fields: [customerId], references: [id])
+  task     Task              @relation(fields: [taskId], references: [id])
+  customer User              @relation("CustomerPayments", fields: [customerId], references: [id])
+  refunds  PaymentRefund[]
+  audits   PaymentAuditLog[]
 
   @@index([taskId])
   @@index([customerId])
   @@index([transactionReference])
+  @@index([providerPaymentId])
   @@index([paymentStatus])
+  @@index([provider])
   @@map("payments")
+}
+
+/// Immutable record of every refund processed against a payment.
+model PaymentRefund {
+  id            String        @id @default(uuid()) @map("id")
+  paymentId     String        @map("payment_id")
+  amount        Decimal       @db.Decimal(10, 2)
+  reason        RefundReason  @map("reason")
+  reasonDetail  String?       @map("reason_detail")
+  status        String        @default("COMPLETED") @map("status")
+  providerRefundId String?    @map("provider_refund_id")
+  processedById String?       @map("processed_by_id")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  payment     Payment @relation(fields: [paymentId], references: [id])
+  processedBy User?   @relation("ProcessedRefunds", fields: [processedById], references: [id])
+
+  @@index([paymentId])
+  @@index([createdAt(sort: Desc)])
+  @@map("payment_refunds")
+}
+
+/// Append-only audit trail for all payment events.
+model PaymentAuditLog {
+  id        BigInt  @id @default(autoincrement()) @map("id")
+  paymentId String  @map("payment_id")
+  event     String  @map("event")
+  fromStatus String? @map("from_status")
+  toStatus  String? @map("to_status")
+  data      Json?   @map("data")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // ── Relations ───────────────────────────────────────
+  payment Payment @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
+  @@index([paymentId, createdAt(sort: Desc)])
+  @@index([event])
+  @@map("payment_audit_logs")
+}
+
+/// Saved payment methods for repeat use.
+model SavedPaymentMethod {
+  id            String          @id @default(uuid()) @map("id")
+  userId        String          @map("user_id")
+  provider       PaymentProvider @map("provider")
+  providerMethodId String       @map("provider_method_id")
+  lastFour      String?         @map("last_four")
+  brand         String?         @map("brand")
+  expiryMonth   Int?            @map("expiry_month")
+  expiryYear    Int?            @map("expiry_year")
+  isDefault     Boolean         @default(false) @map("is_default")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  // ── Relations ───────────────────────────────────────
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, providerMethodId])
+  @@index([userId])
+  @@index([isDefault])
+  @@map("saved_payment_methods")
 }
 
 /// Wallet balance and earnings tracker for a tasker.
 model Wallet {
-  id             String   @id @default(uuid()) @map("id")
-  taskerId       String   @unique @map("tasker_id")
-  balance        Decimal  @default(0) @db.Decimal(10, 2)
-  totalEarned    Decimal  @default(0) @map("total_earned") @db.Decimal(10, 2)
-  totalWithdrawn Decimal  @default(0) @map("total_withdrawn") @db.Decimal(10, 2)
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
+  id                String   @id @default(uuid()) @map("id")
+  taskerId          String   @unique @map("tasker_id")
+  balance           Decimal  @default(0) @db.Decimal(10, 2)
+  pendingBalance    Decimal  @default(0) @map("pending_balance") @db.Decimal(10, 2)
+  availableBalance  Decimal  @default(0) @map("available_balance") @db.Decimal(10, 2)
+  totalEarned       Decimal  @default(0) @map("total_earned") @db.Decimal(10, 2)
+  totalWithdrawn    Decimal  @default(0) @map("total_withdrawn") @db.Decimal(10, 2)
+  totalRefunded     Decimal  @default(0) @map("total_refunded") @db.Decimal(10, 2)
+  currency          String   @default("ETB") @map("currency")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   // ── Relations ───────────────────────────────────────
   tasker       TaskerProfile       @relation(fields: [taskerId], references: [id])

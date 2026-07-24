@@ -52,6 +52,8 @@ export const envConfig: EnvConfig = {
     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || '',
     endpoint: process.env.S3_ENDPOINT || '',
   },
+  paymentProvider: (process.env.PAYMENT_PROVIDER as string) || 'stripe',
+  platformFeePercentage: parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '0.1'),
 } as const;
 
 export const isProduction = envConfig.nodeEnv === 'production';

@@ -45,6 +45,7 @@
     "pino-http": "^11.0.0",
     "sharp": "^0.35.3",
     "socket.io": "^4.8.3",
+    "stripe": "^22.3.2",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^14.0.1"
   },
