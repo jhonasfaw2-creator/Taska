@@ -761,3 +761,25 @@ model UserDevice {
   @@index([pushToken])
   @@map("user_devices")
 }
+
+// ─── Analytics Events ──────────────────────────────────────
+
+/// Tracked analytics events for admin insights.
+model AnalyticsEvent {
+  id        String          @id @default(uuid()) @map("id")
+  event     String          @map("event")
+  category  String?         @map("category")
+  label     String?         @map("label")
+  value     Float?          @map("value")
+  userId    String?         @map("user_id")
+  metadata  Json?           @map("metadata")
+  ipAddress String?         @map("ip_address")
+  userAgent String?         @map("user_agent")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@index([event])
+  @@index([category])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("analytics_events")
+}

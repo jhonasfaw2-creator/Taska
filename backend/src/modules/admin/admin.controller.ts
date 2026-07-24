@@ -262,6 +262,14 @@ export async function sendTargetedNotification(req: Request, res: Response, next
   } catch (err) { next(err); }
 }
 
+export async function listNotifications(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { limit = '50', offset = '0' } = req.query;
+    const result = await adminService.listNotifications(Number(limit), Number(offset));
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
 export async function sendNotification(req: Request, res: Response, next: NextFunction) {
   try {
     const data = sendNotificationSchema.parse(req.body);

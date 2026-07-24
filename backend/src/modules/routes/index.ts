@@ -15,12 +15,14 @@ import paymentRoutes from '../payment/payment.routes';
 import webhookRoutes from '../payment/webhook.routes';
 import walletRoutes from '../wallet/wallet.routes';
 import adminRoutes from '../admin/admin.routes';
+import analyticsRoutes from '../analytics/analytics.routes';
 
 const v1Router = Router();
 
 v1Router.use('/health', healthRoutes);
 v1Router.use('/auth', authRoutes);
 v1Router.use('/admin', adminRoutes);
+v1Router.use('/analytics', analyticsRoutes);
 v1Router.use('/users', userRoutes);
 v1Router.use('/categories', categoryRoutes);
 v1Router.use('/tasks', taskRoutes);

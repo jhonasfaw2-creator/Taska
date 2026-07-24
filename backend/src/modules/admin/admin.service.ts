@@ -739,6 +739,18 @@ export async function broadcastNotification(title: string, message: string, role
   return { sentCount: users.length };
 }
 
+export async function listNotifications(limit = 50, offset = 0) {
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      skip: offset, take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { user: { select: { id: true, firstName: true, lastName: true, phoneNumber: true } } },
+    }),
+    prisma.notification.count(),
+  ]);
+  return { notifications, total };
+}
+
 // ─── Targeted Notifications ─────────────────────────────
 
 export async function sendTargetedNotification(userIds: string[], title: string, message: string) {

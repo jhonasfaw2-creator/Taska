@@ -130,6 +130,9 @@ jest.mock('../../modules/admin/admin.controller', () => ({
   sendTargetedNotification: jest.fn((_req: any, res: any) =>
     res.json({ success: true, data: { sentCount: 3 } }),
   ),
+  listNotifications: jest.fn((_req: any, res: any) =>
+    res.json({ success: true, data: { notifications: [], total: 0 } }),
+  ),
 
   // ── Reports ──────────────────────────────────────────
   getRevenueReport: jest.fn((_req: any, res: any) =>

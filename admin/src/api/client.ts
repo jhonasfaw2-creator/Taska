@@ -238,8 +238,8 @@ export async function listAdminNotifications(params: Record<string, any> = {}) {
   return res.data.data;
 }
 
-export async function sendAdminNotification(data: { subject: string; message: string; topic?: string }) {
-  const res = await api.post('/admin/notifications/send-all', data);
+export async function sendAdminNotification(data: { title: string; message: string; roleFilter?: string }) {
+  const res = await api.post('/admin/notifications/broadcast', data);
   return res.data.data;
 }
 

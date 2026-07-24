@@ -58,6 +58,7 @@ router.post('/payouts/approve', requirePermission('payouts:approve'), ctrl.appro
 router.get('/wallets/:walletId/transactions', requirePermission('payments:view'), ctrl.getWalletTransactions);
 
 // ── Notifications ───────────────────────────────────────
+router.get('/notifications', requirePermission('notifications:send'), ctrl.listNotifications);
 router.post('/notifications/send', requirePermission('notifications:send'), ctrl.sendNotification);
 router.post('/notifications/broadcast', requirePermission('notifications:broadcast'), ctrl.broadcastNotification);
 router.post('/notifications/targeted', requirePermission('notifications:send'), ctrl.sendTargetedNotification);
