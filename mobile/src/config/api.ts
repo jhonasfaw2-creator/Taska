@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { create as createApiInstance, AxiosInstance, AxiosError, InternalAxiosRequestConfig } from 'axios';
 import Constants from 'expo-constants';
 // ─── Base URL resolution ──────────────────────────────
 //
@@ -38,7 +38,7 @@ console.log('[API] Resolved BASE_URL:', BASE_URL);
 
 // ─── Axios instance ────────────────────────────────────
 
-const api: AxiosInstance = axios.create({
+const api: AxiosInstance = createApiInstance({
   baseURL: BASE_URL,
   timeout: 15_000, // 15 seconds
   headers: {

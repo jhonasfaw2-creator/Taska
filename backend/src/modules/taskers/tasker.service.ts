@@ -1,5 +1,5 @@
 import { prisma } from '../../prisma/client';
-import { AppError } from '../../types';
+import { AppError } from '../../common/types';
 import type { VehicleType } from '@prisma/client';
 
 export interface TaskerProfileResult {

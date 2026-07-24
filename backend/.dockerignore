@@ -1,0 +1,17 @@
+node_modules
+dist
+.env
+.env.local
+.env.production
+.git
+.gitignore
+__tests__
+coverage
+src/__tests__
+*.log
+tsconfig.json
+tsconfig.test.json
+.eslintrc.json
+.prettierrc
+.nodemon.json
+README.md

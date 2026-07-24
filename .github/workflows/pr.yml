@@ -1,0 +1,90 @@
+name: PR Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 18
+
+jobs:
+  backend:
+    name: Backend — Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache backend dependencies
+        uses: actions/cache@v4
+        id: cache-backend
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+        if: steps.cache-backend.outputs.cache-hit != 'true'
+
+      - name: Prisma generate
+        run: npm run --prefix backend db:generate
+
+      - name: TypeScript check
+        run: npm run --prefix backend typecheck
+
+      - name: Lint
+        run: npm run --prefix backend lint
+
+      - name: Run tests
+        run: npm run --prefix backend test
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: backend/coverage/
+          retention-days: 7
+
+      - name: Build
+        run: npm run --prefix backend build
+
+  mobile:
+    name: Mobile — Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Cache mobile dependencies
+        uses: actions/cache@v4
+        id: cache-mobile
+        with:
+          path: mobile/node_modules
+          key: ${{ runner.os }}-mobile-${{ hashFiles('mobile/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-mobile-
+
+      - name: Install mobile dependencies
+        run: npm ci --prefix mobile
+        if: steps.cache-mobile.outputs.cache-hit != 'true'
+
+      - name: Lint
+        run: npm run --prefix mobile lint
+
+      - name: TypeScript check
+        run: npx --prefix mobile tsc --noEmit

@@ -123,7 +123,7 @@ export default function ReviewTaskScreen() {
       }
 
       resetTask();
-      router.replace('/searching-tasker');
+      router.replace(`/searching-tasker?taskId=${created.id}`);
     } catch (error: any) {
       const message = error?.message ?? 'Something went wrong. Please try again.';
       Alert.alert('Error', message);

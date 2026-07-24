@@ -1,10 +1,6 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middleware/auth.middleware';
-import {
-  registerDevice,
-  getNotifications,
-  markAsRead,
-} from './notification.controller';
+import { requireAuth } from '../../common/middleware/auth.middleware';
+import { registerDevice, getNotifications, markAsRead } from './notification.controller';
 
 const router = Router();
 

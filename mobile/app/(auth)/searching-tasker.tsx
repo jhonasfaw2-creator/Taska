@@ -4,11 +4,11 @@ import {
   Animated,
   Easing,
   Alert,
-  InteractionManager,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
+import { onSocketEvent, joinTaskRoom, leaveTaskRoom } from '@/services/socket.service';
 
 const PROGRESS_MESSAGES = [
   'Finding nearby taskers...',
@@ -17,7 +17,6 @@ const PROGRESS_MESSAGES = [
 ];
 
 const MESSAGE_INTERVAL_MS = 2500;
-const AUTO_NAVIGATE_DELAY_MS = 5000;
 
 const ESTIMATED_WAIT_MIN = 1;
 const ESTIMATED_WAIT_MAX = 3;
@@ -26,6 +25,7 @@ const NEARBY_TASKERS = 12;
 export default function SearchingTaskerScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { taskId } = useLocalSearchParams<{ taskId?: string }>();
 
   const [messageIndex, setMessageIndex] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -104,22 +104,36 @@ export default function SearchingTaskerScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  // Auto-navigate to task accepted after 5 seconds
+  // Join the task room and navigate when a tasker accepts
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!hasNavigated.current) {
-        hasNavigated.current = true;
-        // Use InteractionManager to ensure smooth transition
-        InteractionManager.runAfterInteractions(() => {
-          router.replace('/task-accepted');
-        });
+    if (taskId) {
+      joinTaskRoom(taskId);
+    }
+
+    const unsubAccepted = onSocketEvent('task_accepted', (data: any) => {
+      if (!taskId || data.taskId === taskId) {
+        if (!hasNavigated.current) {
+          hasNavigated.current = true;
+          router.replace(`/task-accepted?taskId=${data.taskId ?? taskId}`);
+        }
       }
-    }, AUTO_NAVIGATE_DELAY_MS);
+    });
+
+    const unsubStatus = onSocketEvent('task_status_changed', (data: any) => {
+      if (data.status === 'ACCEPTED' && (!taskId || data.taskId === taskId)) {
+        if (!hasNavigated.current) {
+          hasNavigated.current = true;
+          router.replace(`/task-accepted?taskId=${data.taskId}`);
+        }
+      }
+    });
 
     return () => {
-      clearTimeout(timer);
+      if (taskId) leaveTaskRoom(taskId);
+      unsubAccepted();
+      unsubStatus();
     };
-  }, [router]);
+  }, [router, taskId]);
 
   const handleCancelTask = useCallback(() => {
     Alert.alert(
@@ -190,7 +204,7 @@ export default function SearchingTaskerScreen() {
         {/* Subtitle */}
         <View className="mt-sm">
           <Typography variant="body" color="secondary" className="text-center leading-relaxed">
-            We're notifying nearby verified taskers.
+            We&apos;re notifying nearby verified taskers.
           </Typography>
         </View>
 

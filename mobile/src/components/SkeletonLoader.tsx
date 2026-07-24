@@ -1,10 +1,37 @@
-import { View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, View } from 'react-native';
 
+/**
+ * A skeleton loading block with a native pulsing opacity animation.
+ * Do NOT use CSS `animate-pulse` — it crashes on React Native
+ * because keyframe animations are not supported.
+ */
 export function SkeletonBlock({ className }: { className?: string }) {
+  const opacity = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacity, {
+          toValue: 0.3,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [opacity]);
+
   return (
-    <View
+    <Animated.View
       className={`rounded-md bg-border/50 ${className ?? ''}`}
-      style={{ opacity: 0.5 }}
+      style={{ opacity }}
     />
   );
 }

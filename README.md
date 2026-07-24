@@ -1,5 +1,11 @@
 # Taska — Task Management Platform
 
+![PR Check](https://github.com/OWNER/REPO/actions/workflows/pr.yml/badge.svg)
+![Deploy](https://github.com/OWNER/REPO/actions/workflows/deploy.yml/badge.svg)
+[![Coverage](https://img.shields.io/badge/coverage-83%25-brightgreen)](backend/coverage)
+
+> **Replace `OWNER/REPO` in the badge URLs above with your GitHub owner and repository name after pushing.**
+
 | Directory | Purpose |
 |---|---|
 | [`mobile/`](./mobile) | Customer & tasker mobile app (Expo / React Native) |

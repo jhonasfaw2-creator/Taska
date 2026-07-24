@@ -1,6 +1,6 @@
 import { prisma } from '../../prisma/client';
-import { AppError } from '../../types';
-import { emitToUser } from '../../services/socket.service';
+import { AppError } from '../../common/types';
+import { emitToUser } from '../../common/socket';
 import type { NotificationType } from '@prisma/client';
 
 export interface NotificationResult {
@@ -52,9 +52,7 @@ export async function registerDevice(
   return { message: 'Device registered successfully' };
 }
 
-export async function getNotifications(
-  userId: string,
-): Promise<NotificationResult[]> {
+export async function getNotifications(userId: string): Promise<NotificationResult[]> {
   const notifications = await prisma.notification.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
@@ -119,7 +117,9 @@ export async function sendNotification(
     select: { pushToken: true, platform: true },
   });
 
-  if (devices.length === 0) return;
+  if (devices.length === 0) {
+    return;
+  }
 
   const messages = devices.map((d) => ({
     to: d.pushToken,
@@ -137,11 +137,7 @@ export async function sendNotification(
     });
 
     if (!response.ok) {
-      console.error(
-        '[Push] Expo push API error:',
-        response.status,
-        await response.text(),
-      );
+      console.error('[Push] Expo push API error:', response.status, await response.text());
     }
   } catch (err) {
     console.error('[Push] Failed to send push notification:', err);

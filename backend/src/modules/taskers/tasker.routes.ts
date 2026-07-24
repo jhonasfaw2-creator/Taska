@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireAuth } from '../../middleware/auth.middleware';
+import { requireAuth } from '../../common/middleware/auth.middleware';
 import { apply, getProfile, updateStatus } from './tasker.controller';
 
 const router = Router();

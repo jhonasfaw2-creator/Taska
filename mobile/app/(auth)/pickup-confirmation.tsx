@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { View, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, Alert, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
@@ -42,11 +42,12 @@ export default function PickupConfirmationScreen() {
         },
       ],
     );
-  }, [router, notes]);
+  }, [router]);
 
   const handleCallCustomer = useCallback(() => {
-    // In production, initiate phone call
-    Alert.alert('Call', 'Calling customer...');
+    Linking.openURL('tel:+251911234567').catch(() => {
+      Alert.alert('Error', 'Unable to make a phone call on this device.');
+    });
   }, []);
 
   const handleChat = useCallback(() => {

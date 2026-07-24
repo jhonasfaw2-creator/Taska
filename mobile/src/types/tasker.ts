@@ -5,6 +5,9 @@ export interface TaskerProfile {
   rating: number;
   totalTasksCompleted: number;
   isOnline: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  lastLocationUpdate: string | null;
   bio: string | null;
   experience: number | null;
   lastActiveAt: string | null;

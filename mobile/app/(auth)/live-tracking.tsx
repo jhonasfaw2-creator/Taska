@@ -125,8 +125,8 @@ export default function LiveTrackingScreen() {
   }, []);
 
   const handleViewTaskDetails = useCallback(() => {
-    // In production, show the task detail overlay
-  }, []);
+    router.push('/task-details');
+  }, [router]);
 
   return (
     <View className="flex-1 bg-background">

@@ -7,27 +7,6 @@ import { ProgressTimeline } from '@/components/ProgressTimeline';
 import { getTaskById } from '@/services/task.service';
 import type { TaskResponse } from '@/types/task';
 
-function StarRating({ rating, maxRating }: { rating: number; maxRating: number }) {
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating - fullStars >= 0.5;
-  return (
-    <View className="flex-row items-center gap-0.5">
-      {Array.from({ length: maxRating }, (_, i) => {
-        const isFull = i < fullStars;
-        const isHalf = i === fullStars && hasHalfStar;
-        return (
-          <Typography key={i} variant="caption" className={isFull || isHalf ? 'text-amber-500' : 'text-border'}>
-            ★
-          </Typography>
-        );
-      })}
-      <Typography variant="caption" weight="semibold" className="ml-xs text-text-primary">
-        {rating.toFixed(1)}
-      </Typography>
-    </View>
-  );
-}
-
 export default function TaskAcceptedScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -76,7 +55,6 @@ export default function TaskAcceptedScreen() {
     }
   }, [router, taskId]);
 
-  const completedTasks = 342; // Mock for now — no API provides this
   const price = task ? (task.finalPrice ?? task.estimatedPrice) : 0;
   const createdAt = task ? new Date(task.createdAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
   const taskIdDisplay = task?.id?.slice(0, 8).toUpperCase() ?? '';
@@ -104,7 +82,7 @@ export default function TaskAcceptedScreen() {
           </View>
         </View>
 
-        {/* Tasker Information card (mock for now) */}
+        {/* Tasker Information card */}
         <View className="mx-screen-padding mt-lg overflow-hidden rounded-2xl border border-border bg-surface">
           <View className="flex-row items-center gap-md px-lg pt-lg pb-md">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -112,11 +90,10 @@ export default function TaskAcceptedScreen() {
             </View>
             <View className="flex-1">
               <Typography variant="body" weight="semibold" className="text-text-primary">
-                Abebe Kebede
+                Tasker Assigned
               </Typography>
-              <StarRating rating={4.8} maxRating={5} />
               <Typography variant="caption" color="secondary">
-                {completedTasks} tasks completed
+                A verified tasker will contact you shortly
               </Typography>
             </View>
           </View>
@@ -127,7 +104,7 @@ export default function TaskAcceptedScreen() {
             </View>
             <View className="flex-1">
               <Typography variant="caption" color="secondary" className="uppercase tracking-wide">Vehicle</Typography>
-              <Typography variant="body" weight="medium" className="mt-px text-text-primary">Toyota Corolla (White)</Typography>
+              <Typography variant="body" weight="medium" className="mt-px text-text-primary">{task?.vehicleType ?? 'Standard'}</Typography>
             </View>
             <View className="items-end">
               <Typography variant="caption" color="secondary" className="uppercase tracking-wide">Price</Typography>

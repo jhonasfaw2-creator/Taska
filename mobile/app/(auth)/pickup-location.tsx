@@ -1,47 +1,82 @@
 import { useCallback, useState } from 'react';
-import { View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { useTaskContext } from '@/store/TaskContext';
+import { searchAddresses, reverseGeocode } from '@/modules/location/services/geocoding.service';
+import { getCurrentPosition } from '@/modules/location/services/location.service';
+import LocationMap from '@/modules/location/components/LocationMap';
+import type { GeocodingSuggestion } from '@/modules/location/services/geocoding.service';
 
 export default function PickupLocationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { setPickup } = useTaskContext();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<GeocodingSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(null);
 
-  const hasLocation = selectedAddress !== null;
-
-  const handleSearchChange = useCallback((text: string) => {
+  const handleSearch = useCallback(async (text: string) => {
     setSearchQuery(text);
-    setIsSearching(text.length > 0);
+    if (text.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const results = await searchAddresses(text, 5);
+      setSuggestions(results);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleUseCurrentLocation = useCallback(() => {
-    setSelectedAddress('Current Location - Bole, Addis Ababa, Ethiopia');
-    setSearchQuery('Bole, Addis Ababa');
-    setIsSearching(false);
-  }, []);
+  const handleSelectSuggestion = useCallback(
+    async (suggestion: GeocodingSuggestion) => {
+      setSearchQuery(suggestion.displayName);
+      setSuggestions([]);
+      const location = {
+        latitude: suggestion.latitude,
+        longitude: suggestion.longitude,
+        address: suggestion.displayName,
+      };
+      setSelectedLocation(location);
+      setPickup(location);
+    },
+    [setPickup],
+  );
 
-  const handleSelectLocation = useCallback((address: string) => {
-    setSelectedAddress(address);
-    setSearchQuery(address);
-    setIsSearching(false);
-  }, []);
+  const handleUseCurrentLocation = useCallback(async () => {
+    setLoading(true);
+    try {
+      const position = await getCurrentPosition();
+      const result = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+      const location = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        address: result.displayName,
+      };
+      setSelectedLocation(location);
+      setSearchQuery(result.displayName);
+      setPickup(location);
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to get current location');
+    } finally {
+      setLoading(false);
+    }
+  }, [setPickup]);
 
   const handleContinue = useCallback(() => {
-    if (!hasLocation) return;
+    if (!selectedLocation) return;
     router.push('/dropoff-location');
-  }, [hasLocation, router]);
+  }, [selectedLocation, router]);
 
-  const mockSuggestions = [
-    'Bole, Addis Ababa, Ethiopia',
-    'Kazanchis, Addis Ababa, Ethiopia',
-    'Piazza, Addis Ababa, Ethiopia',
-    'Meskel Square, Addis Ababa, Ethiopia',
-    'CMC, Addis Ababa, Ethiopia',
-  ].filter((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+  const canContinue = !!selectedLocation;
 
   return (
     <View className="flex-1 bg-background">
@@ -54,33 +89,12 @@ export default function PickupLocationScreen() {
           paddingBottom: insets.bottom,
         }}
       >
-        {/* Header */}
-        <View className="px-screen-padding pt-lg">
-          <TouchableOpacity
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-            testID="pickup-back-button"
-            onPress={() => router.back()}
-            className="mb-lg h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
-            hitSlop={8}
-          >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
-          </TouchableOpacity>
+        <ScreenHeader
+          title="Pickup location"
+          subtitle="Where should the task begin?"
+        />
 
-          <Typography variant="h1" weight="bold" className="text-text-primary">
-            Pickup location
-          </Typography>
-          <View className="h-sm" />
-          <Typography variant="body" color="secondary">
-            Where should the task begin?
-          </Typography>
-        </View>
-
-        {/* Search + map area */}
         <View className="flex-1 px-screen-padding pt-xl">
-          {/* Search input */}
           <View className="overflow-hidden rounded-xl border border-border bg-surface">
             <View className="flex-row items-center px-md">
               <Typography variant="body" color="secondary" className="mr-md">
@@ -88,7 +102,7 @@ export default function PickupLocationScreen() {
               </Typography>
               <TextInput
                 value={searchQuery}
-                onChangeText={handleSearchChange}
+                onChangeText={handleSearch}
                 placeholder="Search for a location"
                 placeholderTextColor="rgba(107, 114, 128, 0.5)"
                 autoComplete="off"
@@ -99,10 +113,14 @@ export default function PickupLocationScreen() {
                 accessibilityLabel="Search location"
                 testID="pickup-search-input"
               />
+              {loading && (
+                <View className="h-4 w-4 items-center justify-center">
+                  <View className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </View>
+              )}
             </View>
           </View>
 
-          {/* Use Current Location */}
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Use current location"
@@ -118,54 +136,49 @@ export default function PickupLocationScreen() {
             </Typography>
           </TouchableOpacity>
 
-          {/* Suggestions */}
-          {isSearching && searchQuery.length > 0 && mockSuggestions.length > 0 && (
+          {suggestions.length > 0 && (
             <View className="mt-md overflow-hidden rounded-xl border border-border bg-surface">
-              {mockSuggestions.map((suggestion, index) => (
+              {suggestions.map((suggestion, index) => (
                 <TouchableOpacity
-                  key={index}
+                  key={suggestion.placeId}
                   accessibilityRole="button"
-                  accessibilityLabel={`Select ${suggestion}`}
-                  onPress={() => handleSelectLocation(suggestion)}
+                  accessibilityLabel={`Select ${suggestion.displayName}`}
+                  onPress={() => handleSelectSuggestion(suggestion)}
                   testID={`pickup-suggestion-${index}`}
                   className={[
                     'flex-row items-center gap-md px-md py-md active:bg-primary/5',
-                    index === mockSuggestions.length - 1 ? '' : 'border-b border-border',
+                    index === suggestions.length - 1 ? '' : 'border-b border-border',
                   ].join(' ')}
                 >
-                  <Typography variant="body" color="secondary">
-                    📍
-                  </Typography>
-                  <Typography variant="body" className="flex-1 text-text-primary">
-                    {suggestion}
-                  </Typography>
+                  <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                    <Typography variant="caption" className="text-primary">
+                      📍
+                    </Typography>
+                  </View>
+                  <View className="flex-1">
+                    <Typography variant="body" className="text-text-primary" numberOfLines={1}>
+                      {suggestion.displayName}
+                    </Typography>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
           )}
 
-          {/* Map placeholder */}
-          <View className="mt-lg min-h-[280px] flex-1 overflow-hidden rounded-2xl border border-border bg-surface">
-            <View className="flex-1 items-center justify-center px-md">
-              <View className="items-center gap-md opacity-50">
-                <Typography variant="h2" weight="bold" className="text-text-secondary">
-                  🗺️
-                </Typography>
-                <Typography variant="body" color="secondary" className="text-center">
-                  Interactive Map
-                </Typography>
-                <Typography variant="caption" color="secondary" className="text-center">
-                  Tap to select pickup location. Map integration coming soon.
-                </Typography>
-              </View>
+          {selectedLocation && (
+            <View className="mt-md">
+              <LocationMap
+                userLocation={{ latitude: selectedLocation.latitude, longitude: selectedLocation.longitude }}
+                pickupLocation={{ latitude: selectedLocation.latitude, longitude: selectedLocation.longitude }}
+                style={{ minHeight: 240, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' }}
+              />
             </View>
-          </View>
+          )}
         </View>
       </ScrollView>
 
-      {/* Bottom: selected address + Continue */}
       <View className="px-screen-padding pb-xl pt-lg">
-        {hasLocation && (
+        {selectedLocation && (
           <View className="mb-md rounded-xl border border-primary bg-primary/5 p-md">
             <View className="flex-row items-start gap-md">
               <Typography variant="body" className="mt-1 text-primary">
@@ -179,16 +192,20 @@ export default function PickupLocationScreen() {
                 >
                   Pickup Location
                 </Typography>
-                <Typography variant="body" className="mt-xs text-text-primary">
-                  {selectedAddress}
+                <Typography variant="body" className="mt-xs text-text-primary" numberOfLines={2}>
+                  {selectedLocation.address}
+                </Typography>
+                <Typography variant="caption" color="secondary">
+                  {selectedLocation.latitude.toFixed(6)}, {selectedLocation.longitude.toFixed(6)}
                 </Typography>
               </View>
               <TouchableOpacity
                 accessibilityRole="button"
                 accessibilityLabel="Clear pickup location"
                 onPress={() => {
-                  setSelectedAddress(null);
+                  setSelectedLocation(null);
                   setSearchQuery('');
+                  setPickup(null as any);
                 }}
                 testID="pickup-clear-location"
                 className="p-1 active:opacity-60"
@@ -204,8 +221,8 @@ export default function PickupLocationScreen() {
         <Button
           label="Continue"
           radius="lg"
-          shadow={hasLocation ? 'lg' : 'none'}
-          disabled={!hasLocation}
+          shadow={canContinue ? 'lg' : 'none'}
+          disabled={!canContinue}
           onPress={handleContinue}
           testID="pickup-continue"
         />

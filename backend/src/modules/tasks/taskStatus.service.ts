@@ -1,6 +1,6 @@
 import { prisma } from '../../prisma/client';
-import { AppError } from '../../types';
-import { emitToTask } from '../../services/socket.service';
+import { AppError } from '../../common/types';
+import { emitToTask } from '../../common/socket';
 
 // ─── Status Transition Map ─────────────────────────────
 // Defines all valid transitions and who is allowed to perform them.
@@ -8,20 +8,20 @@ import { emitToTask } from '../../services/socket.service';
 
 const VALID_TRANSITIONS: Record<string, Record<string, string[]>> = {
   PENDING: {
-    SEARCHING: ['CUSTOMER'],   // Task posted → searching for taskers
-    CANCELLED: ['CUSTOMER'],   // Customer cancels before assignment
+    SEARCHING: ['CUSTOMER'], // Task posted → searching for taskers
+    CANCELLED: ['CUSTOMER'], // Customer cancels before assignment
   },
   SEARCHING: {
-    CANCELLED: ['CUSTOMER'],   // Customer cancels while searching
+    CANCELLED: ['CUSTOMER'], // Customer cancels while searching
   },
   ACCEPTED: {
-    PICKED_UP: ['TASKER'],     // Tasker marks item picked up
+    PICKED_UP: ['TASKER'], // Tasker marks item picked up
   },
   PICKED_UP: {
-    IN_PROGRESS: ['TASKER'],   // Tasker marks en route to destination
+    IN_PROGRESS: ['TASKER'], // Tasker marks en route to destination
   },
   IN_PROGRESS: {
-    COMPLETED: ['TASKER'],     // Tasker marks task complete
+    COMPLETED: ['TASKER'], // Tasker marks task complete
   },
 };
 
@@ -90,10 +90,7 @@ export async function updateTaskStatus(
   // ── Validate transition exists ──────────────────────
   const allowedRoles = VALID_TRANSITIONS[currentStatus]?.[newStatus];
   if (!allowedRoles) {
-    throw new AppError(
-      `Invalid status transition: "${currentStatus}" → "${newStatus}".`,
-      400,
-    );
+    throw new AppError(`Invalid status transition: "${currentStatus}" → "${newStatus}".`, 400);
   }
 
   // ── Role authorisation ──────────────────────────────
@@ -114,10 +111,7 @@ export async function updateTaskStatus(
       });
 
       if (!profile || task.taskerId !== profile.id) {
-        throw new AppError(
-          'Only the assigned tasker can update the task progress.',
-          403,
-        );
+        throw new AppError('Only the assigned tasker can update the task progress.', 403);
       }
     }
   }

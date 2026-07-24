@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { asyncHandler } from '../../utils/asyncHandler';
-import { AppError } from '../../types';
+import { asyncHandler } from '../../common/utils/asyncHandler';
+import { AppError } from '../../common/types';
 import * as taskerService from './tasker.service';
 import { validateApply, validateStatus } from './tasker.validation';
 

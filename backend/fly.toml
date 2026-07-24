@@ -1,0 +1,29 @@
+# fly.toml — Fly.io deployment configuration
+# Generated for Taska backend
+#
+# Deploy with:
+#   fly launch
+#   fly deploy
+
+app = "taska-backend"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[http_service]
+  internal_port = 5000
+  force_https = true
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+[env]
+  NODE_ENV = "production"
+  DEV_MODE = "false"
+  LOG_FORMAT = "combined"
+  PORT = "5000"
+
+[[statics]]
+  guest_path = "/app/public"
+  url_prefix = "/public"

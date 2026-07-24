@@ -19,6 +19,7 @@ export interface VerifyOtpResponse {
     phoneNumber: string;
   };
   accessToken: string;
+  refreshToken: string;
 }
 
 // ─── Auth error shape ───────────────────────────────────
@@ -45,5 +46,5 @@ export interface UserProfile {
   email: string | null;
   profileImage: string | null;
   role: string;
-  isVerified: boolean;
+  isOnboarded: boolean;
 }

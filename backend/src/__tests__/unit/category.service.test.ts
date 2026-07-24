@@ -16,8 +16,22 @@ beforeEach(() => {
 describe('CategoryService', () => {
   it('returns all categories ordered by sortOrder', async () => {
     const mockCategories = [
-      { id: 'cat-1', name: 'Delivery', slug: 'delivery', description: 'Parcel delivery', iconUrl: null, sortOrder: 1 },
-      { id: 'cat-2', name: 'Grocery', slug: 'grocery', description: 'Grocery shopping', iconUrl: null, sortOrder: 2 },
+      {
+        id: 'cat-1',
+        name: 'Delivery',
+        slug: 'delivery',
+        description: 'Parcel delivery',
+        iconUrl: null,
+        sortOrder: 1,
+      },
+      {
+        id: 'cat-2',
+        name: 'Grocery',
+        slug: 'grocery',
+        description: 'Grocery shopping',
+        iconUrl: null,
+        sortOrder: 2,
+      },
     ];
     (prisma.category.findMany as jest.Mock).mockResolvedValue(mockCategories);
 

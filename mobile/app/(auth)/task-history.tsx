@@ -3,6 +3,7 @@ import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '@/components/ui';
+import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { fetchRecentTasks } from '@/services/task.service';
 import type { RecentTask } from '@/types/task';
 
@@ -149,10 +150,10 @@ export default function TaskHistoryScreen() {
 
   const handleTaskPress = useCallback(
     (task: RecentTask) => {
-      if (ACTIVE_STATUSES.has(task.status)) {
-        router.push('/live-tracking');
-      }
-      // For completed/cancelled, could navigate to a task detail screen
+      router.push({
+        pathname: '/task-details',
+        params: { taskId: task.id },
+      });
     },
     [router],
   );
@@ -237,9 +238,9 @@ export default function TaskHistoryScreen() {
           {loading ? (
             <View className="gap-sm">
               {Array.from({ length: 3 }).map((_, i) => (
-                <View
+                <SkeletonBlock
                   key={i}
-                  className="h-24 animate-pulse rounded-2xl bg-surface"
+                  className="h-24 rounded-2xl"
                 />
               ))}
             </View>

@@ -4,12 +4,15 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { VEHICLES } from '@/data/vehicles';
+import { applyAsTasker } from '@/services/tasker.service';
+import { ApiError } from '@/services';
 
 interface FormState {
   vehicleType: string | null;
@@ -38,18 +41,30 @@ export default function TaskerApplyScreen() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }, []);
 
-  const handleSubmit = useCallback(() => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = useCallback(async () => {
     setTouched(true);
-    if (!isValid) return;
-    // TODO: Call applyAsTasker API when connected
-    // import { applyAsTasker } from '@/services/tasker.service';
-    // const result = await applyAsTasker({
-    //   vehicleType: form.vehicleType!,
-    //   experience: form.experience ? Number(form.experience) : undefined,
-    //   bio: form.bio || undefined,
-    // });
-    router.replace('/tasker-dashboard');
-  }, [isValid, form, router]);
+    if (!isValid || submitting) return;
+
+    setSubmitting(true);
+    try {
+      await applyAsTasker({
+        vehicleType: form.vehicleType!,
+        experience: form.experience ? Number(form.experience) : undefined,
+        bio: form.bio || undefined,
+      });
+      router.replace('/tasker-dashboard');
+    } catch (err) {
+      if (err instanceof ApiError && err.statusCode === 401) {
+        router.replace('/(auth)/welcome');
+      } else {
+        Alert.alert('Error', err instanceof Error ? err.message : 'Failed to submit application. Please try again.');
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [isValid, form, submitting, router]);
 
   return (
     <View className="flex-1 bg-background">
@@ -182,10 +197,11 @@ export default function TaskerApplyScreen() {
 
       <View className="gap-md border-t border-border bg-background px-screen-padding pb-xl pt-lg">
         <Button
-          label="Submit Application"
+          label={submitting ? 'Submitting...' : 'Submit Application'}
           radius="lg"
           shadow={isValid ? 'lg' : 'none'}
-          disabled={!isValid}
+          disabled={!isValid || submitting}
+          loading={submitting}
           onPress={handleSubmit}
           testID="tasker-apply-submit"
         />
@@ -193,6 +209,7 @@ export default function TaskerApplyScreen() {
           label="Back"
           variant="outline"
           radius="lg"
+          disabled={submitting}
           onPress={() => router.back()}
           testID="tasker-apply-back"
         />
