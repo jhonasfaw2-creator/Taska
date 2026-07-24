@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { requireAuth } from '../../common/middleware/auth.middleware';
-import { uploadFile, uploadMultiple, deleteFile, getFile, listFiles } from './media.controller';
+import {
+  uploadFile,
+  uploadMultiple,
+  replaceFile,
+  deleteFile,
+  getFile,
+  listFiles,
+} from './media.controller';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -17,6 +24,7 @@ router.use(requireAuth);
 
 router.post('/upload', upload.single('file'), uploadFile);
 router.post('/upload-multiple', upload.array('files', 10), uploadMultiple);
+router.put('/:id/replace', upload.single('file'), replaceFile);
 router.delete('/:id', deleteFile);
 router.get('/:id', getFile);
 router.get('/', listFiles);

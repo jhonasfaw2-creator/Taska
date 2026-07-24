@@ -1,4 +1,4 @@
-import { AppError } from '../../common/types';
+import { AppError } from '../../common/errors';
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -17,6 +17,12 @@ const ALLOWED_FOLDERS = [
 ];
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_FILES_PER_UPLOAD: Record<string, number> = {
+  'profile-images': 1,
+  'task-images': 5,
+  'verification-documents': 3,
+  'vehicle-images': 5,
+};
 
 export function validateMimeType(mimeType: string): void {
   if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
@@ -42,6 +48,13 @@ export function validateFolder(folder: string): void {
       `Invalid folder: ${folder}. Allowed folders: ${ALLOWED_FOLDERS.join(', ')}`,
       400,
     );
+  }
+}
+
+export function validateFileCount(count: number, folder: string): void {
+  const max = MAX_FILES_PER_UPLOAD[folder] ?? 10;
+  if (count > max) {
+    throw new AppError(`Too many files for folder "${folder}". Maximum allowed: ${max}.`, 400);
   }
 }
 

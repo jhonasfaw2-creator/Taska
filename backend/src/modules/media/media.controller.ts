@@ -1,10 +1,18 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../common/utils/asyncHandler';
+import { envConfig } from '../../common/config/env';
 import { MediaService } from './media.service';
 import { validateFolder } from './media.validation';
-import { LocalStorageProvider } from './storage';
+import { LocalStorageProvider, S3StorageProvider } from './storage';
 
-const mediaService = new MediaService(new LocalStorageProvider());
+function resolveStorageProvider() {
+  if (envConfig.storageProvider === 's3') {
+    return new S3StorageProvider();
+  }
+  return new LocalStorageProvider();
+}
+
+const mediaService = new MediaService(resolveStorageProvider());
 
 export const uploadFile = asyncHandler(async (req: Request, res: Response) => {
   const folder = (req.body.folder as string) || 'task-images';
@@ -33,9 +41,23 @@ export const uploadMultiple = asyncHandler(async (req: Request, res: Response) =
   res.status(201).json({ success: true, data: mediaRecords });
 });
 
+export const replaceFile = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const folder = (req.body.folder as string) || 'task-images';
+  validateFolder(folder);
+
+  if (!req.file) {
+    res.status(400).json({ success: false, error: 'No file provided.' });
+    return;
+  }
+
+  const media = await mediaService.replace(id, req.file, folder, req.user!.userId);
+  res.status(200).json({ success: true, data: media });
+});
+
 export const deleteFile = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
-  await mediaService.delete(id);
+  await mediaService.delete(id, req.user!.userId);
   res.status(200).json({ success: true, message: 'File deleted successfully.' });
 });
 

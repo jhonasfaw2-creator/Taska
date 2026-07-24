@@ -3,6 +3,8 @@ export {
   verifyOTP,
   hasSession,
   getAccessToken,
+  getRefreshToken,
+  refreshAccessToken,
   getStoredPhoneNumber,
   clearSession,
   getUserProfile,
@@ -20,5 +22,15 @@ export {
   markNotificationRead,
   setUnreadCountListener,
 } from './notification.service';
+export {
+  uploadImage,
+  uploadMultipleImages,
+  deleteMedia,
+  getMedia,
+  validateImage,
+  compressImage,
+} from './media.service';
+
+export type { MediaRecord, UploadProgress } from '../types/media';
 
 export type { SendOtpResponse, VerifyOtpResponse, UserSession, UserProfile } from '../types/auth';

@@ -1,0 +1,1983 @@
+openapi: 3.1.0
+info:
+  title: Taska API
+  description: |
+    Taska is a real-time tasking platform connecting customers with local
+    taskers for delivery and errand services.
+
+    ## Authentication
+
+    Most endpoints require a JWT access token obtained via the
+    `POST /api/v1/auth/verify-otp` flow.
+
+    Include the token in the `Authorization` header:
+    ```
+    Authorization: Bearer <accessToken>
+    ```
+
+    The token contains the user's `userId`, `phoneNumber`, and `role` (CUSTOMER | TASKER | ADMIN).
+  version: 1.0.0
+  contact:
+    name: Taska Support
+    url: https://taska.app
+servers:
+  - url: /api/v1
+    description: API v1
+
+paths:
+  # ─────────────────────────────────────────────────────
+  #  Health
+  # ─────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns the current service status. Does not require authentication.
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+              example:
+                status: ok
+                service: Taska API
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  # ─────────────────────────────────────────────────────
+  #  Auth
+  # ─────────────────────────────────────────────────────
+  /auth/send-otp:
+    post:
+      tags: [Authentication]
+      summary: Send OTP
+      description: |
+        Sends a one-time password (OTP) to the given phone number.
+        In development mode the OTP value is returned in the response
+        body; in production it is only sent via SMS.
+      operationId: sendOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendOtpInput'
+            example:
+              phoneNumber: '+251911234567'
+      responses:
+        '200':
+          description: OTP sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOtpResponse'
+              example:
+                message: OTP sent
+                otp: '123456'
+        '400':
+          description: Invalid phone number format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: Invalid phone number format. Use E.164 format (e.g. +251XXXXXXXXX).
+
+  /auth/verify-otp:
+    post:
+      tags: [Authentication]
+      summary: Verify OTP & login
+      description: |
+        Verifies the OTP code sent to the user's phone. On success
+        returns a JWT access token and a refresh token.
+      operationId: verifyOtp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpInput'
+            example:
+              phoneNumber: '+251911234567'
+              code: '123456'
+      responses:
+        '200':
+          description: OTP verified – tokens issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOtpResponse'
+              example:
+                user:
+                  phoneNumber: '+251911234567'
+                accessToken: eyJhbGciOiJIUzI1NiIs...
+                refreshToken: eyJhbGciOiJIUzI1NiIs...
+        '400':
+          description: No OTP found or invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                success: false
+                error: No OTP found. Please request a new OTP.
+        '401':
+          description: Invalid OTP code
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: OTP expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Too many OTP attempts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh-token:
+    post:
+      tags: [Authentication]
+      summary: Refresh access token
+      description: |
+        Exchanges a valid refresh token for a new access token.
+      operationId: refreshToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokenInput'
+            example:
+              refreshToken: eyJhbGciOiJIUzI1NiIs...
+      responses:
+        '200':
+          description: New access token issued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+              example:
+                accessToken: eyJhbGciOiJIUzI1NiIs...
+        '401':
+          description: Invalid, expired, or revoked refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────
+  #  Users
+  # ─────────────────────────────────────────────────────
+  /users/profile:
+    get:
+      tags: [Users]
+      summary: Get own profile
+      description: Returns the profile of the currently authenticated user.
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440000
+                phoneNumber: '+251911234567'
+                firstName: Abebe
+                lastName: Kebede
+                email: abebe@example.com
+                profileImage: null
+                role: CUSTOMER
+                isOnboarded: true
+                createdAt: '2026-07-20T12:00:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    patch:
+      tags: [Users]
+      summary: Update own profile
+      description: Updates one or more profile fields for the authenticated user.
+      operationId: updateProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileInput'
+            example:
+              firstName: Abebe
+              lastName: Kebede
+              email: abebe@example.com
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /users/role:
+    patch:
+      tags: [Users]
+      summary: Update user role
+      description: Changes the user's role between CUSTOMER and TASKER.
+      operationId: updateRole
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [CUSTOMER, TASKER]
+                  description: The new role
+            example:
+              role: TASKER
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleUpdateResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440000
+                phoneNumber: '+251911234567'
+                role: TASKER
+        '400':
+          description: Invalid role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ─────────────────────────────────────────────────────
+  #  Categories
+  # ─────────────────────────────────────────────────────
+  /categories:
+    get:
+      tags: [Categories]
+      summary: List categories
+      description: Returns all task categories ordered by name.
+      operationId: getCategories
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Category'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440001
+                  name: Delivery
+                  description: Parcel and food delivery
+                - id: 550e8400-e29b-41d4-a716-446655440002
+                  name: Grocery
+                  description: Grocery shopping and pickup
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # ─────────────────────────────────────────────────────
+  #  Tasks
+  # ─────────────────────────────────────────────────────
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List recent tasks
+      description: |
+        Returns the 10 most recent tasks for the authenticated customer.
+      operationId: getRecentTasks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Recent tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RecentTask'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440010
+                  title: Pick up groceries from Shola
+                  status: PENDING
+                  estimatedPrice: 150.00
+                  finalPrice: null
+                  createdAt: '2026-07-21T08:00:00.000Z'
+                  categoryName: Grocery
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      tags: [Tasks]
+      summary: Create a task
+      description: |
+        Creates a new task. Only users with the CUSTOMER role can create tasks.
+        On success a `task_created` socket event is emitted to the customer.
+      operationId: createTask
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskInput'
+            example:
+              categoryId: 550e8400-e29b-41d4-a716-446655440001
+              title: Pick up groceries from Shola
+              description: I need someone to pick up my groceries from Shola Mall
+              pickupAddress: Shola Mall, Addis Ababa
+              pickupLatitude: 9.0227
+              pickupLongitude: 38.7468
+              dropoffAddress: Bole, Addis Ababa
+              dropoffLatitude: 9.0082
+              dropoffLongitude: 38.7614
+              vehicleType: MOTORCYCLE
+              estimatedPrice: 150.00
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440010
+                customerId: 550e8400-e29b-41d4-a716-446655440000
+                categoryId: 550e8400-e29b-41d4-a716-446655440001
+                title: Pick up groceries from Shola
+                description: I need someone to pick up my groceries from Shola Mall
+                specialInstructions: null
+                pickupAddress: Shola Mall, Addis Ababa
+                pickupLatitude: 9.0227
+                pickupLongitude: 38.7468
+                dropoffAddress: Bole, Addis Ababa
+                dropoffLatitude: 9.0082
+                dropoffLongitude: 38.7614
+                vehicleType: MOTORCYCLE
+                estimatedPrice: 150.00
+                finalPrice: null
+                status: PENDING
+                createdAt: '2026-07-21T08:00:00.000Z'
+                updatedAt: '2026-07-21T08:00:00.000Z'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Only customers can create tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /tasks/my-tasks:
+    get:
+      tags: [Tasks]
+      summary: List own tasks
+      description: Returns all tasks belonging to the authenticated user.
+      operationId: getMyTasks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User's tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MyTask'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440010
+                  title: Pick up groceries from Shola
+                  description: I need someone to pick up my groceries from Shola Mall
+                  status: PENDING
+                  estimatedPrice: 150.00
+                  finalPrice: null
+                  vehicleType: MOTORCYCLE
+                  pickupAddress: Shola Mall, Addis Ababa
+                  dropoffAddress: Bole, Addis Ababa
+                  createdAt: '2026-07-21T08:00:00.000Z'
+                  categoryName: Grocery
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/tasks/{taskId}':
+    get:
+      tags: [Tasks]
+      summary: Get task by ID
+      description: Returns a single task with its category name.
+      operationId: getTaskById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The task's unique identifier
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskWithCategory'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440010
+                customerId: 550e8400-e29b-41d4-a716-446655440000
+                categoryId: 550e8400-e29b-41d4-a716-446655440001
+                title: Pick up groceries from Shola
+                description: I need someone to pick up my groceries from Shola Mall
+                specialInstructions: null
+                pickupAddress: Shola Mall, Addis Ababa
+                pickupLatitude: 9.0227
+                pickupLongitude: 38.7468
+                dropoffAddress: Bole, Addis Ababa
+                dropoffLatitude: 9.0082
+                dropoffLongitude: 38.7614
+                vehicleType: MOTORCYCLE
+                estimatedPrice: 150.00
+                finalPrice: null
+                status: PENDING
+                createdAt: '2026-07-21T08:00:00.000Z'
+                updatedAt: '2026-07-21T08:00:00.000Z'
+                categoryName: Grocery
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/tasks/{taskId}/accept':
+    post:
+      tags: [Tasks]
+      summary: Accept a task
+      description: |
+        Allows a tasker to accept a task. The tasker must have a pending
+        TaskOffer for this task. On success a `task_accepted` socket event
+        is emitted to the task room.
+      operationId: acceptTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The task's unique identifier
+      responses:
+        '200':
+          description: Task accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptResponse'
+              example:
+                message: Task accepted successfully
+                task:
+                  id: 550e8400-e29b-41d4-a716-446655440010
+                  status: ACCEPTED
+                  taskerId: 550e8400-e29b-41d4-a716-446655440020
+                  title: Pick up groceries from Shola
+                  estimatedPrice: 150.00
+                  pickupAddress: Shola Mall, Addis Ababa
+                  dropoffAddress: Bole, Addis Ababa
+        '400':
+          description: Task not in acceptable status or missing taskId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not a tasker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tasker profile or pending offer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Task already accepted by another tasker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  '/tasks/{taskId}/status':
+    patch:
+      tags: [Tasks]
+      summary: Update task status
+      description: |
+        Transitions a task through its lifecycle statuses. Allowed
+        transitions depend on the current status and the user's role.
+
+        | Current → Next | Allowed Roles |
+        |---|---|
+        | PENDING → SEARCHING | CUSTOMER |
+        | PENDING → CANCELLED | CUSTOMER |
+        | SEARCHING → CANCELLED | CUSTOMER |
+        | ACCEPTED → PICKED_UP | TASKER |
+        | PICKED_UP → IN_PROGRESS | TASKER |
+        | IN_PROGRESS → COMPLETED | TASKER |
+
+        Socket events `task_status_changed` and (for cancellations)
+        `task_cancelled` are emitted.
+      operationId: updateTaskStatus
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The task's unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [SEARCHING, CANCELLED, PICKED_UP, IN_PROGRESS, COMPLETED]
+                  description: The next status to transition to
+            example:
+              status: SEARCHING
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatusUpdateResponse'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440010
+                status: SEARCHING
+                previousStatus: PENDING
+                message: Task status updated from "PENDING" to "SEARCHING".
+        '400':
+          description: Invalid transition or status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Role not permitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/tasks/{taskId}/status-history':
+    get:
+      tags: [Tasks]
+      summary: Get status history
+      description: Returns the chronological status change history for a task.
+      operationId: getStatusHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The task's unique identifier
+      responses:
+        '200':
+          description: Status history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StatusHistoryEntry'
+              example:
+                - status: PENDING
+                  changedBy: system
+                  createdAt: '2026-07-21T08:00:00.000Z'
+                - status: SEARCHING
+                  changedBy: customer
+                  createdAt: '2026-07-21T08:05:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────────────
+  #  Taskers
+  # ─────────────────────────────────────────────────────
+  /taskers/apply:
+    post:
+      tags: [Taskers]
+      summary: Apply to become a tasker
+      description: |
+        Submits a tasker application for the authenticated user.
+        On success the user's role is set to TASKER.
+      operationId: applyTasker
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskerApplyInput'
+            example:
+              vehicleType: MOTORCYCLE
+              experience: 3
+              bio: Experienced motorcycle rider with 3 years of delivery experience.
+      responses:
+        '201':
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskerApplyResponse'
+              example:
+                message: Tasker application submitted
+                taskerProfile:
+                  id: 550e8400-e29b-41d4-a716-446655440020
+                  userId: 550e8400-e29b-41d4-a716-446655440000
+                  verificationStatus: PENDING
+                  rating: 0
+                  totalTasksCompleted: 0
+                  isOnline: false
+                  bio: Experienced motorcycle rider with 3 years of delivery experience.
+                  experience: 3
+                  lastActiveAt: null
+                  createdAt: '2026-07-21T09:00:00.000Z'
+                  updatedAt: '2026-07-21T09:00:00.000Z'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          description: Already applied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /taskers/profile:
+    get:
+      tags: [Taskers]
+      summary: Get own tasker profile
+      description: Returns the tasker profile for the authenticated user.
+      operationId: getTaskerProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Tasker profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskerProfile'
+              example:
+                id: 550e8400-e29b-41d4-a716-446655440020
+                userId: 550e8400-e29b-41d4-a716-446655440000
+                verificationStatus: PENDING
+                rating: 4.5
+                totalTasksCompleted: 12
+                isOnline: true
+                bio: Experienced motorcycle rider
+                experience: 3
+                lastActiveAt: '2026-07-21T09:30:00.000Z'
+                createdAt: '2026-07-21T09:00:00.000Z'
+                updatedAt: '2026-07-21T09:30:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No tasker profile found (apply first)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /taskers/status:
+    patch:
+      tags: [Taskers]
+      summary: Update online status
+      description: Toggles the tasker's online/offline availability status.
+      operationId: updateTaskerStatus
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [isOnline]
+              properties:
+                isOnline:
+                  type: boolean
+                  description: Whether the tasker is accepting tasks
+            example:
+              isOnline: true
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskerProfile'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Tasker profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /taskers/tasks:
+    get:
+      tags: [Taskers]
+      summary: List available tasks (tasker view)
+      description: |
+        Returns tasks with pending offers for the authenticated tasker.
+        Only taskers with an active profile can access this endpoint.
+      operationId: getAvailableTasks
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Available tasks with offers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AvailableTask'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440010
+                  title: Pick up groceries from Shola
+                  description: I need someone to pick up my groceries from Shola Mall
+                  categoryName: Grocery
+                  pickupAddress: Shola Mall, Addis Ababa
+                  pickupLatitude: 9.0227
+                  pickupLongitude: 38.7468
+                  dropoffAddress: Bole, Addis Ababa
+                  estimatedPrice: 150.00
+                  offerPrice: 140.00
+                  offerId: 550e8400-e29b-41d4-a716-446655440030
+                  customerRating: 4.8
+                  createdAt: '2026-07-21T08:00:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not a tasker
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tasker profile not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ─────────────────────────────────────────────────────
+  #  Notifications
+  # ─────────────────────────────────────────────────────
+  /notifications/register-device:
+    post:
+      tags: [Notifications]
+      summary: Register push device
+      description: |
+        Registers a device for push notifications. Uses upsert logic
+        so duplicate push tokens are handled gracefully.
+      operationId: registerDevice
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pushToken, platform]
+              properties:
+                pushToken:
+                  type: string
+                  description: Expo push token
+                platform:
+                  type: string
+                  description: Device platform (ios, android)
+            example:
+              pushToken: ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]
+              platform: ios
+      responses:
+        '200':
+          description: Device registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Device registered successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: List own notifications
+      description: Returns all notifications for the authenticated user, newest first.
+      operationId: getNotifications
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Notifications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+              example:
+                - id: 550e8400-e29b-41d4-a716-446655440040
+                  title: Task accepted
+                  message: Your task has been accepted by a tasker
+                  type: TASK_UPDATE
+                  isRead: false
+                  createdAt: '2026-07-21T09:05:00.000Z'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/notifications/{id}/read':
+    patch:
+      tags: [Notifications]
+      summary: Mark notification as read
+      description: Marks a single notification as read.
+      operationId: markNotificationRead
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The notification's unique identifier
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # ─────────────────────────────────────────────────────
+  #  Media
+  # ─────────────────────────────────────────────────────
+  /media/upload:
+    post:
+      tags: [Media]
+      summary: Upload a single file
+      description: |
+        Uploads a single file to the specified folder.
+        The file is validated, compressed (if image), and stored.
+      operationId: uploadFile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, folder]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: The file to upload
+                folder:
+                  type: string
+                  enum: [profile-images, task-images, verification-documents, vehicle-images]
+                  description: Target folder for the upload
+      responses:
+        '201':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+        '400':
+          description: Validation error
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /media/upload-multiple:
+    post:
+      tags: [Media]
+      summary: Upload multiple files
+      description: |
+        Uploads multiple files (max 5 for task-images) to the specified folder.
+      operationId: uploadMultipleFiles
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files, folder]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: Array of files to upload
+                folder:
+                  type: string
+                  enum: [profile-images, task-images, verification-documents, vehicle-images]
+      responses:
+        '201':
+          description: Files uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Media'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  '/media/{id}/replace':
+    put:
+      tags: [Media]
+      summary: Replace a file
+      description: Replaces an existing file. Only the original uploader can replace.
+      operationId: replaceFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The media record ID
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, folder]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                folder:
+                  type: string
+                  enum: [profile-images, task-images, verification-documents, vehicle-images]
+      responses:
+        '200':
+          description: File replaced successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaUploadResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not authorized to replace this file
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  '/media/{id}':
+    get:
+      tags: [Media]
+      summary: Get media metadata
+      description: Returns metadata for a single media record.
+      operationId: getMediaById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Media metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MediaRecordResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    delete:
+      tags: [Media]
+      summary: Delete a file
+      description: Deletes a media record and its underlying storage file. Only the uploader can delete.
+      operationId: deleteFile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Not authorized to delete this file
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /media:
+    get:
+      tags: [Media]
+      summary: List media files
+      description: |
+        Lists media files, optionally filtered by folder or userId.
+        Defaults to the authenticated user's files.
+      operationId: listMedia
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: folder
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [profile-images, task-images, verification-documents, vehicle-images]
+          description: Filter by folder
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Filter by uploader user ID
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of media records
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Media'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT access token obtained from `POST /api/v1/auth/verify-otp`.
+        Include as `Authorization: Bearer <token>`.
+
+  schemas:
+    # ── Common ────────────────────────────────────────────
+    # ── Media ─────────────────────────────────────────────
+    Media:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalName:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+        width:
+          type: integer
+          nullable: true
+        height:
+          type: integer
+          nullable: true
+        folder:
+          type: string
+          enum: [profile-images, task-images, verification-documents, vehicle-images]
+        filename:
+          type: string
+        url:
+          type: string
+        uploadedById:
+          type: string
+          format: uuid
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, originalName, mimeType, size, folder, filename, url, createdAt]
+
+    MediaUploadResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Media'
+      required: [success, data]
+
+    MediaRecordResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          $ref: '#/components/schemas/Media'
+      required: [success, data]
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Human-readable error message
+      required: [success, error]
+
+    # ── Health ────────────────────────────────────────────
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+        service:
+          type: string
+          example: Taska API
+      required: [status, service]
+
+    # ── Auth ──────────────────────────────────────────────
+    SendOtpInput:
+      type: object
+      required: [phoneNumber]
+      properties:
+        phoneNumber:
+          type: string
+          pattern: '^\+[1-9]\d{6,14}$'
+          description: Phone number in E.164 format
+          example: '+251911234567'
+
+    SendOtpResponse:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          example: OTP sent
+        otp:
+          type: string
+          description: Only returned in development mode
+          example: '123456'
+
+    VerifyOtpInput:
+      type: object
+      required: [phoneNumber, code]
+      properties:
+        phoneNumber:
+          type: string
+          pattern: '^\+[1-9]\d{6,14}$'
+          example: '+251911234567'
+        code:
+          type: string
+          pattern: '^\d{6}$'
+          description: 6-digit OTP code
+          example: '123456'
+
+    VerifyOtpResponse:
+      type: object
+      properties:
+        user:
+          type: object
+          properties:
+            phoneNumber:
+              type: string
+        accessToken:
+          type: string
+          description: JWT access token (expires in 7 days)
+        refreshToken:
+          type: string
+          description: JWT refresh token (expires in 30 days)
+      required: [user, accessToken, refreshToken]
+
+    RefreshTokenInput:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken:
+          type: string
+          description: Valid refresh token
+
+    RefreshTokenResponse:
+      type: object
+      required: [accessToken]
+      properties:
+        accessToken:
+          type: string
+          description: New JWT access token
+
+    # ── Users ─────────────────────────────────────────────
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        profileImage:
+          type: string
+          format: uri
+          nullable: true
+        role:
+          type: string
+          enum: [CUSTOMER, TASKER, ADMIN]
+        isOnboarded:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, phoneNumber, role, isOnboarded, createdAt]
+
+    UpdateProfileInput:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+          format: email
+        profileImage:
+          type: string
+          format: uri
+
+    RoleUpdateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        role:
+          type: string
+          enum: [CUSTOMER, TASKER]
+      required: [id, phoneNumber, role]
+
+    # ── Categories ────────────────────────────────────────
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required: [id, name]
+
+    # ── Tasks ─────────────────────────────────────────────
+    CreateTaskInput:
+      type: object
+      required:
+        - categoryId
+        - title
+        - description
+        - pickupAddress
+        - pickupLatitude
+        - pickupLongitude
+        - dropoffAddress
+        - dropoffLatitude
+        - dropoffLongitude
+        - vehicleType
+        - estimatedPrice
+      properties:
+        categoryId:
+          type: string
+          format: uuid
+          description: Category identifier
+        title:
+          type: string
+          description: Short task title
+        description:
+          type: string
+          description: Detailed task description
+        specialInstructions:
+          type: string
+          description: Optional special instructions
+        pickupAddress:
+          type: string
+          description: Pickup location address
+        pickupLatitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        pickupLongitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+        dropoffAddress:
+          type: string
+          description: Drop-off location address
+        dropoffLatitude:
+          type: number
+          format: double
+          minimum: -90
+          maximum: 90
+        dropoffLongitude:
+          type: number
+          format: double
+          minimum: -180
+          maximum: 180
+        vehicleType:
+          type: string
+          enum: [WALKING, MOTORCYCLE, CAR, VAN, TRUCK]
+          description: Required vehicle type for this task
+        estimatedPrice:
+          type: number
+          format: double
+          minimum: 0
+          description: Estimated price in ETB
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        customerId:
+          type: string
+          format: uuid
+        categoryId:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        specialInstructions:
+          type: string
+          nullable: true
+        pickupAddress:
+          type: string
+        pickupLatitude:
+          type: number
+        pickupLongitude:
+          type: number
+        dropoffAddress:
+          type: string
+        dropoffLatitude:
+          type: number
+        dropoffLongitude:
+          type: number
+        vehicleType:
+          type: string
+        estimatedPrice:
+          type: number
+        finalPrice:
+          type: number
+          nullable: true
+        status:
+          type: string
+          enum: [PENDING, SEARCHING, ACCEPTED, PICKED_UP, IN_PROGRESS, COMPLETED, CANCELLED]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, customerId, categoryId, title, description, pickupAddress, pickupLatitude, pickupLongitude, dropoffAddress, dropoffLatitude, dropoffLongitude, vehicleType, estimatedPrice, status, createdAt, updatedAt]
+
+    TaskWithCategory:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+        - type: object
+          properties:
+            categoryName:
+              type: string
+          required: [categoryName]
+
+    RecentTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          type: string
+        estimatedPrice:
+          type: number
+        finalPrice:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        categoryName:
+          type: string
+      required: [id, title, status, estimatedPrice, createdAt, categoryName]
+
+    MyTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        estimatedPrice:
+          type: number
+        finalPrice:
+          type: number
+          nullable: true
+        vehicleType:
+          type: string
+        pickupAddress:
+          type: string
+        dropoffAddress:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        categoryName:
+          type: string
+      required: [id, title, description, status, estimatedPrice, vehicleType, pickupAddress, dropoffAddress, createdAt, categoryName]
+
+    AcceptResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        task:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            status:
+              type: string
+              example: ACCEPTED
+            taskerId:
+              type: string
+              format: uuid
+            title:
+              type: string
+            estimatedPrice:
+              type: number
+            pickupAddress:
+              type: string
+            dropoffAddress:
+              type: string
+      required: [message, task]
+
+    StatusUpdateResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        status:
+          type: string
+        previousStatus:
+          type: string
+        message:
+          type: string
+      required: [id, status, previousStatus, message]
+
+    StatusHistoryEntry:
+      type: object
+      properties:
+        status:
+          type: string
+        changedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [status, changedBy, createdAt]
+
+    # ── Taskers ───────────────────────────────────────────
+    TaskerApplyInput:
+      type: object
+      required: [vehicleType]
+      properties:
+        vehicleType:
+          type: string
+          enum: [WALKING, MOTORCYCLE, CAR, VAN, TRUCK]
+        experience:
+          type: integer
+          minimum: 0
+          description: Years of experience
+        bio:
+          type: string
+          description: Short biography
+
+    TaskerProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        verificationStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, SUSPENDED]
+        rating:
+          type: number
+          format: double
+        totalTasksCompleted:
+          type: integer
+        isOnline:
+          type: boolean
+        bio:
+          type: string
+          nullable: true
+        experience:
+          type: integer
+          nullable: true
+        lastActiveAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required: [id, userId, verificationStatus, rating, totalTasksCompleted, isOnline, createdAt, updatedAt]
+
+    TaskerApplyResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        taskerProfile:
+          $ref: '#/components/schemas/TaskerProfile'
+      required: [message, taskerProfile]
+
+    AvailableTask:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        categoryName:
+          type: string
+        pickupAddress:
+          type: string
+        pickupLatitude:
+          type: number
+        pickupLongitude:
+          type: number
+        dropoffAddress:
+          type: string
+        estimatedPrice:
+          type: number
+        offerPrice:
+          type: number
+        offerId:
+          type: string
+          format: uuid
+        customerRating:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, description, categoryName, pickupAddress, estimatedPrice, offerPrice, offerId, createdAt]
+
+    # ── Notifications ─────────────────────────────────────
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        message:
+          type: string
+        type:
+          type: string
+          enum: [TASK_REQUEST, TASK_UPDATE, PAYMENT, SYSTEM]
+        isRead:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, title, message, type, isRead, createdAt]
+
+    # ── Reusable websocket schemas (informational) ────────
+    SocketEventTaskCreated:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [task_created]
+        taskId:
+          type: string
+          format: uuid
+        title:
+          type: string
+      required: [event, taskId, title]
+
+    SocketEventTaskAccepted:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [task_accepted]
+        taskId:
+          type: string
+          format: uuid
+        taskerId:
+          type: string
+          format: uuid
+        taskerName:
+          type: string
+      required: [event, taskId, taskerId, taskerName]
+
+    SocketEventTaskStatusChanged:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [task_status_changed]
+        taskId:
+          type: string
+          format: uuid
+        status:
+          type: string
+        previousStatus:
+          type: string
+        changedBy:
+          type: string
+      required: [event, taskId, status, previousStatus, changedBy]
+
+    SocketEventTaskCancelled:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [task_cancelled]
+        taskId:
+          type: string
+          format: uuid
+        reason:
+          type: string
+      required: [event, taskId]
+
+    SocketEventNewMessage:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [new_message]
+        taskId:
+          type: string
+          format: uuid
+        messageId:
+          type: string
+          format: uuid
+        senderId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required: [event, taskId, messageId, senderId, text, createdAt]
+
+    SocketEventNotificationCreated:
+      type: object
+      properties:
+        event:
+          type: string
+          enum: [notification_created]
+        userId:
+          type: string
+          format: uuid
+        notification:
+          $ref: '#/components/schemas/Notification'
+      required: [event, userId, notification]
+
+  responses:
+    Unauthorized:
+      description: Authentication required — missing or invalid JWT
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Authentication required
+    BadRequest:
+      description: Invalid request parameters
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: "Invalid folder. Allowed folders: profile-images, task-images, verification-documents, vehicle-images"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Resource not found
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            error: Internal server error
+
+x-webhooks:
+  task_created:
+    post:
+      summary: Task created
+      description: Emitted when a new task is created by a customer.
+      operationId: webhookTaskCreated
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventTaskCreated'
+  task_accepted:
+    post:
+      summary: Task accepted
+      description: Emitted when a tasker accepts a task.
+      operationId: webhookTaskAccepted
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventTaskAccepted'
+  task_status_changed:
+    post:
+      summary: Task status changed
+      description: Emitted when a task's status transitions.
+      operationId: webhookTaskStatusChanged
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventTaskStatusChanged'
+  task_cancelled:
+    post:
+      summary: Task cancelled
+      description: Emitted when a task is cancelled.
+      operationId: webhookTaskCancelled
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventTaskCancelled'
+  new_message:
+    post:
+      summary: New message
+      description: Emitted when a new chat message is sent.
+      operationId: webhookNewMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventNewMessage'
+  notification_created:
+    post:
+      summary: Notification created
+      description: Emitted when a new notification is generated.
+      operationId: webhookNotificationCreated
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SocketEventNotificationCreated'

@@ -1,7 +1,13 @@
 import sharp from 'sharp';
 import { prisma } from '../../prisma/client';
+import { AppError } from '../../common/errors';
 import { IStorageProvider, UploadResult } from './storage';
-import { validateMimeType, validateFileSize, validateFolder } from './media.validation';
+import {
+  validateMimeType,
+  validateFileSize,
+  validateFolder,
+  validateFileCount,
+} from './media.validation';
 
 export interface MediaRecord {
   id: string;
@@ -17,6 +23,9 @@ export interface MediaRecord {
   createdAt: Date;
 }
 
+const MAX_IMAGE_WIDTH = 2048;
+const JPEG_QUALITY = 80;
+
 export class MediaService {
   constructor(private storage: IStorageProvider) {}
 
@@ -29,31 +38,46 @@ export class MediaService {
     validateFileSize(file.size);
     validateFolder(folder);
 
+    let processedBuffer = file.buffer;
+    let processedMimeType = file.mimetype;
     let width: number | undefined;
     let height: number | undefined;
 
     if (file.mimetype.startsWith('image/') && file.mimetype !== 'application/pdf') {
       try {
-        const metadata = await sharp(file.buffer).metadata();
+        const image = sharp(file.buffer);
+        const metadata = await image.metadata();
         width = metadata.width;
         height = metadata.height;
+
+        if (width && width > MAX_IMAGE_WIDTH) {
+          const resized = image.resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true });
+          processedBuffer = await resized.jpeg({ quality: JPEG_QUALITY }).toBuffer();
+          processedMimeType = 'image/jpeg';
+          const resizedMeta = await sharp(processedBuffer).metadata();
+          width = resizedMeta.width;
+          height = resizedMeta.height;
+        } else if (file.mimetype !== 'image/jpeg') {
+          processedBuffer = await image.jpeg({ quality: JPEG_QUALITY }).toBuffer();
+          processedMimeType = 'image/jpeg';
+        }
       } catch {
-        // Not a valid image — proceed without dimensions
+        // Not a valid image — proceed with original buffer
       }
     }
 
     const uploadResult: UploadResult = await this.storage.upload({
-      buffer: file.buffer,
+      buffer: processedBuffer,
       originalName: file.originalname,
-      mimeType: file.mimetype,
+      mimeType: processedMimeType,
       folder,
     });
 
     const media = await prisma.media.create({
       data: {
         originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
+        mimeType: processedMimeType,
+        size: processedBuffer.length,
         width: width ?? null,
         height: height ?? null,
         folder,
@@ -71,16 +95,39 @@ export class MediaService {
     folder: string,
     userId?: string,
   ): Promise<MediaRecord[]> {
+    validateFileCount(files.length, folder);
     return Promise.all(files.map((file) => this.uploadSingle(file, folder, userId)));
   }
 
-  async delete(id: string): Promise<void> {
-    const media = await prisma.media.findUnique({ where: { id } });
-    if (!media) {
-      return;
+  async replace(
+    id: string,
+    file: Express.Multer.File,
+    folder: string,
+    userId: string,
+  ): Promise<MediaRecord> {
+    const existing = await prisma.media.findUnique({ where: { id } });
+    if (!existing) {
+      throw new AppError('Media not found.', 404);
+    }
+    if (existing.uploadedById !== userId) {
+      throw new AppError('You can only replace your own uploaded files.', 403);
     }
 
-    await this.storage.delete(media.filename);
+    await this.storage.delete(`${existing.folder}/${existing.filename}`);
+
+    return this.uploadSingle(file, folder, userId);
+  }
+
+  async delete(id: string, userId: string): Promise<void> {
+    const media = await prisma.media.findUnique({ where: { id } });
+    if (!media) {
+      throw new AppError('Media not found.', 404);
+    }
+    if (media.uploadedById !== userId) {
+      throw new AppError('You can only delete your own uploaded files.', 403);
+    }
+
+    await this.storage.delete(`${media.folder}/${media.filename}`);
     await prisma.media.delete({ where: { id } });
   }
 

@@ -13,12 +13,20 @@ jest.mock('../../modules/media/media.service', () => {
     createdAt: new Date().toISOString(),
   };
 
+  const mockReplacedRecord = {
+    ...mockMediaRecord,
+    id: 'media-uuid-replaced',
+    filename: 'replaced-file.png',
+    url: '/uploads/task-images/replaced-file.png',
+  };
+
   return {
     MediaService: jest.fn().mockImplementation(() => ({
       uploadSingle: jest.fn().mockResolvedValue(mockMediaRecord),
       uploadMultiple: jest
         .fn()
         .mockResolvedValue([mockMediaRecord, { ...mockMediaRecord, id: 'media-uuid-456' }]),
+      replace: jest.fn().mockResolvedValue(mockReplacedRecord),
       delete: jest.fn().mockResolvedValue(undefined),
       getById: jest
         .fn()
@@ -127,6 +135,40 @@ describe('GET /api/v1/media/:id', () => {
       .set('Authorization', `Bearer ${authToken}`);
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe('PUT /api/v1/media/:id/replace', () => {
+  it('replaces a file successfully', async () => {
+    const res = await request(app)
+      .put('/api/v1/media/media-uuid-123/replace')
+      .set('Authorization', `Bearer ${authToken}`)
+      .attach('file', Buffer.from('new-image'), 'new-image.png', {
+        contentType: 'image/png',
+      })
+      .field('folder', 'task-images');
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.id).toBe('media-uuid-replaced');
+  });
+
+  it('rejects replace without a file', async () => {
+    const res = await request(app)
+      .put('/api/v1/media/media-uuid-123/replace')
+      .set('Authorization', `Bearer ${authToken}`)
+      .field('folder', 'task-images');
+
+    expect(res.status).toBe(400);
+  });
+
+  it('rejects unauthenticated replace', async () => {
+    const res = await request(app)
+      .put('/api/v1/media/media-uuid-123/replace')
+      .attach('file', Buffer.from('test'), 'test.png')
+      .field('folder', 'task-images');
+
+    expect(res.status).toBe(401);
   });
 });
 
