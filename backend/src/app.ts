@@ -1,24 +1,22 @@
 import express, { Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
-import { envConfig } from './config/env';
-import { httpLogger } from './utils/logger';
-import { AppError } from './types';
-import routes from './routes';
-import { notFoundHandler } from './middleware/notFound.middleware';
-import { globalErrorHandler } from './middleware/error.middleware';
+import compression from 'compression';
+import path from 'path';
+import { envConfig } from './common/config/env';
+import { logger } from './common/utils/logger';
+import { AppError } from './common/errors';
+import { v1Router } from './modules/routes';
+import { notFoundHandler } from './common/middleware/notFound.middleware';
+import { globalErrorHandler } from './common/middleware/error.middleware';
+import { requestIdMiddleware } from './common/middleware/requestId.middleware';
+import { globalRateLimit, authRateLimit } from './common/middleware/rateLimiter.middleware';
+import swaggerRouter from './docs/swagger';
 
-/**
- * Creates and configures the Express application.
- * Separated from the listener so it can be imported during testing.
- */
 export function createApp(): express.Application {
   const app = express();
 
-  // ── Security headers ────────────────────────────────
-  app.use(helmet());
-
-  // ── CORS ────────────────────────────────────────────
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(
     cors({
       origin: envConfig.corsOrigins,
@@ -27,29 +25,36 @@ export function createApp(): express.Application {
       credentials: true,
     }),
   );
+  app.use(compression());
+  app.use(requestIdMiddleware);
 
-  // ── Body parsing ────────────────────────────────────
+  app.use('/api/', globalRateLimit);
+  app.use('/api/v1/auth', authRateLimit);
+
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
 
-  // ── Body guard: reject null/undefined bodies for mutation methods ──
   app.use((req: Request, _res: Response, next: NextFunction) => {
     if (['POST', 'PUT', 'PATCH'].includes(req.method) && req.body === undefined) {
-      return next(new AppError('Request body is required. Ensure Content-Type is application/json.', 400));
+      return next(
+        new AppError('Request body is required. Ensure Content-Type is application/json.', 400),
+      );
     }
     next();
   });
 
-  // ── HTTP request logging ────────────────────────────
-  app.use(httpLogger);
+  app.use((req: Request, _res: Response, next: NextFunction) => {
+    const requestId = (req as Request & { requestId?: string }).requestId ?? 'unknown';
+    logger.info({ requestId, method: req.method, url: req.url }, 'incoming request');
+    next();
+  });
 
-  // ── API routes (versioned) ──────────────────────────
-  app.use('/api/v1', routes);
+  app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 
-  // ── 404 handler (must be after routes) ──────────────
+  app.use('/api/v1', v1Router);
+  app.use('/api/docs', swaggerRouter);
+
   app.use(notFoundHandler);
-
-  // ── Global error handler (must be last) ─────────────
   app.use(globalErrorHandler);
 
   return app;

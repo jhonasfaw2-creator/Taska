@@ -2,6 +2,7 @@ import api from '../config/api';
 import type { RecentTask, TaskResponse, TaskStatus } from '../types/task';
 import type { TaskFormData } from '@/store/TaskContext';
 import { fetchCategories } from './category.service';
+import { uploadMultipleImages } from './media.service';
 
 let lastCreatedTaskId: string | null = null;
 
@@ -105,6 +106,13 @@ export async function createTask(form: TaskFormData): Promise<TaskResponse> {
     body.specialInstructions = form.specialInstructions.trim();
   }
 
+  // Upload images if present
+  if (form.images.length > 0) {
+    const imageUris = form.images.map((img) => img.uri);
+    const uploaded = await uploadMultipleImages(imageUris, 'task-images');
+    body.imageUrls = uploaded.map((m) => m.url);
+  }
+
   const response = await api.post<TaskResponse>('/tasks', body);
   lastCreatedTaskId = response.data.id;
   return response.data;
@@ -131,12 +139,12 @@ export async function updateTaskStatus(
  */
 export async function getTaskStatusHistory(
   taskId: string,
-): Promise<Array<{ status: string; changedBy: string; createdAt: string }>> {
-  const response = await api.get<Array<{
+): Promise<{ status: string; changedBy: string; createdAt: string }[]> {
+  const response = await api.get<{
     status: string;
     changedBy: string;
     createdAt: string;
-  }>>(`/tasks/${taskId}/status-history`);
+  }[]>(`/tasks/${taskId}/status-history`);
   return response.data;
 }
 

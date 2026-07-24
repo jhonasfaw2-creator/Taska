@@ -132,8 +132,8 @@ enum AdminRole {
 /// Registered user of the Taska platform.
 model User {
   id           String    @id @default(uuid()) @map("id")
-  firstName    String    @map("first_name")
-  lastName     String    @map("last_name")
+  firstName    String?   @map("first_name")
+  lastName     String?   @map("last_name")
   phoneNumber  String    @unique @map("phone_number")
   email        String?   @unique
   profileImage String?   @map("profile_image")
@@ -142,6 +142,13 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
   deletedAt    DateTime? @map("deleted_at")
+
+  // ── Auth fields stored directly on User for atomic OTP flow ──
+  otp          String?
+  otpExpiresAt DateTime?
+  otpAttempts  Int       @default(0)
+  refreshToken String?
+  isOnboarded  Boolean   @default(false)
 
   // ── Relations ───────────────────────────────────────
   taskerProfile   TaskerProfile?
@@ -155,6 +162,7 @@ model User {
   ratingSummary   RatingSummary?
   devices         UserDevice[]
   conversations   Conversation[]
+  media           Media[]
 
   @@index([role])
   @@index([deletedAt])
@@ -187,6 +195,9 @@ model TaskerProfile {
   rating              Float              @default(0) @map("rating")
   totalTasksCompleted Int                @default(0) @map("total_tasks_completed")
   isOnline            Boolean            @default(false) @map("is_online")
+  latitude            Float?             @map("latitude")
+  longitude           Float?             @map("longitude")
+  lastLocationUpdate  DateTime?          @map("last_location_update")
   bio                 String?            @map("bio")
   experience          Int?               @map("experience")
   lastActiveAt        DateTime?          @map("last_active_at")
@@ -594,6 +605,31 @@ model AuditLog {
   @@index([createdAt(sort: Desc)])
   @@index([action])
   @@map("audit_logs")
+}
+
+// ─── Media Module ────────────────────────────────────────────
+
+/// File metadata for uploaded media (images, documents).
+/// Physical files are stored via IStorageProvider (local/S3/Cloudinary).
+model Media {
+  id            String   @id @default(uuid()) @map("id")
+  originalName  String   @map("original_name")
+  mimeType      String   @map("mime_type")
+  size          Int
+  width         Int?     @map("width")
+  height        Int?     @map("height")
+  folder        String   @map("folder")
+  filename      String   @map("filename")
+  url           String   @map("url")
+  uploadedById  String?  @map("uploaded_by_id")
+  uploadedBy    User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([uploadedById])
+  @@index([folder])
+  @@index([createdAt(sort: Desc)])
+  @@map("media")
 }
 
 // ─── User Devices (Push Notifications) ──────────────────────

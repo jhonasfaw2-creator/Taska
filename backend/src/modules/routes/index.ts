@@ -10,6 +10,7 @@ import taskerTasksRoutes from '../taskers/taskerTasks.routes';
 import notificationRoutes from '../notifications/notification.routes';
 import locationRoutes from '../location/location.routes';
 import matchingRoutes from '../matching/matching.routes';
+import mediaRoutes from '../media/media.routes';
 
 const v1Router = Router();
 
@@ -24,5 +25,6 @@ v1Router.use('/taskers', taskerTasksRoutes);
 v1Router.use('/notifications', notificationRoutes);
 v1Router.use('/location', locationRoutes);
 v1Router.use('/matching', matchingRoutes);
+v1Router.use('/media', mediaRoutes);
 
 export { v1Router };
