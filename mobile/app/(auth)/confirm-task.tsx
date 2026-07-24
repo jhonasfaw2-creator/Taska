@@ -1,10 +1,11 @@
 import { useCallback, useState } from 'react';
-import { View, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
+import { createTask } from '@/services/task.service';
 
 interface SummaryRowProps {
   icon: string;
@@ -88,8 +89,9 @@ export default function ConfirmTaskScreen() {
   const insets = useSafeAreaInsets();
   const { state } = useTaskContext();
   const [isConfirmed, setIsConfirmed] = useState(false);
+  const [posting, setPosting] = useState(false);
 
-  const isValid = isConfirmed;
+  const isValid = isConfirmed && !posting;
   const vehicleName = state.vehicleType
     ? VEHICLES.find((v) => v.id === state.vehicleType)?.name ?? state.vehicleType
     : 'Not specified';
@@ -101,10 +103,19 @@ export default function ConfirmTaskScreen() {
     setIsConfirmed((prev) => !prev);
   }, []);
 
-  const handlePostTask = useCallback(() => {
+  const handlePostTask = useCallback(async () => {
     if (!isValid) return;
-    router.push('/searching-tasker');
-  }, [isValid, router]);
+    setPosting(true);
+    try {
+      const task = await createTask(state);
+      router.replace(`/searching-tasker?taskId=${task.id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create task. Please try again.';
+      Alert.alert('Error', message);
+    } finally {
+      setPosting(false);
+    }
+  }, [isValid, state, router]);
 
   return (
     <View className="flex-1 bg-background">
@@ -239,10 +250,11 @@ export default function ConfirmTaskScreen() {
         style={{ paddingBottom: insets.bottom + 16 }}
       >
         <Button
-          label="Post Task"
+          label={posting ? 'Posting...' : 'Post Task'}
           radius="lg"
           shadow={isValid ? 'lg' : 'none'}
           disabled={!isValid}
+          loading={posting}
           onPress={handlePostTask}
           testID="confirm-task-post"
         />
