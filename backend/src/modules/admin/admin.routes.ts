@@ -26,12 +26,15 @@ router.patch('/users/:id', requirePermission('users:edit'), ctrl.updateUser);
 router.post('/users/:id/suspend', requirePermission('users:suspend'), ctrl.suspendUser);
 router.post('/users/:id/reactivate', requirePermission('users:suspend'), ctrl.reactivateUser);
 router.delete('/users/:id', requirePermission('users:delete'), ctrl.deleteUser);
+router.post('/users/:id/reset-verification', requirePermission('users:reset'), ctrl.resetUserVerification);
+router.post('/users/:id/reset-account', requirePermission('users:reset'), ctrl.resetUserAccount);
 
 // ── Task Management ─────────────────────────────────────
 router.get('/tasks', requirePermission('tasks:view'), ctrl.listTasks);
 router.get('/tasks/:id', requirePermission('tasks:view'), ctrl.getTaskDetails);
 router.post('/tasks/:id/cancel', requirePermission('tasks:cancel'), ctrl.cancelTask);
 router.post('/tasks/:id/reassign', requirePermission('tasks:reassign'), ctrl.reassignTask);
+router.post('/tasks/:id/resolve-dispute', requirePermission('support:resolve'), ctrl.resolveDispute);
 
 // ── Tasker Management ───────────────────────────────────
 router.get('/taskers', requirePermission('taskers:view'), ctrl.listTaskers);
@@ -48,15 +51,23 @@ router.post('/payments/:id/refund', requirePermission('payments:refund'), ctrl.p
 // ── Wallet Management ───────────────────────────────────
 router.get('/wallets', requirePermission('payments:view'), ctrl.listWallets);
 
+// ── Payouts ──────────────────────────────────────────────
+router.post('/payouts/approve', requirePermission('payouts:approve'), ctrl.approvePayout);
+
+// ── Wallet Transactions ─────────────────────────────────
+router.get('/wallets/:walletId/transactions', requirePermission('payments:view'), ctrl.getWalletTransactions);
+
 // ── Notifications ───────────────────────────────────────
 router.post('/notifications/send', requirePermission('notifications:send'), ctrl.sendNotification);
 router.post('/notifications/broadcast', requirePermission('notifications:broadcast'), ctrl.broadcastNotification);
+router.post('/notifications/targeted', requirePermission('notifications:send'), ctrl.sendTargetedNotification);
 
 // ── Reports ─────────────────────────────────────────────
 router.get('/reports/revenue', requirePermission('reports:view'), ctrl.getRevenueReport);
 router.get('/reports/users', requirePermission('reports:view'), ctrl.getUsersReport);
 router.get('/reports/tasks', requirePermission('reports:view'), ctrl.getTasksReport);
 router.get('/reports/payments', requirePermission('reports:view'), ctrl.getPaymentsReport);
+router.get('/reports/growth', requirePermission('reports:view'), ctrl.getGrowthReport);
 router.get('/reports/export', requirePermission('reports:export'), ctrl.exportReport);
 
 // ── Audit Logs ──────────────────────────────────────────

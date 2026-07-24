@@ -83,6 +83,16 @@ export async function deleteUser(id: string) {
   return res.data;
 }
 
+export async function resetUserVerification(id: string) {
+  const res = await api.post(`/admin/users/${id}/reset-verification`);
+  return res.data.data;
+}
+
+export async function resetUserAccount(id: string) {
+  const res = await api.post(`/admin/users/${id}/reset-account`);
+  return res.data.data;
+}
+
 export async function listTasks(params: Record<string, any>) {
   const res = await api.get('/admin/tasks', { params });
   return res.data.data;
@@ -100,6 +110,11 @@ export async function cancelTask(id: string, reason: string) {
 
 export async function reassignTask(id: string, taskerId: string) {
   const res = await api.post(`/admin/tasks/${id}/reassign`, { taskerId });
+  return res.data.data;
+}
+
+export async function resolveDispute(id: string, resolution: string, action: string) {
+  const res = await api.post(`/admin/tasks/${id}/resolve-dispute`, { resolution, action });
   return res.data.data;
 }
 
@@ -145,6 +160,21 @@ export async function processRefund(id: string, amount: number, reason: string) 
 
 export async function listWallets(params: Record<string, any>) {
   const res = await api.get('/admin/wallets', { params });
+  return res.data.data;
+}
+
+export async function approvePayout(walletId: string, amount: number) {
+  const res = await api.post('/admin/payouts/approve', { walletId, amount });
+  return res.data.data;
+}
+
+export async function getWalletTransactions(walletId: string, params: Record<string, any> = {}) {
+  const res = await api.get(`/admin/wallets/${walletId}/transactions`, { params });
+  return res.data.data;
+}
+
+export async function sendTargetedNotification(userIds: string[], title: string, message: string) {
+  const res = await api.post('/admin/notifications/targeted', { userIds, title, message });
   return res.data.data;
 }
 
@@ -216,6 +246,16 @@ export async function sendAdminNotification(data: { subject: string; message: st
 export async function exportReports(params: { type: string; format?: string; dateFrom?: string; dateTo?: string }) {
   const res = await api.get('/admin/reports/export', { params, responseType: 'blob' });
   return res.data;
+}
+
+export async function getReportData(type: string, params: Record<string, any> = {}) {
+  const res = await api.get(`/admin/reports/${type}`, { params });
+  return res.data.data;
+}
+
+export async function getGrowthReport(days = 30) {
+  const res = await api.get('/admin/reports/growth', { params: { days } });
+  return res.data.data;
 }
 
 export default api;

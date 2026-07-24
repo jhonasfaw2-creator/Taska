@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { path: '/wallets', label: 'Wallets', icon: '💰' },
   { path: '/notifications', label: 'Notifications', icon: '🔔' },
   { path: '/reports', label: 'Reports', icon: '📈' },
+  { path: '/support', label: 'Support', icon: '🎧' },
   { path: '/audit-logs', label: 'Audit Logs', icon: '📝' },
   { path: '/admins', label: 'Admin Users', icon: '🔐' },
 ];

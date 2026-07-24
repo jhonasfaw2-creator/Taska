@@ -11,6 +11,7 @@ import { notFoundHandler } from './common/middleware/notFound.middleware';
 import { globalErrorHandler } from './common/middleware/error.middleware';
 import { requestIdMiddleware } from './common/middleware/requestId.middleware';
 import { globalRateLimit, authRateLimit } from './common/middleware/rateLimiter.middleware';
+import { securityErrorHandler } from './common/middleware/security.middleware';
 import swaggerRouter from './docs/swagger';
 
 export function createApp(): express.Application {
@@ -55,6 +56,7 @@ export function createApp(): express.Application {
   app.use('/api/docs', swaggerRouter);
 
   app.use(notFoundHandler);
+  app.use(securityErrorHandler);
   app.use(globalErrorHandler);
 
   return app;

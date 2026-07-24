@@ -4,10 +4,13 @@ import * as adminService from './admin.service';
 import { createAuditLog, getAuditLogs } from './audit.service';
 import {
   createAdminSchema, updateAdminRoleSchema, sendNotificationSchema, broadcastSchema,
+  targetedNotificationSchema,
   userSearchSchema, taskFilterSchema, taskerFilterSchema, paymentFilterSchema,
-  updateUserSchema, refundInputSchema,
+  updateUserSchema, refundInputSchema, resolveDisputeSchema, payoutSchema,
   reportQuerySchema, paginationSchema,
 } from './admin.validation';
+import ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
 
 function getClientInfo(req: Request) {
   return { ipAddress: req.ip, userAgent: req.headers['user-agent'] };
@@ -19,7 +22,7 @@ export async function login(req: Request, res: Response, next: NextFunction) {
     if (!phoneNumber || !password) {
       return res.status(400).json({ error: 'Phone number and password are required.' });
     }
-    const result = await adminService.loginAdmin(phoneNumber, password);
+    const result = await adminService.loginAdmin(phoneNumber, password, req.ip);
     res.json({ success: true, data: result });
   } catch (err) { next(err); }
 }
@@ -101,6 +104,20 @@ export async function deleteUser(req: Request, res: Response, next: NextFunction
   try {
     await adminService.deleteUser(req.params.id, req.user!.userId, req.ip);
     res.json({ success: true, message: 'User deleted.' });
+  } catch (err) { next(err); }
+}
+
+export async function resetUserVerification(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await adminService.resetUserVerification(req.params.id, req.user!.userId, req.ip);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
+export async function resetUserAccount(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await adminService.resetUserAccount(req.params.id, req.user!.userId, req.ip);
+    res.json({ success: true, data: result });
   } catch (err) { next(err); }
 }
 
@@ -202,10 +219,45 @@ export async function processRefund(req: Request, res: Response, next: NextFunct
   } catch (err) { next(err); }
 }
 
+export async function resolveDispute(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = resolveDisputeSchema.parse(req.body);
+    const result = await adminService.resolveDispute(
+      req.params.id, data.resolution, data.action, req.user!.userId, req.ip,
+    );
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
 export async function listWallets(req: Request, res: Response, next: NextFunction) {
   try {
     const params = paginationSchema.parse(req.query);
     const result = await adminService.listAllWallets(params);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
+export async function approvePayout(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = payoutSchema.parse(req.body);
+    const result = await adminService.approvePayout(data.walletId, data.amount, req.user!.userId, req.ip);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
+export async function getWalletTransactions(req: Request, res: Response, next: NextFunction) {
+  try {
+    const params = paginationSchema.parse(req.query);
+    const { walletId } = req.params;
+    const result = await adminService.getWalletTransactions(walletId, params);
+    res.json({ success: true, data: result });
+  } catch (err) { next(err); }
+}
+
+export async function sendTargetedNotification(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = targetedNotificationSchema.parse(req.body);
+    const result = await adminService.sendTargetedNotification(data.userIds, data.title, data.message);
     res.json({ success: true, data: result });
   } catch (err) { next(err); }
 }
@@ -259,26 +311,203 @@ export async function getPaymentsReport(req: Request, res: Response, next: NextF
 
 export async function exportReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const { type, format = 'csv', dateFrom, dateTo } = req.query as any;
+    const { type, format = 'csv', dateFrom, dateTo, days } = req.query as any;
     let data: any;
     switch (type) {
       case 'revenue': data = await adminService.getRevenueReport(dateFrom, dateTo); break;
       case 'users': data = await adminService.getUsersReport(dateFrom, dateTo); break;
       case 'tasks': data = await adminService.getTasksReport(dateFrom, dateTo); break;
       case 'payments': data = await adminService.getPaymentsReport(dateFrom, dateTo); break;
+      case 'growth': {
+        const d = Number(days) || 30;
+        const [userGrowth, taskGrowth, revenueGrowth] = await Promise.all([
+          adminService.getUserGrowth(d),
+          adminService.getTaskGrowth(d),
+          adminService.getRevenueGrowth(d),
+        ]);
+        data = {
+          data: userGrowth.map((u: any, i: number) => ({
+            date: u.date,
+            newUsers: u.value,
+            newTasks: taskGrowth[i]?.value ?? 0,
+            revenue: revenueGrowth[i]?.value ?? 0,
+          })),
+          totalNewUsers: userGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          totalNewTasks: taskGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          totalRevenue: revenueGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          days: d,
+        };
+        break;
+      }
       default: return res.status(400).json({ error: 'Invalid report type.' });
     }
-    if (format === 'csv') {
+
+    const fmt = (format as string).toLowerCase();
+    const filename = `${type}-report-${Date.now()}`;
+
+    if (fmt === 'csv') {
       res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', `attachment; filename="${type}-report.csv"`);
-      let csv = 'date,value\n';
-      if (data.data) {
-        for (const row of data.data) csv += `${row.date},${row.revenue || row.value || 0}\n`;
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+      const fields = Object.keys(data).filter((k) => k !== 'data');
+      let csv = fields.join(',') + '\n';
+      csv += fields.map((f) => data[f] ?? '').join(',') + '\n\n';
+      if (data.data && Array.isArray(data.data)) {
+        const keys = Object.keys(data.data[0] || {});
+        csv += keys.join(',') + '\n';
+        for (const row of data.data) {
+          csv += keys.map((k) => row[k] ?? '').join(',') + '\n';
+        }
+      } else if (data.byStatus) {
+        csv += 'status,count\n';
+        for (const [status, count] of Object.entries(data.byStatus)) {
+          csv += `${status},${count}\n`;
+        }
       }
-      res.send(csv);
-    } else {
-      res.json({ success: true, data });
+      return res.send(csv);
     }
+
+    if (fmt === 'xlsx') {
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'Taska Admin';
+      const sheet = workbook.addWorksheet(type.charAt(0).toUpperCase() + type.slice(1));
+
+      // Summary section
+      sheet.addRow([`${type.charAt(0).toUpperCase() + type.slice(1)} Report`]);
+      sheet.addRow([]);
+      const summaryFields = Object.keys(data).filter((k) => k !== 'data' && k !== 'byStatus');
+      for (const field of summaryFields) {
+        sheet.addRow([field, data[field] ?? '']);
+      }
+      sheet.addRow([]);
+
+      // Data section
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        const keys = Object.keys(data.data[0]);
+        const headerRow = sheet.addRow(keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1)));
+        headerRow.font = { bold: true };
+        for (const row of data.data) {
+          sheet.addRow(keys.map((k) => row[k] ?? ''));
+        }
+        sheet.columns = keys.map((k) => ({
+          header: k.charAt(0).toUpperCase() + k.slice(1),
+          key: k,
+          width: 20,
+        }));
+      } else if (data.byStatus) {
+        sheet.addRow(['Status', 'Count']);
+        for (const [status, count] of Object.entries(data.byStatus)) {
+          sheet.addRow([status, count]);
+        }
+      }
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
+      await workbook.xlsx.write(res);
+      return res.end();
+    }
+
+    if (fmt === 'pdf') {
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
+      doc.pipe(res);
+
+      // Header
+      doc.fontSize(20).font('Helvetica-Bold').text('Taska Admin Report', { align: 'center' });
+      doc.fontSize(14).font('Helvetica').text(`${type.charAt(0).toUpperCase() + type.slice(1)} Report`, { align: 'center' });
+      doc.moveDown();
+
+      // Date range
+      if (dateFrom || dateTo) {
+        doc.fontSize(10).text(`Period: ${dateFrom || 'Start'} → ${dateTo || 'Today'}`);
+        doc.moveDown();
+      }
+
+      // Summary
+      doc.fontSize(12).font('Helvetica-Bold').text('Summary', { underline: true });
+      doc.moveDown(0.5);
+      const summaryFields = Object.keys(data).filter((k) => k !== 'data' && k !== 'byStatus' && k !== 'count');
+      for (const field of summaryFields) {
+        doc.fontSize(10).font('Helvetica').text(`  ${field}: ${data[field] ?? ''}`);
+      }
+      doc.moveDown();
+
+      // Data table
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        doc.fontSize(12).font('Helvetica-Bold').text('Details', { underline: true });
+        doc.moveDown(0.5);
+
+        const keys = Object.keys(data.data[0]);
+        const startX = 50;
+        const colWidth = Math.min(80, (500) / keys.length);
+        let y = doc.y;
+
+        // Header row
+        doc.fontSize(9).font('Helvetica-Bold');
+        keys.forEach((k, i) => {
+          doc.text(k.charAt(0).toUpperCase() + k.slice(1), startX + i * colWidth, y, { width: colWidth });
+        });
+        y += 15;
+        doc.moveTo(startX, y - 5).lineTo(startX + keys.length * colWidth, y - 5).stroke();
+
+        // Data rows
+        doc.fontSize(8).font('Helvetica');
+        for (const row of data.data) {
+          if (y > 750) { doc.addPage(); y = 50; }
+          keys.forEach((k, i) => {
+            doc.text(String(row[k] ?? ''), startX + i * colWidth, y, { width: colWidth });
+          });
+          y += 12;
+        }
+      } else if (data.byStatus) {
+        doc.fontSize(12).font('Helvetica-Bold').text('Status Breakdown', { underline: true });
+        doc.moveDown(0.5);
+        doc.fontSize(10).font('Helvetica');
+        for (const [status, count] of Object.entries(data.byStatus)) {
+          doc.text(`  ${status}: ${count}`);
+        }
+      }
+
+      // Footer
+      doc.fontSize(8).font('Helvetica').text(
+        `Generated on ${new Date().toLocaleString()} by Taska Admin`,
+        50, doc.page.height - 50, { align: 'center' }
+      );
+
+      doc.end();
+      return;
+    }
+
+    return res.status(400).json({ error: 'Unsupported format. Use csv, xlsx, or pdf.' });
+  } catch (err) { next(err); }
+}
+
+export async function getGrowthReport(req: Request, res: Response, next: NextFunction) {
+  try {
+    const days = Number(req.query.days) || 30;
+    const [userGrowth, taskGrowth, revenueGrowth] = await Promise.all([
+      adminService.getUserGrowth(days),
+      adminService.getTaskGrowth(days),
+      adminService.getRevenueGrowth(days),
+    ]);
+    res.json({
+      success: true,
+      data: {
+        days,
+        userGrowth,
+        taskGrowth,
+        revenueGrowth,
+        summary: {
+          totalNewUsers: userGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          totalNewTasks: taskGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          totalRevenue: revenueGrowth.reduce((s: number, p: any) => s + p.value, 0),
+          avgDailyUsers: Math.round(userGrowth.reduce((s: number, p: any) => s + p.value, 0) / days),
+          avgDailyTasks: Math.round(taskGrowth.reduce((s: number, p: any) => s + p.value, 0) / days),
+          avgDailyRevenue: revenueGrowth.reduce((s: number, p: any) => s + p.value, 0) / days,
+        },
+      },
+    });
   } catch (err) { next(err); }
 }
 

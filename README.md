@@ -10,7 +10,7 @@
 |---|---|
 | [`mobile/`](./mobile) | Customer & tasker mobile app (Expo / React Native) |
 | [`backend/`](./backend) | REST API (Express.js / TypeScript / Prisma / PostgreSQL) |
-| [`admin/`](./admin) | Admin dashboard (React / …) |
+| [`admin/`](./admin) | Admin dashboard (React 18 / TypeScript / Vite / Tailwind CSS) |
 | [`docs/`](./docs) | Architecture docs, ADRs, runbooks |
 | [`database/`](./database) | DB migrations, seed scripts, ERDs |
 | [`api/`](./api) | API specs (OpenAPI / Postman collections) |

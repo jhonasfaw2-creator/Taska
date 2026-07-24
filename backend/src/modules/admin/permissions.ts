@@ -3,6 +3,7 @@ export type Permission =
   | 'users:view'
   | 'users:edit'
   | 'users:suspend'
+  | 'users:reset'
   | 'users:delete'
   | 'tasks:view'
   | 'tasks:edit'
@@ -31,6 +32,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'users:view',
     'users:edit',
     'users:suspend',
+    'users:reset',
     'users:delete',
     'tasks:view',
     'tasks:edit',
@@ -58,6 +60,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'users:view',
     'users:edit',
     'users:suspend',
+    'users:reset',
     'tasks:view',
     'tasks:edit',
     'tasks:cancel',

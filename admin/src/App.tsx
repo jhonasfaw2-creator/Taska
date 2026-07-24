@@ -15,6 +15,7 @@ import Notifications from './pages/Notifications';
 import Reports from './pages/Reports';
 import AuditLogs from './pages/AuditLogs';
 import AdminUsers from './pages/AdminUsers';
+import Support from './pages/Support';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('admin_token');
@@ -40,6 +41,7 @@ export default function App() {
         <Route path="wallets" element={<Wallets />} />
         <Route path="notifications" element={<Notifications />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="support" element={<Support />} />
         <Route path="audit-logs" element={<AuditLogs />} />
         <Route path="admins" element={<AdminUsers />} />
       </Route>

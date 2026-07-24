@@ -1795,6 +1795,1745 @@ paths:
         '401':
           $ref: '#/components/responses/Unauthorized'
 
+  # ─────────────────────────────────────────────────────
+  #  Admin
+  # ─────────────────────────────────────────────────────
+  /admin/auth/login:
+    post:
+      tags: [Admin]
+      summary: Admin login
+      description: |
+        Authenticates an admin user using phone number and password.
+        Returns a JWT token with admin role information.
+      operationId: adminLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phoneNumber, password]
+              properties:
+                phoneNumber:
+                  type: string
+                  example: '+251911000000'
+                password:
+                  type: string
+                  example: 'Admin@123456'
+            example:
+              phoneNumber: '+251911000000'
+              password: Admin@123456
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      token:
+                        type: string
+                      user:
+                        $ref: '#/components/schemas/AdminUser'
+        '401':
+          description: Invalid credentials
+          $ref: '#/components/responses/Unauthorized'
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Dashboard
+  # ════════════════════════════════════════════════════════
+  /admin/dashboard/stats:
+    get:
+      tags: [Admin]
+      summary: Get dashboard stats
+      description: Returns aggregate platform statistics for the admin dashboard.
+      operationId: getAdminDashboardStats
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminDashboardStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/dashboard/user-growth:
+    get:
+      tags: [Admin]
+      summary: Get user growth data
+      description: Returns daily new user signups for the specified period.
+      operationId: getAdminUserGrowth
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+          description: Number of days to analyze
+      responses:
+        '200':
+          description: Growth data points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrowthDataPoint'
+
+  /admin/dashboard/task-growth:
+    get:
+      tags: [Admin]
+      summary: Get task growth data
+      description: Returns daily new task creation counts for the specified period.
+      operationId: getAdminTaskGrowth
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Growth data points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrowthDataPoint'
+
+  /admin/dashboard/revenue-growth:
+    get:
+      tags: [Admin]
+      summary: Get revenue growth data
+      description: Returns daily revenue amounts for the specified period.
+      operationId: getAdminRevenueGrowth
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Growth data points
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GrowthDataPoint'
+
+  /admin/dashboard/category-distribution:
+    get:
+      tags: [Admin]
+      summary: Get task category distribution
+      description: Returns task counts grouped by category.
+      operationId: getAdminCategoryDistribution
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Category distribution
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        count:
+                          type: integer
+
+  # ════════════════════════════════════════════════════════
+  #  Admin User Management
+  # ════════════════════════════════════════════════════════
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List users (Admin)
+      description: Lists all platform users with search and filter capabilities.
+      operationId: listAdminUsers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Search by name, phone, or email
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [CUSTOMER, TASKER]
+          description: Filter by user role
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [active, suspended]
+          description: Filter by account status
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Paginated user list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      users:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminUserListItem'
+                      total:
+                        type: integer
+
+  '/admin/users/{id}':
+    get:
+      tags: [Admin]
+      summary: Get user details
+      description: Returns detailed user profile including tasker info, reviews, and activity.
+      operationId: getAdminUserDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminUserDetail'
+
+    patch:
+      tags: [Admin]
+      summary: Update user
+      description: Updates a user's profile fields (firstName, lastName, email, etc.).
+      operationId: updateAdminUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UserProfile'
+
+    delete:
+      tags: [Admin]
+      summary: Soft-delete user
+      description: Soft-deletes a user account (SUPER_ADMIN only).
+      operationId: deleteAdminUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/admin/users/{id}/suspend':
+    post:
+      tags: [Admin]
+      summary: Suspend user
+      description: Suspends a user account by setting deletedAt.
+      operationId: suspendAdminUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User suspended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  '/admin/users/{id}/reactivate':
+    post:
+      tags: [Admin]
+      summary: Reactivate user
+      description: Reactivates a previously suspended user account.
+      operationId: reactivateAdminUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User reactivated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  '/admin/users/{id}/reset-verification':
+    post:
+      tags: [Admin]
+      summary: Reset user verification
+      description: Resets a user's verification status and tasker profile verification.
+      operationId: resetUserVerificationAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Verification reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+
+  '/admin/users/{id}/reset-account':
+    post:
+      tags: [Admin]
+      summary: Reset user account
+      description: Completely resets a user's account (clears profile, verification, onboarding).
+      operationId: resetUserAccountAdmin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Account reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Task Management
+  # ════════════════════════════════════════════════════════
+  /admin/tasks:
+    get:
+      tags: [Admin]
+      summary: List tasks (Admin)
+      description: Lists all platform tasks with search, status, and date filters.
+      operationId: listAdminTasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+        - name: categoryId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Paginated task list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      tasks:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminTaskListItem'
+                      total:
+                        type: integer
+
+  '/admin/tasks/{id}':
+    get:
+      tags: [Admin]
+      summary: Get task details
+      description: Returns full task details including customer, tasker, payment, status history, and conversations.
+      operationId: getAdminTaskDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminTaskDetail'
+
+  '/admin/tasks/{id}/cancel':
+    post:
+      tags: [Admin]
+      summary: Cancel task
+      description: Admin-cancels a task with a reason. Logged in audit trail.
+      operationId: cancelAdminTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Reason for cancellation
+            example:
+              reason: Policy violation
+      responses:
+        '200':
+          description: Task cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  '/admin/tasks/{id}/reassign':
+    post:
+      tags: [Admin]
+      summary: Reassign task
+      description: Reassigns a task to a new tasker (SUPER_ADMIN only).
+      operationId: reassignAdminTask
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskerId]
+              properties:
+                taskerId:
+                  type: string
+                  format: uuid
+            example:
+              taskerId: 550e8400-e29b-41d4-a716-446655440020
+      responses:
+        '200':
+          description: Task reassigned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/admin/tasks/{id}/resolve-dispute':
+    post:
+      tags: [Admin]
+      summary: Resolve dispute
+      description: Resolves a task dispute with options to refund customer, release tasker, or cancel task.
+      operationId: resolveAdminDispute
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [resolution, action]
+              properties:
+                resolution:
+                  type: string
+                  description: Free-text resolution notes
+                action:
+                  type: string
+                  enum: [refund_customer, release_tasker, cancel_task, none]
+            example:
+              resolution: Refund issued to customer for damaged item
+              action: refund_customer
+      responses:
+        '200':
+          description: Dispute resolved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Tasker Management
+  # ════════════════════════════════════════════════════════
+  /admin/taskers:
+    get:
+      tags: [Admin]
+      summary: List taskers (Admin)
+      description: Lists all tasker profiles with search and verification filter.
+      operationId: listAdminTaskers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: verificationStatus
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED, SUSPENDED]
+        - name: isOnline
+          in: query
+          required: false
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Paginated tasker list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      taskers:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminTaskerListItem'
+                      total:
+                        type: integer
+
+  '/admin/taskers/{id}':
+    get:
+      tags: [Admin]
+      summary: Get tasker details
+      description: Returns full tasker profile including wallet, vehicles, documents, reviews, and tasks.
+      operationId: getAdminTaskerDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasker details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminTaskerDetail'
+
+  '/admin/taskers/{id}/approve':
+    post:
+      tags: [Admin]
+      summary: Approve tasker
+      description: Approves a pending tasker verification.
+      operationId: approveAdminTasker
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasker approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      verificationStatus:
+                        type: string
+                        example: APPROVED
+
+  '/admin/taskers/{id}/reject':
+    post:
+      tags: [Admin]
+      summary: Reject tasker
+      description: Rejects a tasker verification application.
+      operationId: rejectAdminTasker
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasker rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      verificationStatus:
+                        type: string
+                        example: REJECTED
+
+  '/admin/taskers/{id}/suspend':
+    post:
+      tags: [Admin]
+      summary: Suspend tasker
+      description: Suspends an approved tasker from accepting new tasks.
+      operationId: suspendAdminTasker
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Tasker suspended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      verificationStatus:
+                        type: string
+                        example: SUSPENDED
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Payments & Payouts
+  # ════════════════════════════════════════════════════════
+  '/admin/payments':
+    get:
+      tags: [Admin]
+      summary: List all payments (Admin)
+      description: Lists all platform payments with status and date filters.
+      operationId: listAdminPayments
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: '#/components/schemas/PaymentStatus'
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Paginated payment list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      payments:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminPaymentListItem'
+                      total:
+                        type: integer
+
+  '/admin/payments/{id}':
+    get:
+      tags: [Admin]
+      summary: Get payment details
+      description: Returns full payment details with refunds and audit trail.
+      operationId: getAdminPaymentDetails
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Payment details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminPaymentDetail'
+
+  '/admin/payments/{id}/refund':
+    post:
+      tags: [Admin]
+      summary: Process refund
+      description: Processes a full or partial refund for a payment.
+      operationId: processAdminRefund
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount, reason]
+              properties:
+                amount:
+                  type: number
+                  description: Refund amount in ETB
+                reason:
+                  type: string
+                  enum: [CUSTOMER_REQUEST, SERVICE_ISSUE, DUPLICATE, FRAUD, OTHER]
+                reasonDetail:
+                  type: string
+            example:
+              amount: 50.00
+              reason: CUSTOMER_REQUEST
+              reasonDetail: Customer reported item damaged
+      responses:
+        '200':
+          description: Refund processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminRefund'
+
+  '/admin/wallets':
+    get:
+      tags: [Admin]
+      summary: List wallets (Admin)
+      description: Lists all tasker wallets with balances and transaction counts.
+      operationId: listAdminWallets
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Wallet list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      wallets:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AdminWalletListItem'
+                      total:
+                        type: integer
+
+  '/admin/wallets/{walletId}/transactions':
+    get:
+      tags: [Admin]
+      summary: Get wallet transactions (Admin)
+      description: Returns transaction history for a specific wallet.
+      operationId: getAdminWalletTransactions
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      transactions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/WalletTransaction'
+                      total:
+                        type: integer
+                      wallet:
+                        $ref: '#/components/schemas/WalletSummary'
+
+  '/admin/payouts/approve':
+    post:
+      tags: [Admin]
+      summary: Approve payout
+      description: Approves a payout from a tasker's available balance.
+      operationId: approveAdminPayout
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [walletId, amount]
+              properties:
+                walletId:
+                  type: string
+                  format: uuid
+                amount:
+                  type: number
+                  description: Amount to pay out in ETB
+            example:
+              walletId: 550e8400-e29b-41d4-a716-446655440100
+              amount: 200.00
+      responses:
+        '200':
+          description: Payout approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      balance:
+                        type: number
+                      amount:
+                        type: number
+                      taskerId:
+                        type: string
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Notifications
+  # ════════════════════════════════════════════════════════
+  /admin/notifications/send:
+    post:
+      tags: [Admin]
+      summary: Send notification
+      description: Sends a push notification to a single user.
+      operationId: sendAdminNotification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, title, message]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                title:
+                  type: string
+                message:
+                  type: string
+            example:
+              userId: 550e8400-e29b-41d4-a716-446655440000
+              title: Account Update
+              message: Your account has been updated by an admin.
+      responses:
+        '200':
+          description: Notification sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/Notification'
+
+  /admin/notifications/broadcast:
+    post:
+      tags: [Admin]
+      summary: Broadcast notification
+      description: Sends a push notification to all users or a filtered role.
+      operationId: broadcastAdminNotification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, message]
+              properties:
+                title:
+                  type: string
+                message:
+                  type: string
+                roleFilter:
+                  type: string
+                  enum: [ALL, CUSTOMER, TASKER]
+                  description: 'Filter by role (default: ALL)'
+            example:
+              title: Platform Announcement
+              message: We are introducing new features!
+              roleFilter: ALL
+      responses:
+        '200':
+          description: Broadcast sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sentCount:
+                        type: integer
+
+  /admin/notifications/targeted:
+    post:
+      tags: [Admin]
+      summary: Send targeted notification
+      description: Sends a notification to a specified list of users.
+      operationId: sendAdminTargetedNotification
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userIds, title, message]
+              properties:
+                userIds:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: List of recipient user IDs
+                title:
+                  type: string
+                message:
+                  type: string
+            example:
+              userIds:
+                - 550e8400-e29b-41d4-a716-446655440000
+                - 550e8400-e29b-41d4-a716-446655440001
+              title: Exclusive Offer
+              message: You've been selected for a special promotion!
+      responses:
+        '200':
+          description: Targeted notification sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      sentCount:
+                        type: integer
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Reports
+  # ════════════════════════════════════════════════════════
+  /admin/reports/revenue:
+    get:
+      tags: [Admin]
+      summary: Revenue report
+      description: Returns revenue data grouped by day, week, or month with totals and fees.
+      operationId: getRevenueReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: groupBy
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [day, week, month]
+            default: day
+      responses:
+        '200':
+          description: Revenue report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/RevenueReport'
+
+  /admin/reports/users:
+    get:
+      tags: [Admin]
+      summary: Users report
+      description: Returns user registration report with role breakdown.
+      operationId: getUsersReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Users report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/UsersReport'
+
+  /admin/reports/tasks:
+    get:
+      tags: [Admin]
+      summary: Tasks report
+      description: Returns task report with status breakdown.
+      operationId: getTasksReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Tasks report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/TasksReport'
+
+  /admin/reports/payments:
+    get:
+      tags: [Admin]
+      summary: Payments report
+      description: Returns payment report with revenue and fee totals.
+      operationId: getPaymentsReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Payments report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/PaymentsReport'
+
+  /admin/reports/growth:
+    get:
+      tags: [Admin]
+      summary: Growth report
+      description: Returns combined user, task, and revenue growth data with summary stats.
+      operationId: getGrowthReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+      responses:
+        '200':
+          description: Growth report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/GrowthReport'
+
+  /admin/reports/export:
+    get:
+      tags: [Admin]
+      summary: Export report
+      description: |
+        Exports a report in CSV, XLSX, or PDF format.
+        Supports revenue, users, tasks, payments, and growth report types.
+      operationId: exportReport
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [revenue, users, tasks, payments, growth]
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [csv, xlsx, pdf]
+            default: csv
+        - name: dateFrom
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: dateTo
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: days
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 30
+          description: Days for growth report
+      responses:
+        '200':
+          description: Exported file
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Invalid report type or format
+          $ref: '#/components/responses/BadRequest'
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Audit Logs
+  # ════════════════════════════════════════════════════════
+  /admin/audit-logs:
+    get:
+      tags: [Admin]
+      summary: List audit logs
+      description: Returns the admin audit log with optional filtering by action, entity type, or entity ID.
+      operationId: listAuditLogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter by action name
+        - name: entityType
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [user, task, tasker, payment, notification, admin, wallet, security]
+        - name: entityId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Audit logs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      logs:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AuditLogEntry'
+                      total:
+                        type: integer
+
+  # ════════════════════════════════════════════════════════
+  #  Admin Management (SUPER_ADMIN only)
+  # ════════════════════════════════════════════════════════
+  /admin/admins:
+    get:
+      tags: [Admin]
+      summary: List admin users
+      description: Lists all admin users with their roles and audit log counts (SUPER_ADMIN only).
+      operationId: listAdminUsersManage
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin user list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminUserListItem'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      tags: [Admin]
+      summary: Create admin user
+      description: Promotes a user to an admin role (SUPER_ADMIN only).
+      operationId: createAdminUser
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, role]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                role:
+                  type: string
+                  enum: [ADMIN, MODERATOR, SUPPORT]
+            example:
+              userId: 550e8400-e29b-41d4-a716-446655440002
+              role: MODERATOR
+      responses:
+        '201':
+          description: Admin user created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminUser'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: User is already an admin
+          $ref: '#/components/responses/BadRequest'
+
+  '/admin/admins/{id}/role':
+    patch:
+      tags: [Admin]
+      summary: Update admin role
+      description: Changes an admin user's role (SUPER_ADMIN only).
+      operationId: updateAdminUserRole
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [role]
+              properties:
+                role:
+                  type: string
+                  enum: [SUPER_ADMIN, ADMIN, MODERATOR, SUPPORT]
+            example:
+              role: ADMIN
+      responses:
+        '200':
+          description: Role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    $ref: '#/components/schemas/AdminUser'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  '/admin/admins/{id}':
+    delete:
+      tags: [Admin]
+      summary: Remove admin user
+      description: Removes an admin user's privileges (SUPER_ADMIN only, cannot self-remove).
+      operationId: removeAdminUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Admin removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+        '400':
+          description: Cannot remove SUPER_ADMIN
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
 components:
   securitySchemes:
     bearerAuth:
@@ -2631,6 +4370,641 @@ components:
         createdAt:
           type: string
           format: date-time
+
+    # ── Admin ───────────────────────────────────────────────
+    AdminUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phoneNumber:
+          type: string
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        email:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [SUPER_ADMIN, ADMIN, MODERATOR, SUPPORT]
+        permissions:
+          type: array
+          items:
+            type: string
+
+    AdminDashboardStats:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+        activeCustomers:
+          type: integer
+        activeTaskers:
+          type: integer
+        onlineTaskers:
+          type: integer
+        tasksToday:
+          type: integer
+        tasksInProgress:
+          type: integer
+        completedTasks:
+          type: integer
+        cancelledTasks:
+          type: integer
+        pendingVerifications:
+          type: integer
+        revenueToday:
+          type: number
+        revenueThisMonth:
+          type: number
+        totalWalletBalance:
+          type: number
+        totalPendingBalance:
+          type: number
+        totalAvailableBalance:
+          type: number
+
+    GrowthDataPoint:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        value:
+          type: number
+
+    AdminUserListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+        email:
+          type: string
+          nullable: true
+        role:
+          type: string
+          enum: [CUSTOMER, TASKER]
+        isVerified:
+          type: boolean
+        isOnboarded:
+          type: boolean
+        deletedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        taskerProfile:
+          type: object
+          nullable: true
+          properties:
+            verificationStatus:
+              type: string
+            isOnline:
+              type: boolean
+            rating:
+              type: number
+            totalTasksCompleted:
+              type: integer
+        _count:
+          type: object
+          properties:
+            tasks:
+              type: integer
+            payments:
+              type: integer
+
+    AdminUserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        firstName:
+          type: string
+          nullable: true
+        lastName:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+        email:
+          type: string
+          nullable: true
+        role:
+          type: string
+        isVerified:
+          type: boolean
+        isOnboarded:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        taskerProfile:
+          type: object
+          nullable: true
+        _count:
+          type: object
+          properties:
+            tasks:
+              type: integer
+            payments:
+              type: integer
+            notifications:
+              type: integer
+
+    AdminTaskListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        estimatedPrice:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+        category:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            name:
+              type: string
+        customer:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            firstName:
+              type: string
+              nullable: true
+            lastName:
+              type: string
+              nullable: true
+            phoneNumber:
+              type: string
+        tasker:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            userId:
+              type: string
+              format: uuid
+            user:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  nullable: true
+                lastName:
+                  type: string
+                  nullable: true
+
+    AdminTaskDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        estimatedPrice:
+          type: number
+        finalPrice:
+          type: number
+          nullable: true
+        pickupAddress:
+          type: string
+        dropoffAddress:
+          type: string
+        vehicleType:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        customer:
+          type: object
+        tasker:
+          type: object
+          nullable: true
+        category:
+          type: object
+        payment:
+          type: object
+          nullable: true
+        statusHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusHistoryEntry'
+        conversations:
+          type: array
+        reviews:
+          type: array
+        offers:
+          type: array
+
+    AdminTaskerListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        verificationStatus:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, SUSPENDED]
+        isOnline:
+          type: boolean
+        rating:
+          type: number
+        totalTasksCompleted:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            firstName:
+              type: string
+              nullable: true
+            lastName:
+              type: string
+              nullable: true
+            phoneNumber:
+              type: string
+            email:
+              type: string
+              nullable: true
+        wallet:
+          type: object
+          nullable: true
+          properties:
+            balance:
+              type: number
+            availableBalance:
+              type: number
+            totalEarned:
+              type: number
+            totalWithdrawn:
+              type: number
+        _count:
+          type: object
+          properties:
+            tasks:
+              type: integer
+            offers:
+              type: integer
+
+    AdminTaskerDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        verificationStatus:
+          type: string
+        isOnline:
+          type: boolean
+        rating:
+          type: number
+        totalTasksCompleted:
+          type: integer
+        bio:
+          type: string
+          nullable: true
+        experience:
+          type: integer
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+        wallet:
+          type: object
+          nullable: true
+        vehicles:
+          type: array
+        verificationDocuments:
+          type: array
+        tasks:
+          type: array
+        _count:
+          type: object
+          properties:
+            offers:
+              type: integer
+
+    AdminPaymentListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        platformFee:
+          type: number
+        paymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        createdAt:
+          type: string
+          format: date-time
+        customer:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uuid
+            firstName:
+              type: string
+              nullable: true
+            lastName:
+              type: string
+              nullable: true
+            phoneNumber:
+              type: string
+        task:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: string
+              format: uuid
+            title:
+              type: string
+            status:
+              $ref: '#/components/schemas/TaskStatus'
+        refunds:
+          type: array
+
+    AdminPaymentDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        platformFee:
+          type: number
+        paymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        paymentMethod:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        customer:
+          $ref: '#/components/schemas/UserProfile'
+        task:
+          type: object
+        refunds:
+          type: array
+        audits:
+          type: array
+
+    AdminRefund:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        paymentId:
+          type: string
+          format: uuid
+        amount:
+          type: number
+        reason:
+          type: string
+        reasonDetail:
+          type: string
+          nullable: true
+        processedById:
+          type: string
+          format: uuid
+        createdAt:
+          type: string
+          format: date-time
+
+    AdminWalletListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        balance:
+          type: number
+        pendingBalance:
+          type: number
+        availableBalance:
+          type: number
+        totalEarned:
+          type: number
+        totalWithdrawn:
+          type: number
+        updatedAt:
+          type: string
+          format: date-time
+        tasker:
+          type: object
+          properties:
+            user:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  nullable: true
+                lastName:
+                  type: string
+                  nullable: true
+                phoneNumber:
+                  type: string
+        _count:
+          type: object
+          properties:
+            transactions:
+              type: integer
+
+    WalletSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        balance:
+          type: number
+        availableBalance:
+          type: number
+        pendingBalance:
+          type: number
+
+    RevenueReport:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+                format: date
+              revenue:
+                type: number
+              fees:
+                type: number
+              count:
+                type: integer
+        totalRevenue:
+          type: number
+        totalFees:
+          type: number
+        count:
+          type: integer
+
+    UsersReport:
+      type: object
+      properties:
+        total:
+          type: integer
+        customers:
+          type: integer
+        taskers:
+          type: integer
+        data:
+          type: array
+
+    TasksReport:
+      type: object
+      properties:
+        total:
+          type: integer
+        byStatus:
+          type: object
+          additionalProperties:
+            type: integer
+        data:
+          type: array
+
+    PaymentsReport:
+      type: object
+      properties:
+        total:
+          type: integer
+        totalRevenue:
+          type: number
+        totalFees:
+          type: number
+
+    GrowthReport:
+      type: object
+      properties:
+        days:
+          type: integer
+        userGrowth:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrowthDataPoint'
+        taskGrowth:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrowthDataPoint'
+        revenueGrowth:
+          type: array
+          items:
+            $ref: '#/components/schemas/GrowthDataPoint'
+        summary:
+          type: object
+          properties:
+            totalNewUsers:
+              type: integer
+            totalNewTasks:
+              type: integer
+            totalRevenue:
+              type: number
+            avgDailyUsers:
+              type: number
+            avgDailyTasks:
+              type: number
+            avgDailyRevenue:
+              type: number
+
+    AuditLogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        action:
+          type: string
+        entityType:
+          type: string
+        entityId:
+          type: string
+        changes:
+          type: object
+          nullable: true
+        ipAddress:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        admin:
+          type: object
+          nullable: true
+          properties:
+            user:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  nullable: true
+                lastName:
+                  type: string
+                  nullable: true
+
+    TaskStatus:
+      type: string
+      enum: [PENDING, SEARCHING, ACCEPTED, PICKED_UP, IN_PROGRESS, COMPLETED, CANCELLED]
+
+    PaymentStatus:
+      type: string
+      enum: [PENDING, PROCESSING, AUTHORIZED, PAID, FAILED, CANCELLED, REFUNDED, PARTIALLY_REFUNDED]
 
     # ── Reusable websocket schemas (informational) ────────
     SocketEventTaskCreated:

@@ -146,12 +146,35 @@ fly deploy
 - [ ] CPU / Memory usage alerts configured
 - [ ] SSL certificate valid and auto-renewing
 
+### Admin Panel
+
+- [ ] Admin login page loads at `/admin/login`
+- [ ] SUPER_ADMIN account created via seed script or direct DB insert
+- [ ] Password set for admin account (admin users log in with phone + password)
+- [ ] RBAC permissions verified for each admin role (SUPER_ADMIN, ADMIN, MODERATOR, SUPPORT)
+- [ ] Audit logs accessible and filterable
+- [ ] Dashboard stats render correctly with real data
+- [ ] User management CRUD operations functional
+- [ ] Task management (cancel, reassign, dispute resolution) works
+- [ ] Tasker verification (approve/reject/suspend) works
+- [ ] Payment refunds and payout approvals work
+- [ ] Notification sending (single, broadcast, targeted) works
+- [ ] Report generation and export (CSV, XLSX, PDF) works
+- [ ] Admin user management (create/update/remove) restricted to SUPER_ADMIN
+- [ ] Role-based restrictions verified (MODERATOR cannot delete users, etc.)
+
+### Admin Build
+
+- [ ] `cd admin && npm run build` passes (TypeScript + Vite)
+- [ ] Admin API docs accessible at `/api/docs` (Swagger UI)
+- [ ] Admin production build served via reverse proxy or bundled with backend
+
 ### Security
 
 - [ ] All HTTP traffic redirected to HTTPS
 - [ ] JWT secrets rotated from defaults
 - [ ] Database password rotated from defaults
-- [ ] Rate limiting active (200 requests per 15 min globally)
+- [ ] Rate limiting active (200 requests per 15 min globally, 50 for auth)
 - [ ] Request body limited to 1 MB
 - [ ] Helmet security headers active
 - [ ] CORS restricted to known domains
@@ -159,6 +182,8 @@ fly deploy
 - [ ] `express.json` body size limited
 - [ ] Graceful shutdown implemented (30s forced timeout)
 - [ ] Non-root user runs container (not `root`)
+- [ ] Failed admin login attempts logged to audit log
+- [ ] Permission denied events logged as security events
 
 ---
 

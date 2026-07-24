@@ -4,22 +4,26 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { envConfig } from '../../common/config/env';
 import { createAuditLog } from './audit.service';
+import { logFailedLogin } from '../../common/middleware/security.middleware';
 
 // ─── Admin Auth ─────────────────────────────────────────
 
-export async function loginAdmin(phoneNumber: string, password: string) {
+export async function loginAdmin(phoneNumber: string, password: string, ipAddress?: string) {
   const user = await prisma.user.findUnique({
     where: { phoneNumber },
     include: { adminUser: true },
   });
   if (!user || !user.adminUser || user.deletedAt) {
+    await logFailedLogin(phoneNumber, 'account_not_found_or_deleted', ipAddress);
     throw new AppError('Invalid credentials.', 401);
   }
   if (!user.password) {
+    await logFailedLogin(phoneNumber, 'no_password_set', ipAddress);
     throw new AppError('Admin account has no password set. Contact a SUPER_ADMIN.', 401);
   }
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
+    await logFailedLogin(phoneNumber, 'invalid_password', ipAddress);
     throw new AppError('Invalid credentials.', 401);
   }
   const token = jwt.sign(
@@ -167,6 +171,68 @@ function aggregateTimeSeries(
 }
 
 // ─── User Management ────────────────────────────────────
+
+export async function resetUserVerification(userId: string, adminId: string, ipAddress?: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { taskerProfile: true },
+  });
+  if (!user) throw new AppError('User not found.', 404);
+
+  // Reset user verification
+  await prisma.user.update({
+    where: { id: userId },
+    data: { isVerified: false },
+  });
+
+  // If user has a tasker profile, reset its verification status too
+  if (user.taskerProfile) {
+    await prisma.taskerProfile.update({
+      where: { userId },
+      data: { verificationStatus: 'PENDING' },
+    });
+  }
+
+  await createAuditLog({ adminId, action: 'reset_verification', entityType: 'user', entityId: userId, ipAddress });
+  return { message: 'User verification has been reset.' };
+}
+
+export async function resetUserAccount(userId: string, adminId: string, ipAddress?: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { taskerProfile: true },
+  });
+  if (!user) throw new AppError('User not found.', 404);
+
+  // Reset account: clear profile data, reset onboarding, clear verification
+  await prisma.user.update({
+    where: { id: userId },
+    data: {
+      firstName: null,
+      lastName: null,
+      email: null,
+      profileImage: null,
+      isVerified: false,
+      isOnboarded: false,
+      otp: null,
+      otpExpiresAt: null,
+      otpAttempts: 0,
+      refreshToken: null,
+    },
+  });
+
+  // If user has a tasker profile, reset its verification status
+  if (user.taskerProfile) {
+    await prisma.taskerProfile.update({
+      where: { userId },
+      data: { verificationStatus: 'PENDING' },
+    });
+  }
+
+  await createAuditLog({ adminId, action: 'reset_account', entityType: 'user', entityId: userId, ipAddress });
+  return { message: 'User account has been reset.' };
+}
+
 
 export async function listUsers(params: {
   search?: string;
@@ -411,7 +477,7 @@ export async function getTaskerDetails(taskerId: string) {
       wallet: true,
       vehicles: true,
       verificationDocuments: { orderBy: { createdAt: 'desc' } },
-      tasks: { orderBy: { createdAt: 'desc' }, take: 20 },
+      tasks: { orderBy: { createdAt: 'desc' }, take: 20, include: { category: { select: { name: true } } } },
       _count: { select: { offers: true } },
     },
   });
@@ -508,6 +574,152 @@ export async function listAllWallets(params: { limit: number; offset: number }) 
   return { wallets, total };
 }
 
+// ─── Dispute Resolution ─────────────────────────────────
+
+export async function resolveDispute(
+  taskId: string,
+  resolution: string,
+  action: 'refund_customer' | 'release_tasker' | 'cancel_task' | 'none',
+  adminId: string,
+  ipAddress?: string,
+) {
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { payment: true, tasker: { include: { wallet: true } }, customer: true },
+  });
+  if (!task) throw new AppError('Task not found.', 404);
+
+  const result: any = { resolution, action, taskId, previousStatus: task.status };
+
+  switch (action) {
+    case 'cancel_task': {
+      await prisma.task.update({
+        where: { id: taskId },
+        data: { status: 'CANCELLED' },
+      });
+      await prisma.taskStatusHistory.create({
+        data: { taskId, status: 'CANCELLED', changedBy: 'admin (dispute)' },
+      });
+      result.newStatus = 'CANCELLED';
+      break;
+    }
+    case 'refund_customer': {
+      if (task.payment) {
+        await prisma.payment.update({
+          where: { id: task.payment.id },
+          data: { paymentStatus: 'REFUNDED', refundedAmount: task.payment.amount },
+        });
+      }
+      await prisma.task.update({
+        where: { id: taskId },
+        data: { status: 'CANCELLED' },
+      });
+      await prisma.taskStatusHistory.create({
+        data: { taskId, status: 'CANCELLED', changedBy: 'admin (refund)' },
+      });
+      result.newStatus = 'CANCELLED';
+      result.refunded = true;
+      break;
+    }
+    case 'release_tasker': {
+      if (task.taskerId) {
+        // Release the tasker from this task
+        await prisma.task.update({
+          where: { id: taskId },
+          data: { taskerId: null, status: 'SEARCHING' },
+        });
+        await prisma.taskStatusHistory.create({
+          data: { taskId, status: 'SEARCHING', changedBy: 'admin (release)' },
+        });
+        result.newStatus = 'SEARCHING';
+      }
+      break;
+    }
+    case 'none':
+    default:
+      result.newStatus = task.status;
+      break;
+  }
+
+  await createAuditLog({
+    adminId, action: 'resolve_dispute', entityType: 'task', entityId: taskId,
+    changes: { resolution, action, previousStatus: task.status, newStatus: result.newStatus }, ipAddress,
+  });
+
+  return result;
+}
+
+// ─── Payouts ────────────────────────────────────────────
+
+export async function approvePayout(walletId: string, amount: number, adminId: string, ipAddress?: string) {
+  const wallet = await prisma.wallet.findUnique({
+    where: { id: walletId },
+    include: { tasker: { include: { user: { select: { firstName: true, lastName: true } } } } },
+  });
+  if (!wallet) throw new AppError('Wallet not found.', 404);
+  if (Number(wallet.availableBalance) < amount) {
+    throw new AppError('Insufficient available balance.', 400);
+  }
+
+  const updated = await prisma.wallet.update({
+    where: { id: walletId },
+    data: {
+      balance: { decrement: amount },
+      availableBalance: { decrement: amount },
+      totalWithdrawn: { increment: amount },
+    },
+  });
+
+  await prisma.walletTransaction.create({
+    data: {
+      walletId,
+      type: 'PAYOUT',
+      amount: -amount,
+      description: `Admin payout approved by ${adminId}`,
+    },
+  });
+
+  await createAuditLog({
+    adminId, action: 'approve_payout', entityType: 'wallet', entityId: walletId,
+    changes: { amount, taskerId: wallet.taskerId }, ipAddress,
+  });
+
+  return { balance: Number(updated.balance), amount, taskerId: wallet.taskerId };
+}
+
+export async function getWalletTransactions(walletId: string, params: { limit: number; offset: number }) {
+  const wallet = await prisma.wallet.findUnique({ where: { id: walletId } });
+  if (!wallet) throw new AppError('Wallet not found.', 404);
+
+  const [transactions, total] = await Promise.all([
+    prisma.walletTransaction.findMany({
+      where: { walletId },
+      orderBy: { createdAt: 'desc' },
+      take: params.limit,
+      skip: params.offset,
+    }),
+    prisma.walletTransaction.count({ where: { walletId } }),
+  ]);
+
+  return {
+    transactions: transactions.map((t) => ({
+      id: t.id,
+      type: t.type,
+      amount: Number(t.amount),
+      description: t.description,
+      referenceId: t.referenceId,
+      createdAt: t.createdAt,
+    })),
+    total,
+    wallet: {
+      id: wallet.id,
+      balance: Number(wallet.balance),
+      availableBalance: Number(wallet.availableBalance),
+      pendingBalance: Number(wallet.pendingBalance),
+    },
+  };
+}
+
 // ─── Notifications ──────────────────────────────────────
 
 export async function sendNotification(userId: string, title: string, message: string) {
@@ -525,6 +737,15 @@ export async function broadcastNotification(title: string, message: string, role
     data: users.map((u) => ({ userId: u.id, title, message, type: 'SYSTEM' as const })),
   });
   return { sentCount: users.length };
+}
+
+// ─── Targeted Notifications ─────────────────────────────
+
+export async function sendTargetedNotification(userIds: string[], title: string, message: string) {
+  const notifications = await prisma.notification.createMany({
+    data: userIds.map((userId) => ({ userId, title, message, type: 'SYSTEM' as const })),
+  });
+  return { sentCount: notifications.count };
 }
 
 // ─── Reports ────────────────────────────────────────────
