@@ -15,7 +15,10 @@ export async function loginAdmin(phoneNumber: string, password: string) {
   if (!user || !user.adminUser || user.deletedAt) {
     throw new AppError('Invalid credentials.', 401);
   }
-  const valid = await bcrypt.compare(password, user.otp || '');
+  if (!user.password) {
+    throw new AppError('Admin account has no password set. Contact a SUPER_ADMIN.', 401);
+  }
+  const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
     throw new AppError('Invalid credentials.', 401);
   }

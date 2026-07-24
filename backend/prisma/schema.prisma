@@ -175,6 +175,8 @@ model User {
   otpAttempts  Int       @default(0)
   refreshToken String?
   isOnboarded  Boolean   @default(false)
+  /// BCrypt hash — used for admin portal login. Null for non-admin users.
+  password     String?
 
   // ── Relations ───────────────────────────────────────
   taskerProfile     TaskerProfile?

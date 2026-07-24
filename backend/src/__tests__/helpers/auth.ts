@@ -6,13 +6,17 @@ export function generateTestToken(
     userId: string;
     phoneNumber: string;
     role: string;
+    adminRole?: string;
   }> = {},
 ): string {
-  const payload = {
+  const payload: Record<string, string> = {
     userId: overrides.userId || '00000000-0000-0000-0000-000000000000',
     phoneNumber: overrides.phoneNumber || '+251911000000',
     role: overrides.role || 'CUSTOMER',
   };
+  if (overrides.adminRole) {
+    payload.adminRole = overrides.adminRole;
+  }
   return jwt.sign(payload, envConfig.jwtSecret, { expiresIn: '1h' });
 }
 
