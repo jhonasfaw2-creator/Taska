@@ -1,48 +1,84 @@
 import { useCallback, useState } from 'react';
-import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { MapPlaceholder } from '@/components/MapPlaceholder';
 import { useTaskContext } from '@/store/TaskContext';
+import { searchAddresses, reverseGeocode } from '@/modules/location/services/geocoding.service';
+import { getCurrentPosition } from '@/modules/location/services/location.service';
+import LocationMap from '@/modules/location/components/LocationMap';
+import type { GeocodingSuggestion } from '@/modules/location/services/geocoding.service';
 
 interface LocationSectionProps {
   label: string;
+  type: 'pickup' | 'dropoff';
   address: string;
-  onAddressChange: (text: string) => void;
-  onUseCurrent: () => void;
-  onSelectSuggestion: (address: string) => void;
-  selected: boolean;
+  location: { latitude: number; longitude: number; address: string } | null;
+  onLocationSelect: (location: { latitude: number; longitude: number; address: string }) => void;
+  onClear: () => void;
 }
 
 function LocationSection({
   label,
+  type,
   address,
-  onAddressChange,
-  onUseCurrent,
-  onSelectSuggestion,
-  selected,
+  location,
+  onLocationSelect,
+  onClear,
 }: LocationSectionProps) {
   const [searchQuery, setSearchQuery] = useState(address);
-  const [isSearching, setIsSearching] = useState(false);
+  const [suggestions, setSuggestions] = useState<GeocodingSuggestion[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
 
-  const handleSearchChange = useCallback(
-    (text: string) => {
-      setSearchQuery(text);
-      onAddressChange(text);
-      setIsSearching(text.length > 0);
+  const handleSearch = useCallback(async (text: string) => {
+    setSearchQuery(text);
+    if (text.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      const results = await searchAddresses(text, 5);
+      setSuggestions(results);
+    } catch {
+      setSuggestions([]);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  const handleSelectSuggestion = useCallback(
+    async (suggestion: GeocodingSuggestion) => {
+      setSearchQuery(suggestion.displayName);
+      setSuggestions([]);
+      onLocationSelect({
+        latitude: suggestion.latitude,
+        longitude: suggestion.longitude,
+        address: suggestion.displayName,
+      });
     },
-    [onAddressChange],
+    [onLocationSelect],
   );
 
-  const mockSuggestions = [
-    'Bole, Addis Ababa, Ethiopia',
-    'Kazanchis, Addis Ababa, Ethiopia',
-    'Piazza, Addis Ababa, Ethiopia',
-    'Meskel Square, Addis Ababa, Ethiopia',
-    'CMC, Addis Ababa, Ethiopia',
-  ].filter((s) => s.toLowerCase().includes(searchQuery.toLowerCase()));
+  const handleUseCurrent = useCallback(async () => {
+    setSearchLoading(true);
+    try {
+      const position = await getCurrentPosition();
+      const result = await reverseGeocode(position.coords.latitude, position.coords.longitude);
+      const loc = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+        address: result.displayName,
+      };
+      setSearchQuery(result.displayName);
+      onLocationSelect(loc);
+    } catch (err) {
+      Alert.alert('Error', err instanceof Error ? err.message : 'Failed to get current location');
+    } finally {
+      setSearchLoading(false);
+    }
+  }, [onLocationSelect]);
 
   return (
     <View className="mb-xl">
@@ -61,7 +97,7 @@ function LocationSection({
           </Typography>
           <TextInput
             value={searchQuery}
-            onChangeText={handleSearchChange}
+            onChangeText={handleSearch}
             placeholder="Search for a location"
             placeholderTextColor="rgba(107, 114, 128, 0.5)"
             autoComplete="off"
@@ -70,14 +106,21 @@ function LocationSection({
             returnKeyType="search"
             className="flex-1 py-md text-body text-text-primary"
             accessibilityLabel={`Search ${label}`}
+            testID={`${type}-search-input`}
           />
+          {searchLoading && (
+            <View className="h-4 w-4 items-center justify-center">
+              <ActivityIndicator size="small" color="#4F46E5" />
+            </View>
+          )}
         </View>
       </View>
 
       <TouchableOpacity
         accessibilityRole="button"
         accessibilityLabel={`Use current location for ${label}`}
-        onPress={onUseCurrent}
+        onPress={handleUseCurrent}
+        testID={`${type}-current-location`}
         className="mt-md flex-row items-center justify-center gap-sm rounded-xl border border-primary bg-primary/5 px-md py-md active:opacity-80"
       >
         <Typography variant="body" weight="medium" className="text-primary">
@@ -88,34 +131,35 @@ function LocationSection({
         </Typography>
       </TouchableOpacity>
 
-      {isSearching && searchQuery.length > 0 && mockSuggestions.length > 0 && (
+      {suggestions.length > 0 && (
         <View className="mt-md overflow-hidden rounded-xl border border-border bg-surface">
-          {mockSuggestions.map((suggestion, index) => (
+          {suggestions.map((suggestion, index) => (
             <TouchableOpacity
-              key={index}
+              key={suggestion.placeId}
               accessibilityRole="button"
-              accessibilityLabel={`Select ${suggestion}`}
-              onPress={() => {
-                onSelectSuggestion(suggestion);
-                setSearchQuery(suggestion);
-                setIsSearching(false);
-              }}
+              accessibilityLabel={`Select ${suggestion.displayName}`}
+              onPress={() => handleSelectSuggestion(suggestion)}
+              testID={`${type}-suggestion-${index}`}
               className={`flex-row items-center gap-md px-md py-md active:bg-primary/5 ${
-                index === mockSuggestions.length - 1 ? '' : 'border-b border-border'
+                index === suggestions.length - 1 ? '' : 'border-b border-border'
               }`}
             >
-              <Typography variant="body" color="secondary">
-                📍
-              </Typography>
-              <Typography variant="body" className="flex-1 text-text-primary">
-                {suggestion}
-              </Typography>
+              <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Typography variant="caption" className="text-primary">
+                  📍
+                </Typography>
+              </View>
+              <View className="flex-1">
+                <Typography variant="body" className="text-text-primary" numberOfLines={1}>
+                  {suggestion.displayName}
+                </Typography>
+              </View>
             </TouchableOpacity>
           ))}
         </View>
       )}
 
-      {selected && (
+      {location && (
         <View className="mt-md rounded-xl border border-primary bg-primary/5 p-md">
           <View className="flex-row items-start gap-md">
             <Typography variant="body" className="mt-1 text-primary">
@@ -129,20 +173,38 @@ function LocationSection({
               >
                 {label}
               </Typography>
-              <Typography variant="body" className="mt-xs text-text-primary">
-                {address}
+              <Typography variant="body" className="mt-xs text-text-primary" numberOfLines={2}>
+                {location.address}
+              </Typography>
+              <Typography variant="caption" color="secondary">
+                {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
               </Typography>
             </View>
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel={`Clear ${label}`}
+              onPress={onClear}
+              testID={`${type}-clear-location`}
+              className="p-1 active:opacity-60"
+            >
+              <Typography variant="body" color="secondary">
+                ✕
+              </Typography>
+            </TouchableOpacity>
           </View>
         </View>
       )}
 
-      <View className="mt-md">
-        <MapPlaceholder
-          label={`${label} Map`}
-          subtitle="Tap to select location. Map integration coming soon."
-        />
-      </View>
+      {location && (
+        <View className="mt-md">
+          <LocationMap
+            userLocation={null}
+            pickupLocation={type === 'pickup' ? { latitude: location.latitude, longitude: location.longitude } : undefined}
+            dropoffLocation={type === 'dropoff' ? { latitude: location.latitude, longitude: location.longitude } : undefined}
+            style={{ minHeight: 200, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#E5E7EB' }}
+          />
+        </View>
+      )}
     </View>
   );
 }
@@ -152,59 +214,43 @@ export default function LocationScreen() {
   const insets = useSafeAreaInsets();
   const { state, setPickup, setDropoff } = useTaskContext();
 
-  const [pickupAddress, setPickupAddress] = useState(state.pickup?.address ?? '');
-  const [dropoffAddress, setDropoffAddress] = useState(state.dropoff?.address ?? '');
+  const [pickupLocation, setPickupLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(
+    state.pickup ? { latitude: state.pickup.latitude, longitude: state.pickup.longitude, address: state.pickup.address } : null,
+  );
+  const [dropoffLocation, setDropoffLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(
+    state.dropoff ? { latitude: state.dropoff.latitude, longitude: state.dropoff.longitude, address: state.dropoff.address } : null,
+  );
 
-  const pickupSelected = pickupAddress.trim().length > 0;
-  const dropoffSelected = dropoffAddress.trim().length > 0;
-  const isValid = pickupSelected && dropoffSelected;
+  const isValid = !!pickupLocation && !!dropoffLocation;
 
-  const handleUseCurrentPickup = useCallback(() => {
-    const addr = 'Current Location - Bole, Addis Ababa, Ethiopia';
-    setPickupAddress(addr);
-    setPickup({ address: addr, latitude: 9.03, longitude: 38.74 });
-  }, [setPickup]);
-
-  const handleUseCurrentDropoff = useCallback(() => {
-    const addr = 'Current Location - Bole, Addis Ababa, Ethiopia';
-    setDropoffAddress(addr);
-    setDropoff({ address: addr, latitude: 9.02, longitude: 38.75 });
-  }, [setDropoff]);
-
-  const handleSelectPickup = useCallback(
-    (address: string) => {
-      setPickupAddress(address);
-      setPickup({ address, latitude: 9.03, longitude: 38.74 });
+  const handlePickupSelect = useCallback(
+    (location: { latitude: number; longitude: number; address: string }) => {
+      setPickupLocation(location);
+      setPickup(location);
     },
     [setPickup],
   );
 
-  const handleSelectDropoff = useCallback(
-    (address: string) => {
-      setDropoffAddress(address);
-      setDropoff({ address, latitude: 9.02, longitude: 38.75 });
+  const handleDropoffSelect = useCallback(
+    (location: { latitude: number; longitude: number; address: string }) => {
+      setDropoffLocation(location);
+      setDropoff(location);
     },
     [setDropoff],
   );
 
-  const handlePickupChange = useCallback((text: string) => {
-    setPickupAddress(text);
+  const handlePickupClear = useCallback(() => {
+    setPickupLocation(null);
   }, []);
 
-  const handleDropoffChange = useCallback((text: string) => {
-    setDropoffAddress(text);
+  const handleDropoffClear = useCallback(() => {
+    setDropoffLocation(null);
   }, []);
 
   const handleContinue = useCallback(() => {
     if (!isValid) return;
-    if (pickupAddress && pickupAddress !== state.pickup?.address) {
-      setPickup({ address: pickupAddress, latitude: 9.03, longitude: 38.74 });
-    }
-    if (dropoffAddress && dropoffAddress !== state.dropoff?.address) {
-      setDropoff({ address: dropoffAddress, latitude: 9.02, longitude: 38.75 });
-    }
     router.push('/upload-photos');
-  }, [isValid, pickupAddress, dropoffAddress, state, setPickup, setDropoff, router]);
+  }, [isValid, router]);
 
   return (
     <View className="flex-1 bg-background">
@@ -225,20 +271,20 @@ export default function LocationScreen() {
         <View className="flex-1 px-screen-padding pt-xl">
           <LocationSection
             label="Pickup Location"
-            address={pickupAddress}
-            onAddressChange={handlePickupChange}
-            onUseCurrent={handleUseCurrentPickup}
-            onSelectSuggestion={handleSelectPickup}
-            selected={pickupSelected}
+            type="pickup"
+            address={pickupLocation?.address ?? ''}
+            location={pickupLocation}
+            onLocationSelect={handlePickupSelect}
+            onClear={handlePickupClear}
           />
 
           <LocationSection
             label="Drop-off Location"
-            address={dropoffAddress}
-            onAddressChange={handleDropoffChange}
-            onUseCurrent={handleUseCurrentDropoff}
-            onSelectSuggestion={handleSelectDropoff}
-            selected={dropoffSelected}
+            type="dropoff"
+            address={dropoffLocation?.address ?? ''}
+            location={dropoffLocation}
+            onLocationSelect={handleDropoffSelect}
+            onClear={handleDropoffClear}
           />
         </View>
       </ScrollView>
@@ -250,12 +296,14 @@ export default function LocationScreen() {
           shadow={isValid ? 'lg' : 'none'}
           disabled={!isValid}
           onPress={handleContinue}
+          testID="location-continue"
         />
         <Button
           label="Back"
           variant="outline"
           radius="lg"
           onPress={() => router.back()}
+          testID="location-back"
         />
       </View>
     </View>
