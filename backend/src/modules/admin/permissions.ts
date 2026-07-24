@@ -1,0 +1,110 @@
+export type Permission =
+  | 'dashboard:view'
+  | 'users:view'
+  | 'users:edit'
+  | 'users:suspend'
+  | 'users:delete'
+  | 'tasks:view'
+  | 'tasks:edit'
+  | 'tasks:cancel'
+  | 'tasks:reassign'
+  | 'taskers:view'
+  | 'taskers:verify'
+  | 'taskers:suspend'
+  | 'payments:view'
+  | 'payments:refund'
+  | 'payouts:approve'
+  | 'notifications:send'
+  | 'notifications:broadcast'
+  | 'support:view'
+  | 'support:resolve'
+  | 'reports:view'
+  | 'reports:export'
+  | 'audit:view'
+  | 'admins:manage'
+  | 'settings:view'
+  | 'settings:edit';
+
+const ROLE_PERMISSIONS: Record<string, Permission[]> = {
+  SUPER_ADMIN: [
+    'dashboard:view',
+    'users:view',
+    'users:edit',
+    'users:suspend',
+    'users:delete',
+    'tasks:view',
+    'tasks:edit',
+    'tasks:cancel',
+    'tasks:reassign',
+    'taskers:view',
+    'taskers:verify',
+    'taskers:suspend',
+    'payments:view',
+    'payments:refund',
+    'payouts:approve',
+    'notifications:send',
+    'notifications:broadcast',
+    'support:view',
+    'support:resolve',
+    'reports:view',
+    'reports:export',
+    'audit:view',
+    'admins:manage',
+    'settings:view',
+    'settings:edit',
+  ],
+  ADMIN: [
+    'dashboard:view',
+    'users:view',
+    'users:edit',
+    'users:suspend',
+    'tasks:view',
+    'tasks:edit',
+    'tasks:cancel',
+    'taskers:view',
+    'taskers:verify',
+    'taskers:suspend',
+    'payments:view',
+    'payments:refund',
+    'payouts:approve',
+    'notifications:send',
+    'notifications:broadcast',
+    'support:view',
+    'support:resolve',
+    'reports:view',
+    'reports:export',
+    'audit:view',
+    'settings:view',
+    'settings:edit',
+  ],
+  MODERATOR: [
+    'dashboard:view',
+    'users:view',
+    'tasks:view',
+    'tasks:edit',
+    'taskers:view',
+    'taskers:verify',
+    'payments:view',
+    'support:view',
+    'support:resolve',
+    'reports:view',
+  ],
+  SUPPORT: [
+    'dashboard:view',
+    'users:view',
+    'tasks:view',
+    'taskers:view',
+    'payments:view',
+    'support:view',
+    'support:resolve',
+    'reports:view',
+  ],
+};
+
+export function getPermissionsForRole(role: string): Permission[] {
+  return ROLE_PERMISSIONS[role] ?? [];
+}
+
+export function hasPermission(role: string, permission: Permission): boolean {
+  return getPermissionsForRole(role).includes(permission);
+}

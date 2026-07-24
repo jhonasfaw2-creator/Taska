@@ -37,6 +37,7 @@ export interface JwtPayload {
   userId: string;
   phoneNumber: string;
   role: string;
+  adminRole?: string;
 }
 
 export interface TokenPair {
