@@ -19,22 +19,16 @@ let manualDisconnect = false;
 // Flushed into the real socket once connection is established.
 let pendingListeners: Map<string, Set<EventListener>> = new Map();
 
-/**
- * Resolve the Socket.IO server URL using the same logic as the API's
- * base URL resolver, so both HTTP and WebSocket hit the same host.
- *
- * Priority:
- *   1) EXPO_PUBLIC_API_URL env var
- *   2) app.json extra.apiUrl
- *   3) Expo dev-server hostUri  →  http://{ip}:5000
- *   4) fallback  →  http://localhost:5000
- */
 function resolveSocketUrl(): string {
   const envUrl = process.env.EXPO_PUBLIC_API_URL as string | undefined;
-  if (envUrl) return envUrl;
+  if (envUrl) {
+    return envUrl.replace(/\/api\/v1\/?$/, '');
+  }
 
   const extra = Constants.expoConfig?.extra as Record<string, string> | undefined;
-  if (extra?.apiUrl) return extra.apiUrl;
+  if (extra?.apiUrl) {
+    return extra.apiUrl.replace(/\/api\/v1\/?$/, '');
+  }
 
   const hostUri = Constants.expoConfig?.hostUri;
   if (hostUri) {
@@ -65,7 +59,7 @@ function flushPendingListeners(): void {
  * Should be called once after the user authenticates (OTP verification).
  * Automatically reconnects on connection loss.
  */
-export function connectSocket(): Socket {
+export async function connectSocket(): Promise<Socket> {
   if (socket?.connected) {
     return socket;
   }
@@ -75,29 +69,23 @@ export function connectSocket(): Socket {
   const serverUrl = resolveSocketUrl();
   console.log('[Socket] Connecting to:', serverUrl);
 
+  const token = await getAccessToken();
+
   socket = io(serverUrl, {
     transports: ['websocket', 'polling'],
     autoConnect: true,
     reconnection: true,
     reconnectionAttempts: Infinity,
-    reconnectionDelay: 1_000,
-    reconnectionDelayMax: 10_000,
-    timeout: 15_000,
-    auth: async () => {
-      try {
-        const token = await getAccessToken();
-        return { token: token ?? undefined };
-      } catch {
-        return {};
-      }
-    },
+    reconnectionDelay: 2_000,
+    reconnectionDelayMax: 15_000,
+    timeout: 20_000,
+    auth: { token: token ?? '' },
   });
 
   // ── Connection lifecycle handlers ─────────────────────
 
   socket.on('connect', () => {
     console.log('[Socket] Connected:', socket?.id);
-    // Flush any listeners that were queued before the socket was ready
     flushPendingListeners();
     notifyStatus('connected');
   });

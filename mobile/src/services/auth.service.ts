@@ -13,6 +13,7 @@ import {
 
 const SECURE_KEYS = {
   ACCESS_TOKEN: 'taska_access_token',
+  REFRESH_TOKEN: 'taska_refresh_token',
 } as const;
 
 const STORAGE_KEYS = {
@@ -67,19 +68,19 @@ export async function verifyOTP(
     const response = await api.post<VerifyOtpResponse>('/auth/verify-otp', body);
     console.log('[verifyOTP] Response received:', JSON.stringify(response.data));
 
-    const { accessToken } = response.data;
+    const { accessToken, refreshToken } = response.data;
 
-    // Persist session — access token goes to SecureStore, phone to AsyncStorage
-    console.log('[verifyOTP] Persisting session to storage');
     await SecureStore.setItemAsync(SECURE_KEYS.ACCESS_TOKEN, accessToken);
+    if (refreshToken) {
+      await SecureStore.setItemAsync(SECURE_KEYS.REFRESH_TOKEN, refreshToken);
+    }
     const storage = await getStorage();
     await storage.setItem(STORAGE_KEYS.PHONE_NUMBER, phoneNumber);
     console.log('[verifyOTP] Session persisted successfully');
 
-    // Connect the WebSocket for real-time updates
     try {
       const { connectSocket } = await import('./socket.service');
-      connectSocket();
+      await connectSocket();
     } catch {
       // Socket connection is best-effort
     }
@@ -117,6 +118,34 @@ export async function getAccessToken(): Promise<string | null> {
 }
 
 /**
+ * Retrieve the stored refresh token.
+ */
+export async function getRefreshToken(): Promise<string | null> {
+  try {
+    return SecureStore.getItemAsync(SECURE_KEYS.REFRESH_TOKEN);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Refresh the access token using the stored refresh token.
+ */
+export async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const refreshToken = await getRefreshToken();
+    if (!refreshToken) return null;
+
+    const response = await api.post<{ accessToken: string }>('/auth/refresh-token', { refreshToken });
+    const newAccessToken = response.data.accessToken;
+    await SecureStore.setItemAsync(SECURE_KEYS.ACCESS_TOKEN, newAccessToken);
+    return newAccessToken;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Retrieve the stored phone number of the current session.
  */
 export async function getStoredPhoneNumber(): Promise<string | null> {
@@ -134,10 +163,10 @@ export async function getStoredPhoneNumber(): Promise<string | null> {
 export async function clearSession(): Promise<void> {
   try {
     await SecureStore.deleteItemAsync(SECURE_KEYS.ACCESS_TOKEN);
+    await SecureStore.deleteItemAsync(SECURE_KEYS.REFRESH_TOKEN);
     const storage = await getStorage();
     await storage.removeItem(STORAGE_KEYS.PHONE_NUMBER);
 
-    // Disconnect WebSocket
     try {
       const { disconnectSocket } = await import('./socket.service');
       disconnectSocket();
@@ -183,7 +212,7 @@ export async function updateProfile(data: {
 
 export function isProfileComplete(profile: UserProfile): boolean {
   return (
-    profile.firstName !== 'User' ||
+    profile.firstName !== 'User' &&
     profile.lastName !== ''
   );
 }
