@@ -237,6 +237,8 @@ export default function TaskerDashboardScreen() {
         'high',
       ).then((sub) => {
         subscriptionRef.current = sub;
+      }).catch(() => {
+        // Location permission not granted — updates not available
       });
     }
 
