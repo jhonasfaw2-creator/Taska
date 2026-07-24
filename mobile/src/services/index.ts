@@ -31,6 +31,26 @@ export {
   compressImage,
 } from './media.service';
 
+export {
+  createPayment,
+  confirmPayment,
+  cancelPayment,
+  getPayment,
+  getPaymentByTask,
+  listPayments,
+  refundPayment,
+  getPaymentAuditLogs,
+  listAllPayments,
+} from './payment.service';
+
+export {
+  getWallet,
+  getBalanceSummary,
+  getTransactions,
+  requestWithdrawal,
+  getWalletByTaskerId,
+} from './wallet.service';
+
 export type { MediaRecord, UploadProgress } from '../types/media';
 
 export type { SendOtpResponse, VerifyOtpResponse, UserSession, UserProfile } from '../types/auth';
