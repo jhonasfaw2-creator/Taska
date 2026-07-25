@@ -1,6 +1,6 @@
 # Taska — Admin Panel Architecture
 
-> **Last updated:** July 24, 2026
+> **Last updated:** July 25, 2026
 
 ---
 
@@ -130,8 +130,8 @@ globalErrorHandler    ← Returns JSON error response (error.middleware.ts)
 
 | Role | Description | Permissions Count |
 |---|---|---|
-| **SUPER_ADMIN** | Full system access, including admin user management | 26 |
-| **ADMIN** | All operations except admin user management and task reassignment | 23 |
+| **SUPER_ADMIN** | Full system access, including admin user management | 27 |
+| **ADMIN** | All operations except admin user management and task reassignment | 25 |
 | **MODERATOR** | View + tasker verification + dispute resolution | 10 |
 | **SUPPORT** | View-only + dispute resolution | 8 |
 
@@ -161,6 +161,8 @@ globalErrorHandler    ← Returns JSON error response (error.middleware.ts)
 | support:resolve | ✅ | ✅ | ✅ | ✅ |
 | reports:view | ✅ | ✅ | ✅ | ✅ |
 | reports:export | ✅ | ✅ | ❌ | ❌ |
+| analytics:view | ✅ | ✅ | ✅ | ✅ |
+| analytics:manage | ✅ | ✅ | ❌ | ❌ |
 | audit:view | ✅ | ✅ | ❌ | ❌ |
 | admins:manage | ✅ | ❌ | ❌ | ❌ |
 | settings:view | ✅ | ✅ | ❌ | ❌ |
@@ -233,7 +235,7 @@ All admin endpoints are prefixed with `/api/v1/admin`.
 | POST | `/admin/notifications/broadcast` | notifications:broadcast |
 | POST | `/admin/notifications/targeted` | notifications:send |
 
-### Reports & Analytics
+### Reports & Analytics (Admin Module)
 | Method | Path | Permission |
 |---|---|---|
 | GET | `/admin/reports/revenue` | reports:view |
@@ -242,6 +244,24 @@ All admin endpoints are prefixed with `/api/v1/admin`.
 | GET | `/admin/reports/payments` | reports:view |
 | GET | `/admin/reports/growth` | reports:view |
 | GET | `/admin/reports/export` | reports:export |
+
+### Analytics Module
+| Method | Path | Permission |
+|---|---|---|
+| GET | `/analytics/events` | analytics:view |
+| GET | `/analytics/events/:id` | analytics:view |
+| POST | `/analytics/events` | analytics:manage |
+| DELETE | `/analytics/events` | analytics:manage |
+| GET | `/analytics/summary` | analytics:view |
+| GET | `/analytics/users` | analytics:view |
+| GET | `/analytics/tasks` | analytics:view |
+| GET | `/analytics/revenue` | analytics:view |
+| GET | `/analytics/charts/user-growth` | analytics:view |
+| GET | `/analytics/charts/task-growth` | analytics:view |
+| GET | `/analytics/charts/revenue-trend` | analytics:view |
+| GET | `/analytics/charts/popular-categories` | analytics:view |
+
+All analytics endpoints are prefixed with `/api/v1/analytics` and require admin authentication.
 
 ### Audit & Admin Management
 | Method | Path | Permission |
@@ -327,9 +347,9 @@ Security-relevant events are automatically logged:
 
 | Format | Library | Implementation |
 |---|---|---|
-| **CSV** | Built-in | Manual string building with header row + data rows |
-| **XLSX** | `exceljs` | Styled workbook with summary section + data sheet |
-| **PDF** | `pdfkit` | Professional document with header, summary table, detail table, footer |
+| **CSV** | Built-in | Manual string building with header row + data rows; field values are escaped for commas, quotes, and newlines |
+| **XLSX** | `exceljs` | Styled workbook with summary section + data sheet; column widths and headers defined upfront |
+| **PDF** | `pdfkit` | Professional document with header, summary table, detail table, auto-generated footer |
 
 ### Export Flow
 
@@ -347,7 +367,7 @@ User clicks "Export" →
 
 ## 8. Testing
 
-### Test Coverage (81 tests)
+### Test Coverage (260 tests)
 
 | Category | Tests | What's Covered |
 |---|---|---|
@@ -369,11 +389,13 @@ User clicks "Export" →
 ### Running Tests
 
 ```bash
-# All admin API tests
-cd backend && npx jest --testPathPatterns='admin\\.test'
+# All tests
+cd backend && npm test
 
-# Middleware tests
-cd backend && npx jest --testPathPatterns='middleware\\.test'
+# Specific test suites
+cd backend && npx jest --testPathPattern='admin\.test'
+cd backend && npx jest --testPathPattern='analytics\.test'
+cd backend && npx jest --testPathPattern='middleware\.test'
 
 # TypeScript check
 cd backend && npm run build
