@@ -44,9 +44,19 @@ export function createApp(): express.Application {
     next();
   });
 
-  app.use((req: Request, _res: Response, next: NextFunction) => {
+  app.use((req: Request, res: Response, next: NextFunction) => {
     const requestId = (req as Request & { requestId?: string }).requestId ?? 'unknown';
+    const start = Date.now();
     logger.info({ requestId, method: req.method, url: req.url }, 'incoming request');
+
+    res.on('finish', () => {
+      const duration = Date.now() - start;
+      logger.info(
+        { requestId, method: req.method, url: req.url, statusCode: res.statusCode, duration },
+        'response sent',
+      );
+    });
+
     next();
   });
 

@@ -1,5 +1,6 @@
 import { prisma } from '../../prisma/client';
 import { AppError } from '../../common/types';
+import { logger } from '../../common/utils/logger';
 import { emitToTask } from '../../common/socket';
 
 // ─── Status Transition Map ─────────────────────────────
@@ -164,7 +165,7 @@ export async function updateTaskStatus(
     }
   } catch (err) {
     // Socket emission is best-effort; don't fail the request
-    console.error('[Socket] Failed to emit status change:', err);
+    logger.error(err as Error, 'Socket emit failed: status change');
   }
 
   return {

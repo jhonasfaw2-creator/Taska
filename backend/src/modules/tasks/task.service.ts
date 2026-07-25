@@ -1,5 +1,6 @@
 import { prisma } from '../../prisma/client';
 import { AppError } from '../../common/types';
+import { logger } from '../../common/utils/logger';
 import type { VehicleType } from '@prisma/client';
 import type { CreateTaskInput } from './task.validation';
 import { emitToUser } from '../../common/socket';
@@ -124,7 +125,7 @@ export async function createTask(customerId: string, input: CreateTaskInput): Pr
       title: task.title,
     });
   } catch (err) {
-    console.error('[Socket] Failed to emit task_created:', err);
+    logger.error(err as Error, 'Socket emit failed: task_created');
   }
 
   return mapTaskToResult(task);

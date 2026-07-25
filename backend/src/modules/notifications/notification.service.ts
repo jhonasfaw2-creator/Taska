@@ -1,5 +1,6 @@
 import { prisma } from '../../prisma/client';
 import { AppError } from '../../common/types';
+import { logger } from '../../common/utils/logger';
 import { emitToUser } from '../../common/socket';
 import type { NotificationType } from '@prisma/client';
 
@@ -109,7 +110,7 @@ export async function sendNotification(
       },
     });
   } catch (err) {
-    console.error('[Socket] Failed to emit notification:', err);
+    logger.error(err as Error, 'Socket emit failed: notification');
   }
 
   const devices = await prisma.userDevice.findMany({
@@ -137,9 +138,10 @@ export async function sendNotification(
     });
 
     if (!response.ok) {
-      console.error('[Push] Expo push API error:', response.status, await response.text());
+      const text = await response.text();
+      logger.error({ status: response.status, body: text }, 'Expo push API error');
     }
   } catch (err) {
-    console.error('[Push] Failed to send push notification:', err);
+    logger.error(err as Error, 'Failed to send push notification');
   }
 }

@@ -1,5 +1,6 @@
 import { prisma } from '../../prisma/client';
 import { AppError } from '../../common/types';
+import { logger } from '../../common/utils/logger';
 import { emitToTask } from '../../common/socket';
 import { haversineDistance, validateCoordinates } from '../../modules/location/location.service';
 
@@ -287,7 +288,7 @@ export async function acceptTask(taskerProfileId: string, taskId: string): Promi
       changedBy: taskerProfileId,
     });
   } catch (err) {
-    console.error('[Socket] Failed to emit task_accepted:', err);
+    logger.error(err as Error, 'Socket emitted failed: task_accepted');
   }
 
   return {
