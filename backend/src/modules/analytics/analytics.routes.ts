@@ -11,6 +11,7 @@ router.use(requireAuth, requireAdmin);
 router.get('/events', requirePermission('analytics:view'), ctrl.getEvents);
 router.get('/events/:id', requirePermission('analytics:view'), ctrl.getEventById);
 router.post('/events', requirePermission('analytics:view'), ctrl.trackEvent);
+router.get('/revenue', requirePermission('analytics:view'), ctrl.getRevenueAnalytics);
 router.get('/tasks', requirePermission('analytics:view'), ctrl.getTaskAnalytics);
 router.get('/users', requirePermission('analytics:view'), ctrl.getUserAnalytics);
 router.get('/summary', requirePermission('analytics:view'), ctrl.getSummary);

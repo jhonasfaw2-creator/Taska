@@ -40,6 +40,13 @@ export async function getSummary(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
+export async function getRevenueAnalytics(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await analyticsService.getRevenueAnalytics();
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
 export async function getTaskAnalytics(_req: Request, res: Response, next: NextFunction) {
   try {
     const data = await analyticsService.getTaskAnalytics();

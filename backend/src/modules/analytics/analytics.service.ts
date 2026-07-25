@@ -134,6 +134,58 @@ export async function getTaskAnalytics() {
   };
 }
 
+export async function getRevenueAnalytics() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const paidFilter = { paymentStatus: 'PAID' as const };
+
+  const [
+    revenueToday,
+    revenueThisWeek,
+    revenueThisMonth,
+    totalPlatformRevenue,
+    platformFees,
+    pendingPayouts,
+  ] = await Promise.all([
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { ...paidFilter, paidAt: { gte: startOfToday } },
+    }),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { ...paidFilter, paidAt: { gte: startOfWeek } },
+    }),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: { ...paidFilter, paidAt: { gte: startOfMonth } },
+    }),
+    prisma.payment.aggregate({
+      _sum: { amount: true },
+      where: paidFilter,
+    }),
+    prisma.payment.aggregate({
+      _sum: { platformFee: true },
+      where: paidFilter,
+    }),
+    prisma.wallet.aggregate({
+      _sum: { pendingBalance: true },
+    }),
+  ]);
+
+  return {
+    revenueToday: revenueToday._sum.amount ?? 0,
+    revenueThisWeek: revenueThisWeek._sum.amount ?? 0,
+    revenueThisMonth: revenueThisMonth._sum.amount ?? 0,
+    totalPlatformRevenue: totalPlatformRevenue._sum.amount ?? 0,
+    platformFeesCollected: platformFees._sum.platformFee ?? 0,
+    pendingPayouts: pendingPayouts._sum.pendingBalance ?? 0,
+  };
+}
+
 export async function getUserAnalytics() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
