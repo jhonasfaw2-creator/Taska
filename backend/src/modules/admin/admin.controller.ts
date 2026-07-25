@@ -219,9 +219,22 @@ export async function processRefund(req: Request, res: Response, next: NextFunct
     if (!['PAID', 'PARTIALLY_REFUNDED'].includes(payment.paymentStatus)) {
       return res.status(400).json({ error: 'Payment cannot be refunded.' });
     }
-    const refund = await prisma.paymentRefund.create({
-      data: { paymentId: req.params.id, amount: data.amount, reason: data.reason, reasonDetail: data.reasonDetail, processedById: req.user!.userId },
-    });
+    const totalRefunded = Number(payment.refundedAmount) + data.amount;
+    if (totalRefunded > Number(payment.amount)) {
+      return res.status(400).json({ error: 'Refund amount exceeds payment amount.' });
+    }
+    const [refund] = await prisma.$transaction([
+      prisma.paymentRefund.create({
+        data: { paymentId: req.params.id, amount: data.amount, reason: data.reason, reasonDetail: data.reasonDetail, processedById: req.user!.userId },
+      }),
+      prisma.payment.update({
+        where: { id: req.params.id },
+        data: {
+          refundedAmount: { increment: data.amount },
+          paymentStatus: totalRefunded >= Number(payment.amount) ? 'REFUNDED' : 'PARTIALLY_REFUNDED',
+        },
+      }),
+    ]);
     await createAuditLog({ adminId: req.user?.userId, action: 'process_refund', entityType: 'payment', entityId: req.params.id, ...getClientInfo(req) });
     res.json({ success: true, data: refund });
   } catch (err) { next(err); }
