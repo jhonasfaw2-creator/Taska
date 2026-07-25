@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
+import { ZodError } from 'zod';
 import { AppError, ApiResponse } from '../types';
 import { isProduction } from '../config/env';
 import { logger } from '../utils/logger';
+
+function buildErrorBody(error: string): ApiResponse {
+  return { success: false, error };
+}
 
 export const globalErrorHandler = (
   err: Error,
@@ -11,23 +16,26 @@ export const globalErrorHandler = (
   _next: NextFunction,
 ): void => {
   const requestId = req.requestId || 'unknown';
+  const context = { requestId, path: req.path, method: req.method };
 
   logger.error(
-    {
-      requestId,
-      err: err.message,
-      stack: isProduction ? undefined : err.stack,
-      statusCode: err instanceof AppError ? err.statusCode : 500,
-    },
+    { ...context, err: err.message, stack: isProduction ? undefined : err.stack },
     'Unhandled error',
   );
 
   if (err instanceof AppError) {
-    const body: ApiResponse = {
-      success: false,
-      error: err.message,
-    };
-    res.status(err.statusCode).json(body);
+    res.status(err.statusCode).json({ ...buildErrorBody(err.message), requestId });
+    return;
+  }
+
+  if (err instanceof ZodError) {
+    const details = err.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
+    res.status(400).json({ ...buildErrorBody(`Validation failed: ${details}`), requestId });
+    return;
+  }
+
+  if (err instanceof SyntaxError && 'body' in err) {
+    res.status(400).json({ ...buildErrorBody('Invalid JSON in request body.'), requestId });
     return;
   }
 
@@ -46,21 +54,18 @@ export const globalErrorHandler = (
       status = 400;
     }
 
-    const body: ApiResponse = { success: false, error: message };
-    res.status(status).json(body);
+    res.status(status).json({ ...buildErrorBody(message), requestId });
     return;
   }
 
   if (err instanceof Prisma.PrismaClientValidationError) {
-    const body: ApiResponse = { success: false, error: 'Invalid data provided to the database.' };
-    res.status(400).json(body);
+    res
+      .status(400)
+      .json({ ...buildErrorBody('Invalid data provided to the database.'), requestId });
     return;
   }
 
   const statusCode = 500;
-  const body: ApiResponse = {
-    success: false,
-    error: isProduction ? 'Internal server error' : err.message,
-  };
-  res.status(statusCode).json(body);
+  const errorMessage = isProduction ? 'Internal server error' : err.message;
+  res.status(statusCode).json({ ...buildErrorBody(errorMessage), requestId });
 };
