@@ -22,9 +22,9 @@ export default function AdminUsers() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await listAdminUsers({ limit, offset: (page - 1) * limit });
-      setAdminUsers(result.adminUsers);
-      setTotal(result.total);
+      const result = await listAdminUsers();
+      setAdminUsers(Array.isArray(result) ? result : result.adminUsers);
+      setTotal(result.total ?? (Array.isArray(result) ? result.length : 0));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   }, [page]);

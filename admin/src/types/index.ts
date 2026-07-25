@@ -57,7 +57,8 @@ export interface AuditLog {
 }
 
 export interface AdminUser {
-  id: string; userId: string; role: string;
-  user: { firstName: string | null; lastName: string | null; phoneNumber: string; email: string | null };
+  id: string; userId: string; role: string; lastLoginAt: string | null;
+  permissions: string[];
+  user: { firstName: string | null; lastName: string | null; phoneNumber: string; email: string | null; role?: string };
   _count?: { auditLogs: number };
 }

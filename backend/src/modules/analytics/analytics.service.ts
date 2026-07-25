@@ -108,31 +108,25 @@ export async function getUserAnalytics() {
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+  const activeWhere = { deletedAt: null };
+
   const [
+    totalUsers,
+    totalCustomers,
+    totalTaskers,
+    onlineTaskersCount,
     newUsersTodayCount,
     newUsersThisWeekCount,
     newUsersThisMonthCount,
-    roleCounts,
-    onlineTaskersCount,
   ] = await Promise.all([
-    prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
-    prisma.user.count({ where: { createdAt: { gte: startOfWeek } } }),
-    prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
-    prisma.user.groupBy({
-      by: ['role'],
-      _count: true,
-    }),
+    prisma.user.count({ where: activeWhere }),
+    prisma.user.count({ where: { ...activeWhere, role: 'CUSTOMER' } }),
+    prisma.user.count({ where: { ...activeWhere, role: 'TASKER' } }),
     prisma.taskerProfile.count({ where: { isOnline: true } }),
+    prisma.user.count({ where: { ...activeWhere, createdAt: { gte: startOfToday } } }),
+    prisma.user.count({ where: { ...activeWhere, createdAt: { gte: startOfWeek } } }),
+    prisma.user.count({ where: { ...activeWhere, createdAt: { gte: startOfMonth } } }),
   ]);
-
-  const totals: Record<string, number> = {};
-  for (const r of roleCounts) {
-    totals[r.role.toLowerCase()] = r._count;
-  }
-
-  const totalCustomers = totals['customer'] ?? 0;
-  const totalTaskers = totals['tasker'] ?? 0;
-  const totalUsers = totalCustomers + totalTaskers;
 
   return {
     totalUsers,
