@@ -10,6 +10,7 @@ export default function UserDetail() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phoneNumber: '' });
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [confirmAction, setConfirmAction] = useState<{
@@ -46,6 +47,7 @@ export default function UserDetail() {
   };
 
   const handleUpdate = async () => {
+    setSaving(true);
     try {
       const updated = await updateUser(id!, form);
       setUser((prev: any) => ({ ...prev, ...updated }));
@@ -53,7 +55,7 @@ export default function UserDetail() {
       showMessage('success', 'User updated successfully.');
     } catch (err: any) {
       showMessage('error', err.response?.data?.error || 'Update failed');
-    }
+    } finally { setSaving(false); }
   };
 
   const handleSuspend = async () => {
@@ -192,9 +194,14 @@ export default function UserDetail() {
   if (!user) return (
     <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
       <p className="text-red-600 font-medium">User not found</p>
-      <button onClick={() => navigate('/users')} className="mt-2 text-sm text-red-500 hover:underline">
-        Back to Users
-      </button>
+      <div className="mt-3 flex items-center justify-center gap-3">
+        <button onClick={() => { setLoading(true); loadUser(); }} className="text-sm text-red-500 hover:underline font-medium">
+          Retry
+        </button>
+        <button onClick={() => navigate('/users')} className="text-sm text-gray-500 hover:underline">
+          Back to Users
+        </button>
+      </div>
     </div>
   );
 
@@ -346,9 +353,17 @@ export default function UserDetail() {
             </div>
           </div>
           <div className="mt-4 flex gap-2">
-            <button onClick={handleUpdate}
-              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors">
-              Save Changes
+            <button onClick={handleUpdate} disabled={saving}
+              className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors">
+              {saving ? (
+                <span className="flex items-center gap-2">
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Saving...
+                </span>
+              ) : 'Save Changes'}
             </button>
             <button onClick={() => setEditing(false)}
               className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">

@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -23,6 +23,25 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function NotFound() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <div className="text-center">
+        <p className="text-6xl font-bold text-gray-200 mb-2">404</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Page not found</h2>
+        <p className="text-sm text-gray-500 mb-6">The page you are looking for does not exist or has been moved.</p>
+        <Link to="/dashboard"
+          className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 transition-colors">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          Go to Dashboard
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Routes>
@@ -44,6 +63,7 @@ export default function App() {
         <Route path="support" element={<Support />} />
         <Route path="audit-logs" element={<AuditLogs />} />
         <Route path="admins" element={<AdminUsers />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );

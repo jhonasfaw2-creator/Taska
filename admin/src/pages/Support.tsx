@@ -21,6 +21,7 @@ export default function Support() {
   const [disputeTasks, setDisputeTasks] = useState<any[]>([]);
   const [disputeTotal, setDisputeTotal] = useState(0);
   const [disputeLoading, setDisputeLoading] = useState(true);
+  const [disputeError, setDisputeError] = useState('');
 
   // Resolve modal state
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -38,12 +39,15 @@ export default function Support() {
 
   const loadDisputes = useCallback(async () => {
     setDisputeLoading(true);
+    setDisputeError('');
     try {
       // Find tasks that are in dispute-like statuses (not completed/cancelled, with tasker assigned)
       const result = await listTasks({ status: 'IN_PROGRESS', limit: 50, offset: 0 });
       setDisputeTasks(result.tasks || []);
       setDisputeTotal(result.total || 0);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      setDisputeError('Failed to load disputes. Check your network connection.');
+    }
     finally { setDisputeLoading(false); }
   }, []);
 
@@ -167,7 +171,12 @@ export default function Support() {
             </button>
           </div>
 
-          {disputeLoading ? (
+          {disputeError ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+              <p className="text-red-600 font-medium mb-2">{disputeError}</p>
+              <button onClick={loadDisputes} className="text-sm text-red-500 hover:underline font-medium">Retry</button>
+            </div>
+          ) : disputeLoading ? (
             <div className="flex items-center justify-center py-12 text-gray-400">
               <svg className="h-5 w-5 animate-spin mr-2 text-primary-500" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { listAdminUsers, createAdminUser, updateAdminUserRole, deleteAdminUser } from '../api/client';
+import ConfirmModal from '../components/ConfirmModal';
 import type { AdminUser } from '../types';
 
 const ROLE_COLORS: Record<string, string> = {
@@ -16,23 +17,30 @@ export default function AdminUsers() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ userId: '', role: 'MODERATOR' });
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmRole, setConfirmRole] = useState<{ id: string; role: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const page = parseInt(searchParams.get('page') || '1');
   const limit = 20;
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
-      const result = await listAdminUsers();
+      const result = await listAdminUsers({ limit, offset: (page - 1) * limit });
       setAdminUsers(Array.isArray(result) ? result : result.adminUsers);
       setTotal(result.total ?? (Array.isArray(result) ? result.length : 0));
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      setError('Failed to load admin users. Check your network connection.');
+    }
     finally { setLoading(false); }
   }, [page]);
 
   useEffect(() => { load(); }, [load]);
 
   const handleCreate = async () => {
-    if (!form.userId.trim()) return alert('User ID is required');
+    if (!form.userId.trim()) { setMessage('User ID is required'); return; }
     try {
       await createAdminUser({ userId: form.userId, role: form.role as AdminUser['role'] });
       setMessage('Admin user created');
@@ -42,22 +50,28 @@ export default function AdminUsers() {
     } catch (err: any) { setMessage(err.response?.data?.error || 'Failed to create'); }
   };
 
-  const handleUpdateRole = async (id: string, role: string) => {
-    if (!confirm(`Change role to ${role}?`)) return;
+  const handleConfirmRole = async () => {
+    if (!confirmRole) return;
+    setActionLoading(true);
     try {
-      await updateAdminUserRole(id, role);
+      await updateAdminUserRole(confirmRole.id, confirmRole.role);
       setMessage('Role updated');
+      setConfirmRole(null);
       load();
     } catch (err: any) { setMessage(err.response?.data?.error || 'Failed to update'); }
+    finally { setActionLoading(false); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this admin user? This cannot be undone.')) return;
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete) return;
+    setActionLoading(true);
     try {
-      await deleteAdminUser(id);
+      await deleteAdminUser(confirmDelete);
       setMessage('Admin user deleted');
+      setConfirmDelete(null);
       load();
     } catch (err: any) { setMessage(err.response?.data?.error || 'Failed to delete'); }
+    finally { setActionLoading(false); }
   };
 
   return (
@@ -69,7 +83,7 @@ export default function AdminUsers() {
         </button>
       </div>
 
-      {message && <div className={`mb-4 rounded-lg p-3 text-sm ${message.includes('Failed') ? 'bg-red-50 text-red-600' : 'bg-blue-50 text-blue-700'}`}>{message}</div>}
+      {message && <div className={`mb-4 rounded-lg p-3 text-sm flex items-center justify-between ${message.includes('Failed') || message === 'User ID is required' ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-blue-50 text-blue-700 border border-blue-200'}`}><span>{message}</span><button onClick={() => setMessage('')} className="text-current opacity-60 hover:opacity-100">&times;</button></div>}
 
       {showCreate && (
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6">
@@ -92,6 +106,12 @@ export default function AdminUsers() {
         </div>
       )}
 
+      {error && (
+        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-red-600 font-medium mb-2">{error}</p>
+          <button onClick={load} className="text-sm text-red-500 hover:underline font-medium">Retry</button>
+        </div>
+      )}
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-gray-50">
@@ -109,13 +129,13 @@ export default function AdminUsers() {
                   <td className="max-w-xs truncate px-4 py-3 text-xs text-gray-500">{Array.isArray(au.permissions) ? au.permissions.join(', ') : '—'}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1">
-                      <select value={au.role} onChange={(e) => handleUpdateRole(au.id, e.target.value)} className="rounded border px-1.5 py-1 text-xs">
+                      <select value={au.role} onChange={(e) => setConfirmRole({ id: au.id, role: e.target.value })} className="rounded border px-1.5 py-1 text-xs">
                         <option value="SUPER_ADMIN">Super Admin</option>
                         <option value="ADMIN">Admin</option>
                         <option value="MODERATOR">Moderator</option>
                         <option value="SUPPORT">Support</option>
                       </select>
-                      <button onClick={() => handleDelete(au.id)} className="text-red-600 hover:underline text-xs">Delete</button>
+                      <button onClick={() => setConfirmDelete(au.id)} className="text-red-600 hover:underline text-xs">Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -131,6 +151,18 @@ export default function AdminUsers() {
           {page < Math.ceil(total / limit) && <button onClick={() => setSearchParams(prev => { prev.set('page', String(page + 1)); return prev; })} className="rounded-lg border px-3 py-1.5 text-sm hover:bg-gray-50">Next</button>}
         </div>
       )}
+
+      <ConfirmModal open={confirmDelete !== null} title="Delete Admin User"
+        message="Delete this admin user? This cannot be undone."
+        confirmLabel="Delete" confirmColor="red" loading={actionLoading}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmDelete(null)} />
+
+      <ConfirmModal open={confirmRole !== null} title="Change Role"
+        message={`Change this admin's role to ${confirmRole?.role}?`}
+        confirmLabel="Change Role" confirmColor="blue" loading={actionLoading}
+        onConfirm={handleConfirmRole}
+        onCancel={() => setConfirmRole(null)} />
     </div>
   );
 }

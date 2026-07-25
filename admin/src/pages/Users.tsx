@@ -8,6 +8,7 @@ export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const search = searchParams.get('search') || '';
   const role = searchParams.get('role') || '';
   const status = searchParams.get('status') || '';
@@ -16,6 +17,7 @@ export default function Users() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const params: Record<string, any> = { search, role, status, limit, offset: (page - 1) * limit };
       // Only send non-empty params
@@ -23,7 +25,9 @@ export default function Users() {
       const result = await listUsers(params);
       setUsers(result.users);
       setTotal(result.total);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      setError('Failed to load users. Check your network connection.');
+    }
     finally { setLoading(false); }
   }, [search, role, status, page]);
 
@@ -75,6 +79,12 @@ export default function Users() {
         </div>
       </div>
 
+      {error ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-red-600 font-medium mb-2">{error}</p>
+          <button onClick={load} className="text-sm text-red-500 hover:underline font-medium">Retry</button>
+        </div>
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="border-b bg-gray-50">
@@ -171,6 +181,7 @@ export default function Users() {
           </tbody>
         </table>
       </div>
+      )}
 
       {totalPages > 1 && (
         <div className="mt-6 flex items-center justify-between">

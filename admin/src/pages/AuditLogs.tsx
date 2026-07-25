@@ -41,6 +41,7 @@ export default function AuditLogs() {
   const [logs, setLogs] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const action = searchParams.get('action') || '';
   const entityType = searchParams.get('entityType') || '';
   const page = parseInt(searchParams.get('page') || '1');
@@ -57,6 +58,7 @@ export default function AuditLogs() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       const params: Record<string, any> = { limit, offset: (page - 1) * limit };
       if (action) params.action = action;
@@ -64,7 +66,9 @@ export default function AuditLogs() {
       const result = await listAuditLogs(params);
       setLogs(result.logs);
       setTotal(result.total);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      setError('Failed to load audit logs. Check your network connection.');
+    }
     finally { setLoading(false); }
   }, [action, entityType, page]);
 
@@ -158,7 +162,12 @@ export default function AuditLogs() {
         </div>
       </div>
 
-      {loading ? (
+      {error ? (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <p className="text-red-600 font-medium mb-2">{error}</p>
+          <button onClick={load} className="text-sm text-red-500 hover:underline font-medium">Retry</button>
+        </div>
+      ) : loading ? (
         <div className="flex items-center justify-center py-12 text-gray-400">
           <svg className="h-5 w-5 animate-spin mr-2 text-primary-500" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />

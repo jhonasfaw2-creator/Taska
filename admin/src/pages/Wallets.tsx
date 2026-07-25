@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { listWallets, approvePayout, getWalletTransactions } from '../api/client';
-import ConfirmModal from '../components/ConfirmModal';
 
 export default function Wallets() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,6 +15,8 @@ export default function Wallets() {
   const [selectedWallet, setSelectedWallet] = useState<any>(null);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [payoutLoading, setPayoutLoading] = useState(false);
+  const [payoutError, setPayoutError] = useState('');
+  const [listError, setListError] = useState('');
 
   // Transaction modal state
   const [showTxModal, setShowTxModal] = useState(false);
@@ -26,11 +27,14 @@ export default function Wallets() {
 
   const load = useCallback(async () => {
     setLoading(true);
+    setListError('');
     try {
       const result = await listWallets({ limit, offset: (page - 1) * limit });
       setWallets(result.wallets);
       setTotal(result.total);
-    } catch (err) { console.error(err); }
+    } catch (err) {
+      setListError('Failed to load wallets. Check your network connection.');
+    }
     finally { setLoading(false); }
   }, [page]);
 
@@ -52,8 +56,13 @@ export default function Wallets() {
 
   const handlePayout = async () => {
     const amount = parseFloat(payoutAmount);
-    if (!amount || amount <= 0) return;
+    setPayoutError('');
+    if (!amount || amount <= 0) {
+      setPayoutError('Enter a valid payout amount');
+      return;
+    }
     if (amount > Number(selectedWallet.availableBalance)) {
+      setPayoutError(`Amount exceeds available balance (${Number(selectedWallet.availableBalance).toFixed(2)} ETB)`);
       return;
     }
     setPayoutLoading(true);
@@ -63,7 +72,9 @@ export default function Wallets() {
       setShowPayoutModal(false);
       setPayoutAmount('');
       setSelectedWallet(null);
-    } catch (err: any) { console.error(err); }
+    } catch (err: any) {
+      setPayoutError(err.response?.data?.error || 'Failed to approve payout');
+    }
     finally { setPayoutLoading(false); }
   };
 
@@ -75,6 +86,13 @@ export default function Wallets() {
         <h1 className="text-2xl font-bold text-gray-900">Tasker Wallets</h1>
         <p className="mt-1 text-sm text-gray-500">{total} wallets</p>
       </div>
+
+      {listError && (
+        <div className="mb-4 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-200 flex items-center justify-between">
+          <span>{listError}</span>
+          <button onClick={load} className="underline font-medium hover:text-red-800">Retry</button>
+        </div>
+      )}
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table className="w-full text-left text-sm">
@@ -166,18 +184,6 @@ export default function Wallets() {
         </div>
       )}
 
-      {/* Payout Modal */}
-      <ConfirmModal
-        open={showPayoutModal}
-        title="Approve Payout"
-        message={`Process payout of ETB ${payoutAmount || '0.00'} to ${selectedWallet?.tasker?.user?.firstName || 'this tasker'}?`}
-        confirmLabel="Approve Payout"
-        confirmColor="green"
-        loading={payoutLoading}
-        onConfirm={handlePayout}
-        onCancel={() => { setShowPayoutModal(false); setSelectedWallet(null); }}
-      />
-
       {/* Payout Form */}
       {showPayoutModal && selectedWallet && (
         <div className="fixed inset-0 z-40 flex items-center justify-center pointer-events-none">
@@ -186,7 +192,8 @@ export default function Wallets() {
             <p className="text-sm text-gray-500 mb-2">
               Available balance: <span className="font-medium text-green-600">{Number(selectedWallet.availableBalance).toFixed(2)} ETB</span>
             </p>
-            <input type="number" value={payoutAmount} onChange={(e) => setPayoutAmount(e.target.value)}
+            {payoutError && <p className="mb-2 text-sm text-red-600">{payoutError}</p>}
+            <input type="number" value={payoutAmount} onChange={(e) => { setPayoutAmount(e.target.value); setPayoutError(''); }}
               placeholder="Amount" max={Number(selectedWallet.availableBalance)}
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 mb-4" />
             <div className="flex justify-end gap-3">

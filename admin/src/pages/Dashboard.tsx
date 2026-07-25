@@ -24,7 +24,12 @@ function Section({ title, children, loading, error }: { title: string; children:
     <div className="rounded-xl border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-base font-semibold text-gray-900">{title}</h2>
       {loading ? (
-        <div className="flex items-center justify-center py-8"><p className="text-sm text-gray-400">Loading...</p></div>
+        <div className="flex items-center justify-center py-8">
+          <svg className="h-5 w-5 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        </div>
       ) : error ? (
         <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
       ) : children}
@@ -74,7 +79,17 @@ export default function Dashboard() {
   }, []);
 
   if (initialLoad && loading) {
-    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading dashboard...</p></div>;
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="flex items-center gap-3 text-gray-500">
+          <svg className="h-6 w-6 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span>Loading dashboard...</span>
+        </div>
+      </div>
+    );
   }
 
   return (
