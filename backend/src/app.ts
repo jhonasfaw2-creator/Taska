@@ -12,6 +12,7 @@ import { globalErrorHandler } from './common/middleware/error.middleware';
 import { requestIdMiddleware } from './common/middleware/requestId.middleware';
 import { globalRateLimit, authRateLimit } from './common/middleware/rateLimiter.middleware';
 import { securityErrorHandler } from './common/middleware/security.middleware';
+import { perfMiddleware } from './common/middleware/perf.middleware';
 import swaggerRouter from './docs/swagger';
 
 export function createApp(): express.Application {
@@ -28,6 +29,7 @@ export function createApp(): express.Application {
   );
   app.use(compression());
   app.use(requestIdMiddleware);
+  app.use(perfMiddleware);
 
   app.use('/api/', globalRateLimit);
   app.use('/api/v1/auth', authRateLimit);

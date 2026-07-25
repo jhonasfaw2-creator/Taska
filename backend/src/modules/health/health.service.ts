@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import { prisma } from '../../prisma/client';
 import { envConfig } from '../../common/config/env';
 import { logger } from '../../common/utils/logger';
+import { perf } from '../../common/utils/perf';
 
 export interface HealthStatus {
   status: string;
@@ -13,6 +14,11 @@ export interface HealthStatus {
   database: { status: string; latencyMs: number };
   prisma: { status: string; version: string };
   memory: { rss: number; heapTotal: number; heapUsed: number; external: number };
+  performance: {
+    totalRequests: number;
+    routes: { route: string; count: number; avgMs: number; maxMs: number }[];
+    windowSeconds: number;
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -38,6 +44,8 @@ export const getHealthStatus = async (): Promise<HealthStatus> => {
   const allHealthy = dbStatus === 'connected';
   const status = allHealthy ? 'ok' : 'degraded';
 
+  const metrics = perf.getMetrics();
+
   return {
     status,
     service: 'Taska API',
@@ -52,6 +60,16 @@ export const getHealthStatus = async (): Promise<HealthStatus> => {
       heapTotal: Math.round(memory.heapTotal / 1024 / 1024 * 100) / 100,
       heapUsed: Math.round(memory.heapUsed / 1024 / 1024 * 100) / 100,
       external: Math.round(memory.external / 1024 / 1024 * 100) / 100,
+    },
+    performance: {
+      totalRequests: metrics.totalRequests,
+      routes: metrics.routes.map((r) => ({
+        route: r.route,
+        count: r.count,
+        avgMs: r.avgMs,
+        maxMs: r.maxMs,
+      })),
+      windowSeconds: metrics.windowSeconds,
     },
   };
 };
