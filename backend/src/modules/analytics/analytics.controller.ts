@@ -40,6 +40,37 @@ export async function getSummary(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
+export async function getUserGrowth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const days = Number(req.query.days) || 30;
+    const data = await analyticsService.getUserGrowth(days);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function getTaskGrowth(req: Request, res: Response, next: NextFunction) {
+  try {
+    const days = Number(req.query.days) || 30;
+    const data = await analyticsService.getTaskGrowth(days);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function getRevenueTrend(req: Request, res: Response, next: NextFunction) {
+  try {
+    const days = Number(req.query.days) || 30;
+    const data = await analyticsService.getRevenueTrend(days);
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
+export async function getPopularCategories(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await analyticsService.getPopularCategories();
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
 export async function getRevenueAnalytics(_req: Request, res: Response, next: NextFunction) {
   try {
     const data = await analyticsService.getRevenueAnalytics();
