@@ -90,10 +90,6 @@ export const perf = {
     };
   },
 
-  getSlowRequests(): { method: string; path: string; duration: number; statusCode: number }[] {
-    return [];
-  },
-
   reset(): void {
     requestCount.clear();
     routeStats.clear();

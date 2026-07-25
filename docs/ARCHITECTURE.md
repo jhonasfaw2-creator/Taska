@@ -1,6 +1,6 @@
 # Taska — Admin Panel Architecture
 
-> **Last updated:** July 25, 2026
+> **Last updated:** July 26, 2026
 
 ---
 
@@ -61,13 +61,48 @@ admin/
 ├── tailwind.config.js
 └── postcss.config.js
 
-backend/src/modules/admin/
-├── admin.service.ts            # Business logic (all admin operations)
-├── admin.controller.ts         # HTTP request handlers
-├── admin.routes.ts             # Express router with RBAC middleware
-├── admin.validation.ts         # Zod validation schemas
-├── audit.service.ts            # Audit log service
-└── permissions.ts              # RBAC roles & permission mappings
+backend/src/
+├── common/
+│   ├── config/
+│   │   └── env.ts              # Environment config
+│   ├── errors/
+│   │   ├── index.ts            # Error exports
+│   │   └── AppError.ts         # Custom error class
+│   ├── middleware/
+│   │   ├── auth.middleware.ts   # JWT verification
+│   │   ├── admin.middleware.ts  # Admin role check
+│   │   ├── permission.middleware.ts  # RBAC check
+│   │   ├── requestId.middleware.ts   # Request ID assignment
+│   │   ├── perf.middleware.ts   # Performance monitoring
+│   │   ├── rateLimiter.middleware.ts # Rate limiting
+│   │   ├── security.middleware.ts    # Security audit logging
+│   │   ├── notFound.middleware.ts    # 404 handler
+│   │   └── error.middleware.ts       # Global error handler
+│   ├── types/
+│   │   └── index.ts            # Shared type definitions
+│   └── utils/
+│       ├── logger.ts           # Pino structured logger
+│       ├── asyncHandler.ts     # Async error wrapper
+│       └── perf.ts             # Performance tracker
+├── modules/
+│   ├── admin/                  # Admin panel backend
+│   │   ├── admin.service.ts
+│   │   ├── admin.controller.ts
+│   │   ├── admin.routes.ts
+│   │   ├── admin.validation.ts
+│   │   ├── audit.service.ts
+│   │   └── permissions.ts
+│   ├── health/                 # Health monitoring
+│   │   ├── health.service.ts
+│   │   ├── health.controller.ts
+│   │   └── health.routes.ts
+│   ├── analytics/
+│   ├── auth/
+│   ├── ...
+├── prisma/
+│   └── client.ts               # Prisma client (with query perf tracking)
+├── app.ts                      # Express app setup
+└── server.ts                   # HTTP server startup
 ```
 
 ---
@@ -89,37 +124,73 @@ POST /api/v1/admin/auth/login
 5. Failed login attempts are logged via `logFailedLogin()` to the security audit log
 6. JWT expiration is configured via `JWT_ACCESS_EXPIRES_IN` environment variable
 
-### Middleware Chain
+### Global Middleware Chain (all requests)
 
 ```
 Route Request
   │
   ▼
-requireAuth          ← JWT verification (auth.middleware.ts)
+helmet                    ← Security headers
   │
   ▼
-requireAdmin         ← Role check: must be ADMIN or SUPER_ADMIN (admin.middleware.ts)
+cors                      ← Cross-origin access control
   │
   ▼
-requirePermission()  ← Fine-grained RBAC check (permission.middleware.ts)
+compression               ← Response compression
   │
   ▼
-Controller           ← Request handler (admin.controller.ts)
+requestIdMiddleware       ← Assigns x-request-id (UUID / header forward)
   │
   ▼
-Service              ← Business logic (admin.service.ts)
+perfMiddleware            ← Tracks response time, request count, slow requests
+  │
+  ▼
+globalRateLimit / authRateLimit
+  │
+  ▼
+express.json / urlencoded  ← Body parsing (1 MB limit)
+  │
+  ▼
+body-check middleware      ← Ensures POST/PUT/PATCH have req.body
+  │
+  ▼
+request logging middleware ← Logs method / url / requestId → response status / duration
+  │
+  ▼
+static files (/uploads)
+  │
+  ▼
+Route handlers (/api/v1, /api/docs)
+  │
+  ▼
+notFoundHandler           ← 404 → AppError
+  │
+  ▼
+securityErrorHandler      ← Logs 401/403 to audit DB, passes through
+  │
+  ▼
+globalErrorHandler        ← Formats JSON error, hides stack in production
 ```
 
-### Error Handling Chain
+### Admin Route Middleware Chain
 
 ```
-Controller throws AppError
+Route handler
   │
   ▼
-securityErrorHandler  ← Logs 401/403 events to audit log (security.middleware.ts)
+requireAuth               ← JWT verification (auth.middleware.ts)
   │
   ▼
-globalErrorHandler    ← Returns JSON error response (error.middleware.ts)
+requireAdmin              ← Role check: ADMIN or SUPER_ADMIN (admin.middleware.ts)
+  │
+  ▼
+requirePermission()       ← Fine-grained RBAC (permission.middleware.ts)
+  │
+  ▼
+Controller                ← Request handler (admin.controller.ts)
+  │
+  ▼
+Service                   ← Business logic (admin.service.ts)
 ```
 
 ---
@@ -178,6 +249,7 @@ All admin endpoints are prefixed with `/api/v1/admin`.
 | Method | Path | Permission |
 |---|---|---|
 | POST | `/admin/auth/login` | None (public) |
+| GET | `/health` | None (public) — server, database, prisma, memory, performance |
 
 ### Dashboard
 | Method | Path | Permission |
@@ -365,7 +437,115 @@ User clicks "Export" →
 
 ---
 
-## 8. Testing
+## 8. Observability
+
+### 8.1 Structured Logging
+
+All server-side logging goes through a centralized **Pino** logger (`common/utils/logger.ts`).
+
+**Configuration:**
+
+| Environment | Level | Format |
+|---|---|---|
+| `development` | `debug` | Pretty-printed with colors (pino-pretty) |
+| `production` | `info` | JSON (structured) |
+| `test` | `silent` | No output |
+
+**Redacted fields** (never written to logs):
+- `req.headers.authorization` (Bearer tokens)
+- `req.headers.cookie`
+
+**Log output format (production):**
+```json
+{"level":30,"time":"2026-07-26T12:00:00.000Z","requestId":"uuid","method":"GET","url":"/api/v1/health","statusCode":200,"duration":12,"msg":"response sent"}
+```
+
+**Key logging points:**
+| Point | Level | Data |
+|---|---|---|
+| Incoming request | `info` | requestId, method, url |
+| Response sent | `info` | requestId, method, url, statusCode, duration |
+| Unhandled error | `error` | requestId, path, method, err.message, stack (dev only) |
+| Slow request (>500ms) | `warn` | method, path, duration, statusCode |
+| Slow database query (>1000ms) | `warn` | model, operation, duration |
+| Database unreachable | `error` | Error details |
+| Server startup | `info` | environment, port, database config status |
+| Graceful shutdown | `info` / `error` | Shutdown progress |
+
+### 8.2 Global Error Handler
+
+The `globalErrorHandler` (`common/middleware/error.middleware.ts`) is the last middleware in the chain. It catches all unhandled errors and returns consistent JSON.
+
+**Response format:**
+```json
+{ "success": false, "error": "Human-readable message", "requestId": "uuid" }
+```
+
+**Error type handling:**
+
+| Error Type | Status | Behavior |
+|---|---|---|
+| `AppError` (operational) | Custom (typically 400–409) | Uses `err.message` and `err.statusCode` |
+| `ZodError` (validation) | 400 | Lists all field errors: `"Validation failed: field: message; field2: message2"` |
+| `SyntaxError` (malformed JSON) | 400 | `"Invalid JSON in request body."` |
+| Prisma P2002 (unique constraint) | 409 | `"A record with that value already exists."` |
+| Prisma P2025 (not found) | 404 | `"Record not found."` |
+| Prisma P2003 (FK violation) | 400 | `"Referenced record does not exist."` |
+| Prisma validation error | 400 | `"Invalid data provided to the database."` |
+| Unknown error | 500 | Dev: real message; Production: `"Internal server error"` |
+
+Stack traces are logged in development but **never exposed to clients** in production.
+
+### 8.3 Health Monitoring
+
+**Endpoint:** `GET /api/v1/health` (public, no auth required)
+
+Returns HTTP **200** when all critical services are healthy, **503** when the database is unreachable.
+
+**Response structure:**
+```json
+{
+  "status": "ok",
+  "service": "Taska API",
+  "version": "1.0.0",
+  "timestamp": "2026-07-26T12:00:00.000Z",
+  "uptime": 84321,
+  "environment": "development",
+  "database": { "status": "connected", "latencyMs": 3 },
+  "prisma": { "status": "ready", "version": "5.22.0" },
+  "memory": { "rss": 89.42, "heapTotal": 67.31, "heapUsed": 52.18, "external": 4.72 },
+  "performance": {
+    "totalRequests": 1421,
+    "routes": [
+      { "route": "GET /api/v1/health", "count": 85, "avgMs": 2.5, "maxMs": 15 },
+      { "route": "GET /api/v1/auth/send-otp", "count": 320, "avgMs": 180, "maxMs": 1200 }
+    ],
+    "windowSeconds": 300
+  }
+}
+```
+
+### 8.4 Performance Monitoring
+
+The performance tracker (`common/utils/perf.ts`) records metrics in memory with a **5-minute rolling window**.
+
+**What is tracked:**
+
+| Metric | Source | Threshold |
+|---|---|---|
+| Request count | `perfMiddleware` — hooks `res.on('finish')` | — |
+| Response time (avg / max / min) | `perfMiddleware` | — |
+| Slow requests | `perfMiddleware` → `perf.recordRequest()` | >500ms |
+| Database query duration | Prisma `$extends` query middleware | — |
+| Slow database queries | `prisma/client.ts` → `perf.recordQuery()` | >1000ms |
+
+**Route tracking:** Metrics are keyed by Express route patterns (e.g., `GET /api/v1/users/:id`) rather than raw paths, so parameterized routes are correctly grouped.
+
+**Data exposure:** Performance data is exposed through the health endpoint (`GET /api/v1/health`) for live monitoring. The rolling window resets every 5 minutes to prevent unbounded memory growth.
+
+---
+
+## 9. Testing
 
 ### Test Coverage (260 tests)
 
