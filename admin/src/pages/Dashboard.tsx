@@ -1,15 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import {
   getDashboardStats, getUserAnalytics, getTaskAnalytics, getRevenueAnalytics,
   getAnalyticsUserGrowth, getAnalyticsTaskGrowth, getAnalyticsRevenueTrend,
-  getAnalyticsPopularCategories,
+  getAnalyticsPopularCategories, getErrorMessage,
 } from '../api/client';
 import type { DashboardStats, UserAnalytics, TaskAnalytics, RevenueAnalytics, GrowthPoint, CategoryCount } from '../types';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#f97316'];
 
-function StatCard({ title, value, subtitle, color }: { title: string; value: string; subtitle?: string; color?: string }) {
+const StatCard = memo(function StatCard({ title, value, subtitle, color }: { title: string; value: string; subtitle?: string; color?: string }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-5">
       <p className="text-sm text-gray-500">{title}</p>
@@ -17,9 +17,9 @@ function StatCard({ title, value, subtitle, color }: { title: string; value: str
       {subtitle && <p className="mt-1 text-xs text-gray-400">{subtitle}</p>}
     </div>
   );
-}
+});
 
-function Section({ title, children, loading, error }: { title: string; children: React.ReactNode; loading?: boolean; error?: string | null }) {
+const Section = memo(function Section({ title, children, loading, error }: { title: string; children: React.ReactNode; loading?: boolean; error?: string | null }) {
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-6">
       <h2 className="mb-4 text-base font-semibold text-gray-900">{title}</h2>
@@ -35,16 +35,16 @@ function Section({ title, children, loading, error }: { title: string; children:
       ) : children}
     </div>
   );
-}
+});
 
-function MiniStat({ label, value, color }: { label: string; value: string; color?: string }) {
+const MiniStat = memo(function MiniStat({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
     <div className="rounded-lg bg-gray-50 p-3">
       <p className="text-xs text-gray-500">{label}</p>
       <p className={`text-lg font-semibold ${color || 'text-gray-900'}`}>{value}</p>
     </div>
   );
-}
+});
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -64,14 +64,14 @@ export default function Dashboard() {
     setLoading(true);
     setErrors({});
 
-    const pAdmin = getDashboardStats().then(setStats).catch(() => setErrors((e) => ({ ...e, stats: 'Failed to load dashboard stats' })));
-    const pUserAna = getUserAnalytics().then(setUserAna).catch(() => setErrors((e) => ({ ...e, userAna: 'Failed to load user analytics' })));
-    const pTaskAna = getTaskAnalytics().then(setTaskAna).catch(() => setErrors((e) => ({ ...e, taskAna: 'Failed to load task analytics' })));
-    const pRevAna = getRevenueAnalytics().then(setRevAna).catch(() => setErrors((e) => ({ ...e, revAna: 'Failed to load revenue analytics' })));
-    const pUserG = getAnalyticsUserGrowth(30).then(setUserGrowth).catch(() => setErrors((e) => ({ ...e, userGrowth: 'Failed to load user growth chart' })));
-    const pTaskG = getAnalyticsTaskGrowth(30).then(setTaskGrowth).catch(() => setErrors((e) => ({ ...e, taskGrowth: 'Failed to load task growth chart' })));
-    const pRevT = getAnalyticsRevenueTrend(30).then(setRevenueTrend).catch(() => setErrors((e) => ({ ...e, revenueTrend: 'Failed to load revenue trend' })));
-    const pCat = getAnalyticsPopularCategories().then(setCategories).catch(() => setErrors((e) => ({ ...e, categories: 'Failed to load categories' })));
+    const pAdmin = getDashboardStats().then(setStats).catch((err) => setErrors((e) => ({ ...e, stats: getErrorMessage(err) || 'Failed to load dashboard stats' })));
+    const pUserAna = getUserAnalytics().then(setUserAna).catch((err) => setErrors((e) => ({ ...e, userAna: getErrorMessage(err) || 'Failed to load user analytics' })));
+    const pTaskAna = getTaskAnalytics().then(setTaskAna).catch((err) => setErrors((e) => ({ ...e, taskAna: getErrorMessage(err) || 'Failed to load task analytics' })));
+    const pRevAna = getRevenueAnalytics().then(setRevAna).catch((err) => setErrors((e) => ({ ...e, revAna: getErrorMessage(err) || 'Failed to load revenue analytics' })));
+    const pUserG = getAnalyticsUserGrowth(30).then(setUserGrowth).catch((err) => setErrors((e) => ({ ...e, userGrowth: getErrorMessage(err) || 'Failed to load user growth chart' })));
+    const pTaskG = getAnalyticsTaskGrowth(30).then(setTaskGrowth).catch((err) => setErrors((e) => ({ ...e, taskGrowth: getErrorMessage(err) || 'Failed to load task growth chart' })));
+    const pRevT = getAnalyticsRevenueTrend(30).then(setRevenueTrend).catch((err) => setErrors((e) => ({ ...e, revenueTrend: getErrorMessage(err) || 'Failed to load revenue trend' })));
+    const pCat = getAnalyticsPopularCategories().then(setCategories).catch((err) => setErrors((e) => ({ ...e, categories: getErrorMessage(err) || 'Failed to load categories' })));
 
     Promise.allSettled([pAdmin, pUserAna, pTaskAna, pRevAna, pUserG, pTaskG, pRevT, pCat])
       .then(() => setInitialLoad(false))

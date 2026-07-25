@@ -51,7 +51,7 @@ describe('MatchingService', () => {
         {
           ...mockTask,
           category: { name: 'Delivery' },
-          customer: { receivedReviews: [{ rating: 5 }, { rating: 4 }] },
+          customer: { ratingSummary: { averageRating: 4.5 } },
         },
       ]);
 
@@ -82,7 +82,7 @@ describe('MatchingService', () => {
           ...mockTask,
           vehicleType: 'MOTORCYCLE',
           category: { name: 'Delivery' },
-          customer: { receivedReviews: [] },
+          customer: { ratingSummary: null },
         },
       ]);
 

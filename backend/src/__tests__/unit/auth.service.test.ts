@@ -6,6 +6,7 @@ jest.mock('../../prisma/client', () => ({
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      upsert: jest.fn(),
     },
   },
 }));
@@ -55,24 +56,22 @@ beforeEach(() => {
 describe('AuthService', () => {
   describe('sendOtp', () => {
     it('creates a new user and returns OTP in dev mode', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
-      (prisma.user.create as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.user.upsert as jest.Mock).mockResolvedValue(mockUser);
 
       const result = await authService.sendOtp('+251911111111');
 
       expect(result.message).toContain('OTP sent');
       expect(result.otp).toBeDefined();
-      expect(prisma.user.create).toHaveBeenCalledTimes(1);
+      expect(prisma.user.upsert).toHaveBeenCalledTimes(1);
     });
 
     it('updates existing user and returns OTP', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
-      (prisma.user.update as jest.Mock).mockResolvedValue(mockUser);
+      (prisma.user.upsert as jest.Mock).mockResolvedValue(mockUser);
 
       const result = await authService.sendOtp('+251911111111');
 
       expect(result.message).toContain('OTP sent');
-      expect(prisma.user.update).toHaveBeenCalledTimes(1);
+      expect(prisma.user.upsert).toHaveBeenCalledTimes(1);
     });
   });
 

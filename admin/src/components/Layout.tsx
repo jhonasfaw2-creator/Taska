@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 
 const NAV_ITEMS = [
@@ -18,10 +18,10 @@ const NAV_ITEMS = [
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-  let user: Record<string, any> = {};
-  try {
-    user = JSON.parse(localStorage.getItem('admin_user') || '{}');
-  } catch { user = {}; }
+  const user = useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('admin_user') || '{}'); }
+    catch { return {}; }
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('admin_token');

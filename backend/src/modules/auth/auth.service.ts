@@ -21,18 +21,11 @@ export const sendOtp = async (phoneNumber: string) => {
   const otp = generateOtp();
   const otpExpiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
-  const existingUser = await prisma.user.findUnique({ where: { phoneNumber } });
-
-  if (existingUser) {
-    await prisma.user.update({
-      where: { phoneNumber },
-      data: { otp, otpExpiresAt, otpAttempts: 0 },
-    });
-  } else {
-    await prisma.user.create({
-      data: { phoneNumber, otp, otpExpiresAt },
-    });
-  }
+  await prisma.user.upsert({
+    where: { phoneNumber },
+    update: { otp, otpExpiresAt, otpAttempts: 0 },
+    create: { phoneNumber, otp, otpExpiresAt },
+  });
 
   const message = envConfig.nodeEnv === 'development' ? `OTP sent: ${otp}` : 'OTP sent';
 

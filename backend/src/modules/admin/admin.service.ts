@@ -297,13 +297,18 @@ export async function getUserDetails(userId: string) {
 }
 
 export async function updateUser(userId: string, data: any) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new AppError('User not found.', 404);
-  return prisma.user.update({ where: { id: userId }, data });
+  try {
+    return await prisma.user.update({ where: { id: userId }, data });
+  } catch {
+    throw new AppError('User not found.', 404);
+  }
 }
 
 export async function suspendUser(userId: string, adminId: string, ipAddress?: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, deletedAt: true },
+  });
   if (!user) throw new AppError('User not found.', 404);
   if (user.deletedAt) throw new AppError('User is already suspended.', 400);
   const updated = await prisma.user.update({
@@ -315,7 +320,10 @@ export async function suspendUser(userId: string, adminId: string, ipAddress?: s
 }
 
 export async function reactivateUser(userId: string, adminId: string, ipAddress?: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, deletedAt: true },
+  });
   if (!user) throw new AppError('User not found.', 404);
   if (!user.deletedAt) throw new AppError('User is not suspended.', 400);
   const updated = await prisma.user.update({
@@ -327,14 +335,16 @@ export async function reactivateUser(userId: string, adminId: string, ipAddress?
 }
 
 export async function deleteUser(userId: string, adminId: string, ipAddress?: string) {
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) throw new AppError('User not found.', 404);
-  const updated = await prisma.user.update({
-    where: { id: userId },
-    data: { deletedAt: new Date() },
-  });
-  await createAuditLog({ adminId, action: 'soft_delete_user', entityType: 'user', entityId: userId, ipAddress });
-  return updated;
+  try {
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { deletedAt: new Date() },
+    });
+    await createAuditLog({ adminId, action: 'soft_delete_user', entityType: 'user', entityId: userId, ipAddress });
+    return updated;
+  } catch {
+    throw new AppError('User not found.', 404);
+  }
 }
 
 // ─── Task Management ────────────────────────────────────

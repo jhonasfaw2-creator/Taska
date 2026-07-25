@@ -196,6 +196,7 @@ model User {
 
   @@index([role])
   @@index([deletedAt])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -246,6 +247,7 @@ model TaskerProfile {
   @@index([verificationStatus])
   @@index([isOnline])
   @@index([rating])
+  @@index([createdAt])
   @@map("tasker_profiles")
 }
 
@@ -335,6 +337,8 @@ model Task {
   @@index([customerId])
   @@index([taskerId])
   @@index([categoryId])
+  @@index([createdAt])
+  @@index([status, taskerId])
   /// B-tree index for basic location lookups. For production proximity
   /// search, add a GiST index via a raw SQL migration:
   ///   CREATE INDEX idx_tasks_pickup_location ON tasks USING GIST (
@@ -471,6 +475,9 @@ model Payment {
   @@index([providerPaymentId])
   @@index([paymentStatus])
   @@index([provider])
+  @@index([createdAt])
+  @@index([paidAt])
+  @@index([paymentStatus, createdAt])
   @@map("payments")
 }
 

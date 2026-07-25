@@ -82,8 +82,8 @@ export async function findMatchingTasks(options: MatchTaskOptions): Promise<Matc
     include: {
       customer: {
         select: {
-          receivedReviews: {
-            select: { rating: true },
+          ratingSummary: {
+            select: { averageRating: true },
           },
         },
       },
@@ -102,9 +102,9 @@ export async function findMatchingTasks(options: MatchTaskOptions): Promise<Matc
         Number(task.pickupLatitude),
         Number(task.pickupLongitude),
       );
-      const reviews = task.customer.receivedReviews;
-      const avgRating =
-        reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
+      const avgRating = task.customer.ratingSummary?.averageRating
+        ? Number(task.customer.ratingSummary.averageRating)
+        : null;
 
       return {
         id: task.id,

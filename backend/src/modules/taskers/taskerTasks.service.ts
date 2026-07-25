@@ -61,9 +61,9 @@ export async function getAvailableTasks(taskerProfileId: string): Promise<Availa
         include: {
           category: { select: { name: true } },
           customer: {
-            include: {
-              receivedReviews: {
-                select: { rating: true },
+            select: {
+              ratingSummary: {
+                select: { averageRating: true },
               },
             },
           },
@@ -74,9 +74,9 @@ export async function getAvailableTasks(taskerProfileId: string): Promise<Availa
   });
 
   return offers.map((offer) => {
-    const reviews = offer.task.customer.receivedReviews;
-    const avgRating =
-      reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
+    const avgRating = offer.task.customer.ratingSummary?.averageRating
+      ? Number(offer.task.customer.ratingSummary.averageRating)
+      : null;
 
     return {
       id: offer.task.id,
@@ -131,23 +131,14 @@ export async function getNearbyTasksForTasker(options: {
     include: {
       customer: {
         select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          phoneNumber: true,
-          receivedReviews: {
-            select: { rating: true },
+          ratingSummary: {
+            select: { averageRating: true },
           },
         },
       },
       category: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-        },
+        select: { name: true },
       },
-      images: true,
     },
     orderBy: { createdAt: 'asc' },
   });
@@ -160,9 +151,9 @@ export async function getNearbyTasksForTasker(options: {
         Number(task.pickupLatitude),
         Number(task.pickupLongitude),
       );
-      const reviews = task.customer.receivedReviews;
-      const avgRating =
-        reviews.length > 0 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : null;
+      const avgRating = task.customer.ratingSummary?.averageRating
+        ? Number(task.customer.ratingSummary.averageRating)
+        : null;
       return {
         id: task.id,
         title: task.title,

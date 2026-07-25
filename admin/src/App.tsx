@@ -1,21 +1,35 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import Layout from './components/Layout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
-import UserDetail from './pages/UserDetail';
-import Tasks from './pages/Tasks';
-import TaskDetail from './pages/TaskDetail';
-import Taskers from './pages/Taskers';
-import TaskerDetail from './pages/TaskerDetail';
-import Payments from './pages/Payments';
-import PaymentDetail from './pages/PaymentDetail';
-import Wallets from './pages/Wallets';
-import Notifications from './pages/Notifications';
-import Reports from './pages/Reports';
-import AuditLogs from './pages/AuditLogs';
-import AdminUsers from './pages/AdminUsers';
-import Support from './pages/Support';
+import NetworkBanner from './components/NetworkBanner';
+
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Users = lazy(() => import('./pages/Users'));
+const UserDetail = lazy(() => import('./pages/UserDetail'));
+const Tasks = lazy(() => import('./pages/Tasks'));
+const TaskDetail = lazy(() => import('./pages/TaskDetail'));
+const Taskers = lazy(() => import('./pages/Taskers'));
+const TaskerDetail = lazy(() => import('./pages/TaskerDetail'));
+const Payments = lazy(() => import('./pages/Payments'));
+const PaymentDetail = lazy(() => import('./pages/PaymentDetail'));
+const Wallets = lazy(() => import('./pages/Wallets'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Reports = lazy(() => import('./pages/Reports'));
+const AuditLogs = lazy(() => import('./pages/AuditLogs'));
+const AdminUsers = lazy(() => import('./pages/AdminUsers'));
+const Support = lazy(() => import('./pages/Support'));
+
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center py-24">
+      <svg className="h-6 w-6 animate-spin text-primary-500" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+      </svg>
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('admin_token');
@@ -44,27 +58,32 @@ function NotFound() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<Dashboard />} />
-        <Route path="users" element={<Users />} />
-        <Route path="users/:id" element={<UserDetail />} />
-        <Route path="tasks" element={<Tasks />} />
-        <Route path="tasks/:id" element={<TaskDetail />} />
-        <Route path="taskers" element={<Taskers />} />
-        <Route path="taskers/:id" element={<TaskerDetail />} />
-        <Route path="payments" element={<Payments />} />
-        <Route path="payments/:id" element={<PaymentDetail />} />
-        <Route path="wallets" element={<Wallets />} />
-        <Route path="notifications" element={<Notifications />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="support" element={<Support />} />
-        <Route path="audit-logs" element={<AuditLogs />} />
-        <Route path="admins" element={<AdminUsers />} />
-        <Route path="*" element={<NotFound />} />
-      </Route>
-    </Routes>
+    <>
+      <NetworkBanner />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="users" element={<Users />} />
+            <Route path="users/:id" element={<UserDetail />} />
+            <Route path="tasks" element={<Tasks />} />
+            <Route path="tasks/:id" element={<TaskDetail />} />
+            <Route path="taskers" element={<Taskers />} />
+            <Route path="taskers/:id" element={<TaskerDetail />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="payments/:id" element={<PaymentDetail />} />
+            <Route path="wallets" element={<Wallets />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="support" element={<Support />} />
+            <Route path="audit-logs" element={<AuditLogs />} />
+            <Route path="admins" element={<AdminUsers />} />
+            <Route path="*" element={<NotFound />} />
+          </Route>
+        </Routes>
+      </Suspense>
+    </>
   );
 }

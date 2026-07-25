@@ -113,9 +113,7 @@ export async function createTask(customerId: string, input: CreateTaskInput): Pr
             }
           : undefined,
     },
-    include: {
-      statusHistory: true,
-    },
+  
   });
 
   try {

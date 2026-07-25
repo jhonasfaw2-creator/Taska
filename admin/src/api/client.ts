@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+const MAX_RETRIES = 3;
+const RETRYABLE_STATUSES = new Set([408, 429, 502, 503, 504]);
+
 const api = axios.create({
   baseURL: '/api/v1',
   timeout: 15000,
@@ -13,15 +16,45 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
     if (err.response?.status === 401) {
       localStorage.removeItem('admin_token');
       localStorage.removeItem('admin_user');
       window.location.href = '/login';
+      return Promise.reject(err);
     }
-    return Promise.reject(err);
+
+    const config = err.config as any;
+    if (!config || config._retryCount >= MAX_RETRIES) {
+      return Promise.reject(err);
+    }
+
+    const isNetworkError = !err.response;
+    const isRetryableStatus = err.response && RETRYABLE_STATUSES.has(err.response.status);
+    if (!isNetworkError && !isRetryableStatus) {
+      return Promise.reject(err);
+    }
+
+    config._retryCount = (config._retryCount || 0) + 1;
+    const delay = Math.min(1000 * Math.pow(2, config._retryCount - 1), 8000);
+    await new Promise((resolve) => setTimeout(resolve, delay));
+    return api(config);
   },
 );
+
+export function getErrorMessage(err: unknown): string {
+  if (axios.isCancel(err)) return '';
+  if (axios.isAxiosError(err)) {
+    if (err.code === 'ECONNABORTED') return 'Request timed out. Please try again.';
+    if (!err.response) return 'Network error. Please check your connection.';
+    const data = err.response.data as any;
+    if (data?.error) return data.error;
+    if (data?.message) return data.message;
+    return `Server error (${err.response.status})`;
+  }
+  if (err instanceof Error) return err.message;
+  return 'An unexpected error occurred.';
+}
 
 export async function login(phoneNumber: string, password: string) {
   const res = await api.post('/admin/auth/login', { phoneNumber, password });
