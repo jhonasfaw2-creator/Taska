@@ -100,3 +100,47 @@ export async function getSummary(dateFrom?: string, dateTo?: string) {
     topUsers: topUsers.map((u) => ({ userId: u.userId, count: u._count })),
   };
 }
+
+export async function getUserAnalytics() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfToday);
+  startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [
+    newUsersTodayCount,
+    newUsersThisWeekCount,
+    newUsersThisMonthCount,
+    roleCounts,
+    onlineTaskersCount,
+  ] = await Promise.all([
+    prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
+    prisma.user.count({ where: { createdAt: { gte: startOfWeek } } }),
+    prisma.user.count({ where: { createdAt: { gte: startOfMonth } } }),
+    prisma.user.groupBy({
+      by: ['role'],
+      _count: true,
+    }),
+    prisma.taskerProfile.count({ where: { isOnline: true } }),
+  ]);
+
+  const totals: Record<string, number> = {};
+  for (const r of roleCounts) {
+    totals[r.role.toLowerCase()] = r._count;
+  }
+
+  const totalCustomers = totals['customer'] ?? 0;
+  const totalTaskers = totals['tasker'] ?? 0;
+  const totalUsers = totalCustomers + totalTaskers;
+
+  return {
+    totalUsers,
+    totalCustomers,
+    totalTaskers,
+    onlineTaskers: onlineTaskersCount,
+    newUsersToday: newUsersTodayCount,
+    newUsersThisWeek: newUsersThisWeekCount,
+    newUsersThisMonth: newUsersThisMonthCount,
+  };
+}

@@ -40,6 +40,13 @@ export async function getSummary(req: Request, res: Response, next: NextFunction
   } catch (err) { next(err); }
 }
 
+export async function getUserAnalytics(_req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await analyticsService.getUserAnalytics();
+    res.json({ success: true, data });
+  } catch (err) { next(err); }
+}
+
 export async function deleteEvents(req: Request, res: Response, next: NextFunction) {
   try {
     const { dateFrom, dateTo } = analyticsSummarySchema.parse(req.query);
