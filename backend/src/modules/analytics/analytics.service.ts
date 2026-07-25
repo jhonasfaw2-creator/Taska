@@ -101,6 +101,39 @@ export async function getSummary(dateFrom?: string, dateTo?: string) {
   };
 }
 
+export async function getTaskAnalytics() {
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  const [
+    totalTasks,
+    pendingTasks,
+    inProgressTasks,
+    completedTasks,
+    cancelledTasks,
+    tasksCreatedToday,
+    tasksCompletedToday,
+  ] = await Promise.all([
+    prisma.task.count(),
+    prisma.task.count({ where: { status: 'PENDING' } }),
+    prisma.task.count({ where: { status: 'IN_PROGRESS' } }),
+    prisma.task.count({ where: { status: 'COMPLETED' } }),
+    prisma.task.count({ where: { status: 'CANCELLED' } }),
+    prisma.task.count({ where: { createdAt: { gte: startOfToday } } }),
+    prisma.task.count({ where: { completedAt: { gte: startOfToday } } }),
+  ]);
+
+  return {
+    totalTasks,
+    pendingTasks,
+    inProgressTasks,
+    completedTasks,
+    cancelledTasks,
+    tasksCreatedToday,
+    tasksCompletedToday,
+  };
+}
+
 export async function getUserAnalytics() {
   const now = new Date();
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
