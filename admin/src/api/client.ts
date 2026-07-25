@@ -258,4 +258,39 @@ export async function getGrowthReport(days = 30) {
   return res.data.data;
 }
 
+export async function getUserAnalytics() {
+  const res = await api.get('/analytics/users');
+  return res.data.data;
+}
+
+export async function getTaskAnalytics() {
+  const res = await api.get('/analytics/tasks');
+  return res.data.data;
+}
+
+export async function getRevenueAnalytics() {
+  const res = await api.get('/analytics/revenue');
+  return res.data.data;
+}
+
+export async function getAnalyticsUserGrowth(days = 30) {
+  const res = await api.get('/analytics/charts/user-growth', { params: { days } });
+  return res.data.data;
+}
+
+export async function getAnalyticsTaskGrowth(days = 30) {
+  const res = await api.get('/analytics/charts/task-growth', { params: { days } });
+  return res.data.data;
+}
+
+export async function getAnalyticsRevenueTrend(days = 30) {
+  const res = await api.get('/analytics/charts/revenue-trend', { params: { days } });
+  return res.data.data;
+}
+
+export async function getAnalyticsPopularCategories() {
+  const res = await api.get('/analytics/charts/popular-categories');
+  return res.data.data;
+}
+
 export default api;

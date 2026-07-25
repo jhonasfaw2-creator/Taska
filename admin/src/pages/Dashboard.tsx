@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
-import { getDashboardStats, getUserGrowth, getTaskGrowth, getRevenueGrowth, getCategoryDistribution } from '../api/client';
+import {
+  getDashboardStats, getUserAnalytics, getTaskAnalytics, getRevenueAnalytics,
+  getAnalyticsUserGrowth, getAnalyticsTaskGrowth, getAnalyticsRevenueTrend,
+  getAnalyticsPopularCategories,
+} from '../api/client';
 import type { DashboardStats } from '../types';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#f97316'];
@@ -15,72 +19,145 @@ function StatCard({ title, value, subtitle, color }: { title: string; value: str
   );
 }
 
+function Section({ title, children, loading, error }: { title: string; children: React.ReactNode; loading?: boolean; error?: string | null }) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-6">
+      <h2 className="mb-4 text-base font-semibold text-gray-900">{title}</h2>
+      {loading ? (
+        <div className="flex items-center justify-center py-8"><p className="text-sm text-gray-400">Loading...</p></div>
+      ) : error ? (
+        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
+      ) : children}
+    </div>
+  );
+}
+
+function MiniStat({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="rounded-lg bg-gray-50 p-3">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className={`text-lg font-semibold ${color || 'text-gray-900'}`}>{value}</p>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [userAna, setUserAna] = useState<any>(null);
+  const [taskAna, setTaskAna] = useState<any>(null);
+  const [revAna, setRevAna] = useState<any>(null);
   const [userGrowth, setUserGrowth] = useState<any[]>([]);
   const [taskGrowth, setTaskGrowth] = useState<any[]>([]);
-  const [revenueGrowth, setRevenueGrowth] = useState<any[]>([]);
+  const [revenueTrend, setRevenueTrend] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState<Record<string, string | null>>({});
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      getDashboardStats(), getUserGrowth(30), getTaskGrowth(30), getRevenueGrowth(30), getCategoryDistribution(),
-    ]).then(([s, ug, tg, rg, cat]) => {
-      setStats(s); setUserGrowth(ug); setTaskGrowth(tg); setRevenueGrowth(rg); setCategories(cat);
-    }).catch(console.error).finally(() => setLoading(false));
+    setLoading(true);
+    setErrors({});
+
+    const pAdmin = getDashboardStats().then(setStats).catch(() => setErrors((e) => ({ ...e, stats: 'Failed to load dashboard stats' })));
+    const pUserAna = getUserAnalytics().then(setUserAna).catch(() => setErrors((e) => ({ ...e, userAna: 'Failed to load user analytics' })));
+    const pTaskAna = getTaskAnalytics().then(setTaskAna).catch(() => setErrors((e) => ({ ...e, taskAna: 'Failed to load task analytics' })));
+    const pRevAna = getRevenueAnalytics().then(setRevAna).catch(() => setErrors((e) => ({ ...e, revAna: 'Failed to load revenue analytics' })));
+    const pUserG = getAnalyticsUserGrowth(30).then(setUserGrowth).catch(() => setErrors((e) => ({ ...e, userGrowth: 'Failed to load user growth chart' })));
+    const pTaskG = getAnalyticsTaskGrowth(30).then(setTaskGrowth).catch(() => setErrors((e) => ({ ...e, taskGrowth: 'Failed to load task growth chart' })));
+    const pRevT = getAnalyticsRevenueTrend(30).then(setRevenueTrend).catch(() => setErrors((e) => ({ ...e, revenueTrend: 'Failed to load revenue trend' })));
+    const pCat = getAnalyticsPopularCategories().then(setCategories).catch(() => setErrors((e) => ({ ...e, categories: 'Failed to load categories' })));
+
+    Promise.allSettled([pAdmin, pUserAna, pTaskAna, pRevAna, pUserG, pTaskG, pRevT, pCat])
+      .then(() => setInitialLoad(false))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading dashboard...</p></div>;
+  if (initialLoad && loading) {
+    return <div className="flex items-center justify-center h-64"><p className="text-gray-500">Loading dashboard...</p></div>;
+  }
 
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Dashboard</h1>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Total Users" value={String(stats?.totalUsers ?? 0)} subtitle={`${stats?.activeCustomers ?? 0} customers, ${stats?.activeTaskers ?? 0} taskers`} />
-        <StatCard title="Online Taskers" value={String(stats?.onlineTaskers ?? 0)} subtitle={`${stats?.pendingVerifications ?? 0} pending verifications`} color="text-green-600" />
-        <StatCard title="Revenue Today" value={`ETB ${Number(stats?.revenueToday ?? 0).toFixed(2)}`} subtitle={`This month: ETB ${Number(stats?.revenueThisMonth ?? 0).toFixed(2)}`} color="text-primary-600" />
-        <StatCard title="Tasks Today" value={String(stats?.tasksToday ?? 0)} subtitle={`${stats?.tasksInProgress ?? 0} in progress`} />
+        <StatCard title="Total Users" value={String(stats?.totalUsers ?? userAna?.totalUsers ?? 0)}
+          subtitle={`${userAna?.totalCustomers ?? stats?.activeCustomers ?? 0} customers, ${userAna?.totalTaskers ?? stats?.activeTaskers ?? 0} taskers`} />
+        <StatCard title="Online Taskers" value={String(stats?.onlineTaskers ?? userAna?.onlineTaskers ?? 0)}
+          subtitle={`${stats?.pendingVerifications ?? 0} pending verifications`} color="text-green-600" />
+        <StatCard title="Revenue Today" value={`ETB ${Number(revAna?.revenueToday ?? stats?.revenueToday ?? 0).toFixed(2)}`}
+          subtitle={`This month: ETB ${Number(revAna?.revenueThisMonth ?? stats?.revenueThisMonth ?? 0).toFixed(2)}`} color="text-primary-600" />
+        <StatCard title="Tasks Today" value={String(taskAna?.tasksCreatedToday ?? stats?.tasksToday ?? 0)}
+          subtitle={`${taskAna?.inProgressTasks ?? stats?.tasksInProgress ?? 0} in progress`} />
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard title="Completed Tasks" value={String(stats?.completedTasks ?? 0)} />
-        <StatCard title="Cancelled Tasks" value={String(stats?.cancelledTasks ?? 0)} color="text-red-600" />
+        <StatCard title="Completed Tasks" value={String(taskAna?.completedTasks ?? stats?.completedTasks ?? 0)} />
+        <StatCard title="Cancelled Tasks" value={String(taskAna?.cancelledTasks ?? stats?.cancelledTasks ?? 0)} color="text-red-600" />
         <StatCard title="Wallet Balances" value={`ETB ${Number(stats?.totalWalletBalance ?? 0).toFixed(2)}`} subtitle={`Available: ETB ${Number(stats?.totalAvailableBalance ?? 0).toFixed(2)}`} />
-        <StatCard title="Pending Payouts" value={`ETB ${Number(stats?.totalPendingBalance ?? 0).toFixed(2)}`} color="text-amber-600" />
+        <StatCard title="Pending Payouts" value={`ETB ${Number(revAna?.pendingPayouts ?? stats?.totalPendingBalance ?? 0).toFixed(2)}`} color="text-amber-600" />
+      </div>
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-3">
+        <Section title="User Summary" loading={loading && !userAna} error={errors.userAna}>
+          {userAna && (
+            <div className="space-y-3">
+              <MiniStat label="Total Users" value={String(userAna.totalUsers)} />
+              <MiniStat label="Customers" value={String(userAna.totalCustomers)} />
+              <MiniStat label="Taskers" value={String(userAna.totalTaskers)} />
+              <MiniStat label="New This Week" value={String(userAna.newUsersThisWeek)} color="text-green-600" />
+            </div>
+          )}
+        </Section>
+        <Section title="Task Summary" loading={loading && !taskAna} error={errors.taskAna}>
+          {taskAna && (
+            <div className="space-y-3">
+              <MiniStat label="Total Tasks" value={String(taskAna.totalTasks)} />
+              <MiniStat label="Pending" value={String(taskAna.pendingTasks)} color="text-amber-600" />
+              <MiniStat label="In Progress" value={String(taskAna.inProgressTasks)} color="text-blue-600" />
+              <MiniStat label="Completed Today" value={String(taskAna.tasksCompletedToday)} color="text-green-600" />
+            </div>
+          )}
+        </Section>
+        <Section title="Revenue Summary" loading={loading && !revAna} error={errors.revAna}>
+          {revAna && (
+            <div className="space-y-3">
+              <MiniStat label="Total Platform Revenue" value={`ETB ${Number(revAna.totalPlatformRevenue).toFixed(2)}`} />
+              <MiniStat label="Platform Fees" value={`ETB ${Number(revAna.platformFeesCollected).toFixed(2)}`} />
+              <MiniStat label="This Week" value={`ETB ${Number(revAna.revenueThisWeek).toFixed(2)}`} color="text-primary-600" />
+              <MiniStat label="Pending Payouts" value={`ETB ${Number(revAna.pendingPayouts).toFixed(2)}`} color="text-amber-600" />
+            </div>
+          )}
+        </Section>
       </div>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">User Growth (30 days)</h2>
+        <Section title="User Growth (30 days)" loading={loading && userGrowth.length === 0} error={errors.userGrowth}>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={userGrowth}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={2} dot={false} /></LineChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">Revenue Growth (30 days)</h2>
+        </Section>
+        <Section title="Revenue Trend (30 days)" loading={loading && revenueTrend.length === 0} error={errors.revenueTrend}>
           <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={revenueGrowth}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis /><Tooltip /><Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} /></BarChart>
+            <BarChart data={revenueTrend}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis /><Tooltip /><Bar dataKey="value" fill="#6366f1" radius={[4, 4, 0, 0]} /></BarChart>
           </ResponsiveContainer>
-        </div>
+        </Section>
       </div>
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">Task Growth (30 days)</h2>
+        <Section title="Task Growth (30 days)" loading={loading && taskGrowth.length === 0} error={errors.taskGrowth}>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={taskGrowth}><CartesianGrid strokeDasharray="3 3" /><XAxis dataKey="date" tick={{ fontSize: 10 }} /><YAxis /><Tooltip /><Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} /></LineChart>
           </ResponsiveContainer>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">Task Categories</h2>
+        </Section>
+        <Section title="Task Categories" loading={loading && categories.length === 0} error={errors.categories}>
           {categories.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
               <PieChart><Pie data={categories} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}><Pie dataKey="count">{categories.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie></Pie></PieChart>
             </ResponsiveContainer>
           ) : <p className="text-sm text-gray-400">No categories data</p>}
-        </div>
+        </Section>
       </div>
     </div>
   );
