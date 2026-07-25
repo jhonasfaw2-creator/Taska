@@ -7,10 +7,18 @@ import {
   targetedNotificationSchema,
   userSearchSchema, taskFilterSchema, taskerFilterSchema, paymentFilterSchema,
   updateUserSchema, refundInputSchema, resolveDisputeSchema, payoutSchema,
-  reportQuerySchema, paginationSchema,
+  reportQuerySchema, growthQuerySchema, paginationSchema,
 } from './admin.validation';
 import ExcelJS from 'exceljs';
 import PDFDocument from 'pdfkit';
+
+function escapeCSV(value: unknown): string {
+  const str = String(value ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
 
 function getClientInfo(req: Request) {
   return { ipAddress: req.ip, userAgent: req.headers['user-agent'] };
@@ -103,7 +111,7 @@ export async function reactivateUser(req: Request, res: Response, next: NextFunc
 export async function deleteUser(req: Request, res: Response, next: NextFunction) {
   try {
     await adminService.deleteUser(req.params.id, req.user!.userId, req.ip);
-    res.json({ success: true, message: 'User deleted.' });
+    res.json({ success: true, data: { message: 'User deleted.' } });
   } catch (err) { next(err); }
 }
 
@@ -298,21 +306,24 @@ export async function getRevenueReport(req: Request, res: Response, next: NextFu
 
 export async function getUsersReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const report = await adminService.getUsersReport(req.query.dateFrom as string, req.query.dateTo as string);
+    const { dateFrom, dateTo } = reportQuerySchema.parse(req.query);
+    const report = await adminService.getUsersReport(dateFrom, dateTo);
     res.json({ success: true, data: report });
   } catch (err) { next(err); }
 }
 
 export async function getTasksReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const report = await adminService.getTasksReport(req.query.dateFrom as string, req.query.dateTo as string);
+    const { dateFrom, dateTo } = reportQuerySchema.parse(req.query);
+    const report = await adminService.getTasksReport(dateFrom, dateTo);
     res.json({ success: true, data: report });
   } catch (err) { next(err); }
 }
 
 export async function getPaymentsReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const report = await adminService.getPaymentsReport(req.query.dateFrom as string, req.query.dateTo as string);
+    const { dateFrom, dateTo } = reportQuerySchema.parse(req.query);
+    const report = await adminService.getPaymentsReport(dateFrom, dateTo);
     res.json({ success: true, data: report });
   } catch (err) { next(err); }
 }
@@ -357,18 +368,18 @@ export async function exportReport(req: Request, res: Response, next: NextFuncti
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
       const fields = Object.keys(data).filter((k) => k !== 'data');
-      let csv = fields.join(',') + '\n';
-      csv += fields.map((f) => data[f] ?? '').join(',') + '\n\n';
-      if (data.data && Array.isArray(data.data)) {
-        const keys = Object.keys(data.data[0] || {});
-        csv += keys.join(',') + '\n';
+      let csv = fields.map(escapeCSV).join(',') + '\n';
+      csv += fields.map((f) => escapeCSV(data[f])).join(',') + '\n\n';
+      if (data.data && Array.isArray(data.data) && data.data.length > 0) {
+        const keys = Object.keys(data.data[0]);
+        csv += keys.map(escapeCSV).join(',') + '\n';
         for (const row of data.data) {
-          csv += keys.map((k) => row[k] ?? '').join(',') + '\n';
+          csv += keys.map((k) => escapeCSV(row[k])).join(',') + '\n';
         }
       } else if (data.byStatus) {
         csv += 'status,count\n';
         for (const [status, count] of Object.entries(data.byStatus)) {
-          csv += `${status},${count}\n`;
+          csv += `${escapeCSV(status)},${count}\n`;
         }
       }
       return res.send(csv);
@@ -391,16 +402,14 @@ export async function exportReport(req: Request, res: Response, next: NextFuncti
       // Data section
       if (data.data && Array.isArray(data.data) && data.data.length > 0) {
         const keys = Object.keys(data.data[0]);
-        const headerRow = sheet.addRow(keys.map((k) => k.charAt(0).toUpperCase() + k.slice(1)));
-        headerRow.font = { bold: true };
-        for (const row of data.data) {
-          sheet.addRow(keys.map((k) => row[k] ?? ''));
-        }
         sheet.columns = keys.map((k) => ({
           header: k.charAt(0).toUpperCase() + k.slice(1),
           key: k,
           width: 20,
         }));
+        for (const row of data.data) {
+          sheet.addRow(keys.map((k) => row[k] ?? ''));
+        }
       } else if (data.byStatus) {
         sheet.addRow(['Status', 'Count']);
         for (const [status, count] of Object.entries(data.byStatus)) {
@@ -493,7 +502,7 @@ export async function exportReport(req: Request, res: Response, next: NextFuncti
 
 export async function getGrowthReport(req: Request, res: Response, next: NextFunction) {
   try {
-    const days = Number(req.query.days) || 30;
+    const { days } = growthQuerySchema.parse(req.query);
     const [userGrowth, taskGrowth, revenueGrowth] = await Promise.all([
       adminService.getUserGrowth(days),
       adminService.getTaskGrowth(days),

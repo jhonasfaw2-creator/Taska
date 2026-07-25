@@ -152,20 +152,22 @@ export async function getTaskCategoryDistribution() {
 }
 
 function aggregateTimeSeries(
-  data: { createdAt: Date; [key: string]: any }[],
+  data: { createdAt: Date; [key: string]: unknown }[],
   days: number,
   valueField?: string,
 ) {
+  const map = new Map<string, number>();
+  for (const item of data) {
+    const dateStr = item.createdAt.toISOString().slice(0, 10);
+    const current = map.get(dateStr) ?? 0;
+    map.set(dateStr, current + (valueField ? Number(item[valueField] ?? 0) : 1));
+  }
   const points: { date: string; value: number }[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = d.toISOString().slice(0, 10);
-    const items = data.filter((item) => item.createdAt.toISOString().slice(0, 10) === dateStr);
-    const value = valueField
-      ? items.reduce((sum: number, item: any) => sum + Number(item[valueField] ?? 0), 0)
-      : items.length;
-    points.push({ date: dateStr, value });
+    points.push({ date: dateStr, value: map.get(dateStr) ?? 0 });
   }
   return points;
 }

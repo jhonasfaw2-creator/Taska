@@ -56,6 +56,30 @@ export interface AuditLog {
   admin?: { user: { firstName: string | null; lastName: string | null } } | null;
 }
 
+export interface UserAnalytics {
+  totalUsers: number; totalCustomers: number; totalTaskers: number;
+  onlineTaskers: number; newUsersToday: number; newUsersThisWeek: number; newUsersThisMonth: number;
+}
+
+export interface TaskAnalytics {
+  totalTasks: number; pendingTasks: number; inProgressTasks: number;
+  completedTasks: number; cancelledTasks: number;
+  tasksCreatedToday: number; tasksCompletedToday: number;
+}
+
+export interface RevenueAnalytics {
+  revenueToday: number; revenueThisWeek: number; revenueThisMonth: number;
+  totalPlatformRevenue: number; platformFeesCollected: number; pendingPayouts: number;
+}
+
+export interface GrowthPoint {
+  date: string; value: number;
+}
+
+export interface CategoryCount {
+  name: string; count: number;
+}
+
 export interface AdminUser {
   id: string; userId: string; role: string; lastLoginAt: string | null;
   permissions: string[];

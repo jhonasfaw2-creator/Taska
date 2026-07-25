@@ -5,7 +5,7 @@ import {
   getAnalyticsUserGrowth, getAnalyticsTaskGrowth, getAnalyticsRevenueTrend,
   getAnalyticsPopularCategories,
 } from '../api/client';
-import type { DashboardStats } from '../types';
+import type { DashboardStats, UserAnalytics, TaskAnalytics, RevenueAnalytics, GrowthPoint, CategoryCount } from '../types';
 
 const COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#f97316'];
 
@@ -43,13 +43,13 @@ function MiniStat({ label, value, color }: { label: string; value: string; color
 
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [userAna, setUserAna] = useState<any>(null);
-  const [taskAna, setTaskAna] = useState<any>(null);
-  const [revAna, setRevAna] = useState<any>(null);
-  const [userGrowth, setUserGrowth] = useState<any[]>([]);
-  const [taskGrowth, setTaskGrowth] = useState<any[]>([]);
-  const [revenueTrend, setRevenueTrend] = useState<any[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
+  const [userAna, setUserAna] = useState<UserAnalytics | null>(null);
+  const [taskAna, setTaskAna] = useState<TaskAnalytics | null>(null);
+  const [revAna, setRevAna] = useState<RevenueAnalytics | null>(null);
+  const [userGrowth, setUserGrowth] = useState<GrowthPoint[]>([]);
+  const [taskGrowth, setTaskGrowth] = useState<GrowthPoint[]>([]);
+  const [revenueTrend, setRevenueTrend] = useState<GrowthPoint[]>([]);
+  const [categories, setCategories] = useState<CategoryCount[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<Record<string, string | null>>({});
@@ -154,7 +154,7 @@ export default function Dashboard() {
         <Section title="Task Categories" loading={loading && categories.length === 0} error={errors.categories}>
           {categories.length > 0 ? (
             <ResponsiveContainer width="100%" height={250}>
-              <PieChart><Pie data={categories} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}><Pie dataKey="count">{categories.map((_: any, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie></Pie></PieChart>
+              <PieChart><Pie data={categories} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={80} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}><Pie dataKey="count">{categories.map((_, i: number) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}</Pie></Pie></PieChart>
             </ResponsiveContainer>
           ) : <p className="text-sm text-gray-400">No categories data</p>}
         </Section>

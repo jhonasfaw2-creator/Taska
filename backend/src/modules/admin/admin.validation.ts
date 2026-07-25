@@ -86,3 +86,7 @@ export const reportQuerySchema = z.object({
   dateTo: z.string().optional(),
   groupBy: z.enum(['day', 'week', 'month']).default('day'),
 });
+
+export const growthQuerySchema = z.object({
+  days: z.coerce.number().int().min(1).max(365).default(30),
+});

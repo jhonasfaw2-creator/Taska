@@ -25,7 +25,8 @@ export type Permission =
   | 'admins:manage'
   | 'settings:view'
   | 'settings:edit'
-  | 'analytics:view';
+  | 'analytics:view'
+  | 'analytics:manage';
 
 const ROLE_PERMISSIONS: Record<string, Permission[]> = {
   SUPER_ADMIN: [
@@ -56,6 +57,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'settings:view',
     'settings:edit',
     'analytics:view',
+    'analytics:manage',
   ],
   ADMIN: [
     'dashboard:view',
@@ -82,6 +84,7 @@ const ROLE_PERMISSIONS: Record<string, Permission[]> = {
     'settings:view',
     'settings:edit',
     'analytics:view',
+    'analytics:manage',
   ],
   MODERATOR: [
     'dashboard:view',
