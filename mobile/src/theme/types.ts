@@ -1,10 +1,17 @@
 import { TextStyle } from 'react-native';
 
+/**
+ * Taska Design System — Theme type definitions.
+ * Maps one-to-one with the tokens defined in design-tokens/src/.
+ */
 export interface ThemeColors {
   background: string;
   surface: string;
   primary: string;
   primaryVariant: string;
+  success: string;
+  warning: string;
+  error: string;
   textPrimary: string;
   textSecondary: string;
   border: string;

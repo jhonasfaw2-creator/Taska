@@ -95,16 +95,29 @@ export async function getProfile(userId: string): Promise<TaskerProfileResult> {
 }
 
 export async function updateStatus(params: StatusParams): Promise<TaskerProfileResult> {
-  try {
-    const updated = await prisma.taskerProfile.update({
-      where: { userId: params.userId },
+  const profile = await prisma.taskerProfile.findUnique({
+    where: { userId: params.userId },
+  });
+
+  if (!profile) {
+    const created = await prisma.taskerProfile.create({
       data: {
+        userId: params.userId,
         isOnline: params.isOnline,
         lastActiveAt: params.isOnline ? new Date() : undefined,
+        verificationStatus: 'PENDING',
       },
     });
-    return mapProfile(updated);
-  } catch {
-    throw new AppError('Tasker profile not found. Please apply first.', 404);
+    return mapProfile(created);
   }
+
+  const updated = await prisma.taskerProfile.update({
+    where: { userId: params.userId },
+    data: {
+      isOnline: params.isOnline,
+      lastActiveAt: params.isOnline ? new Date() : undefined,
+    },
+  });
+
+  return mapProfile(updated);
 }

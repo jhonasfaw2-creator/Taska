@@ -4,6 +4,9 @@ jest.mock('../../prisma/client', () => ({
       findUnique: jest.fn(),
       update: jest.fn(),
     },
+    taskerProfile: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
@@ -73,7 +76,11 @@ describe('UserService', () => {
   });
 
   describe('updateRole', () => {
-    it('updates role to TASKER', async () => {
+    it('updates role to TASKER when profile exists', async () => {
+      (prisma.taskerProfile.findUnique as jest.Mock).mockResolvedValue({
+        id: 'profile-1',
+        userId: 'user-1',
+      });
       (prisma.user.update as jest.Mock).mockResolvedValue({
         id: 'user-1',
         phoneNumber: '+251911111111',
@@ -86,6 +93,17 @@ describe('UserService', () => {
       );
 
       expect(result.role).toBe('TASKER');
+    });
+
+    it('throws when setting role to TASKER without a profile', async () => {
+      (prisma.taskerProfile.findUnique as jest.Mock).mockResolvedValue(null);
+
+      await expect(
+        userService.updateRole(
+          { userId: 'user-1', phoneNumber: '+251911111111', role: 'CUSTOMER' },
+          'TASKER',
+        ),
+      ).rejects.toThrow('apply to become a tasker');
     });
 
     it('throws on invalid role', async () => {

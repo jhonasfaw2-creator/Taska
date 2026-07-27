@@ -1,0 +1,28 @@
+{
+  "name": "@taska/design-tokens",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./css": {
+      "import": "./dist/css/tokens.css",
+      "types": "./dist/css/tokens.css"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build",
+    "generate:css": "tsx scripts/generate-css.ts"
+  },
+  "sideEffects": false

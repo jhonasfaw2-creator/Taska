@@ -62,6 +62,18 @@ export const updateRole = async (user: JwtPayload, role: string) => {
     throw new AppError('Invalid role. Must be CUSTOMER or TASKER.', 400);
   }
 
+  if (normalized === 'TASKER') {
+    const profile = await prisma.taskerProfile.findUnique({
+      where: { userId: user.userId },
+    });
+    if (!profile) {
+      throw new AppError(
+        'Tasker profile not found. Please apply to become a tasker first.',
+        400,
+      );
+    }
+  }
+
   const updated = await prisma.user.update({
     where: { id: user.userId },
     data: { role: normalized as 'CUSTOMER' | 'TASKER' },

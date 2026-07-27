@@ -16,38 +16,83 @@ const MAP_HTML = `
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     html, body, #map { margin: 0; padding: 0; height: 100%; width: 100%; }
+    .leaflet-tile-pane { filter: saturate(1.1) contrast(1.05); }
   </style>
 </head>
 <body>
   <div id="map"></div>
   <script>
-    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([9.02, 38.75], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+    var map = L.map('map', {
+      zoomControl: true,
+      attributionControl: true,
+      center: [9.02, 38.75],
+      zoom: 13,
+      minZoom: 5,
+      maxZoom: 19,
+    });
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    L.control.attribution({ position: 'bottomright', prefix: false }).addTo(map);
+
+    var osmTiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      subdomains: 'abc',
+    });
+
+    var esriTiles = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.arcgis.com/">Esri</a>',
+    });
+
+    var osmHotTiles = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://hot.osm.be/">Humanitarian OpenStreetMap Team</a>',
+      subdomains: 'abc',
+    });
+
+    var baseLayers = {
+      'OpenStreetMap': osmTiles,
+      'Satellite (Esri)': esriTiles,
+      'Humanitarian OSM': osmHotTiles,
+    };
+
+    L.control.layers(baseLayers, null, { position: 'topright' }).addTo(map);
+
+    osmTiles.addTo(map);
+
     var markers = {};
     var icons = {
-      user: L.divIcon({ className: 'custom-marker', html: '<div style="background:#4F46E5;border:3px solid #fff;border-radius:50%;width:18px;height:18px;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
-      pickup: L.divIcon({ className: 'custom-marker', html: '<div style="background:#16A34A;border:3px solid #fff;border-radius:50%;width:18px;height:18px;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
-      dropoff: L.divIcon({ className: 'custom-marker', html: '<div style="background:#DC2626;border:3px solid #fff;border-radius:50%;width:18px;height:18px;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>', iconSize: [18, 18], iconAnchor: [9, 9] }),
+      user: L.divIcon({ className: 'custom-marker', html: '<div style="background:#4F46E5;border:3px solid #fff;border-radius:50%;width:20px;height:20px;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>', iconSize: [20, 20], iconAnchor: [10, 10] }),
+      pickup: L.divIcon({ className: 'custom-marker', html: '<div style="background:#16A34A;border:3px solid #fff;border-radius:50%;width:22px;height:22px;box-shadow:0 2px 8px rgba(0,0,0,0.4);"><span style="color:#fff;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">P</span></div>', iconSize: [22, 22], iconAnchor: [11, 11] }),
+      dropoff: L.divIcon({ className: 'custom-marker', html: '<div style="background:#DC2626;border:3px solid #fff;border-radius:50%;width:22px;height:22px;box-shadow:0 2px 8px rgba(0,0,0,0.4);"><span style="color:#fff;font-size:12px;font-weight:bold;display:flex;align-items:center;justify-content:center;width:100%;height:100%;">D</span></div>', iconSize: [22, 22], iconAnchor: [11, 11] }),
     };
+
     function updateMarker(id, lat, lng, type) {
       if (markers[id]) { map.removeLayer(markers[id]); }
-      if (!lat || !lng) return;
+      if (lat == null || lng == null) return;
       markers[id] = L.marker([lat, lng], { icon: icons[type] || icons.user }).addTo(map);
     }
+
     map.on('click', function(e) {
       if (window.selectable) {
         window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'mapClick', lat: e.latlng.lat, lng: e.latlng.lng }));
       }
     });
+
     function fitBounds() {
       var bounds = L.latLngBounds();
-      Object.keys(markers).forEach(function(k) { bounds.extend(markers[k].getLatLng()); });
-      if (bounds.isValid()) { map.fitBounds(bounds.pad(0.2), { maxZoom: 16 }); }
+      var hasMarkers = false;
+      Object.keys(markers).forEach(function(k) {
+        if (markers[k]) { bounds.extend(markers[k].getLatLng()); hasMarkers = true; }
+      });
+      if (hasMarkers && bounds.isValid()) { map.fitBounds(bounds.pad(0.25), { maxZoom: 16, animate: true }); }
     }
+
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'ready' }));
   </script>
 </body>
