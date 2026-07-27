@@ -1,9 +1,5 @@
 import { TextStyle } from 'react-native';
 
-/**
- * Taska Design System — Theme type definitions.
- * Maps one-to-one with the tokens defined in design-tokens/src/.
- */
 export interface ThemeColors {
   background: string;
   surface: string;
@@ -31,10 +27,12 @@ export interface ThemeSpacing {
 export interface ThemeTypography {
   fontSize: {
     display: number;
-    h1: number;
-    h2: number;
+    headline: number;
+    title: number;
+    subtitle: number;
     body: number;
     caption: number;
+    button: number;
   };
   fontWeight: {
     regular: TextStyle['fontWeight'];
@@ -51,11 +49,13 @@ export interface ThemeTypography {
 
 export interface ThemeShapes {
   borderRadius: {
+    xs: number;
     sm: number;
     md: number;
     lg: number;
-    full: number;
+    xl: number;
   };
+  full: number;
 }
 
 export interface Theme {

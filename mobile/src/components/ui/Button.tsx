@@ -95,7 +95,14 @@ export const Button: React.FC<ButtonProps> = ({
       ) : (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           {leftIcon && <View style={{ marginRight: 8 }}>{leftIcon}</View>}
-          <Text style={{ color: getTextColor(), fontWeight: '600', fontSize: 16 }}>
+          <Text
+            style={{
+              color: getTextColor(),
+              fontWeight: '600',
+              fontSize: 16,
+              fontFamily: 'Inter',
+            }}
+          >
             {label}
           </Text>
         </View>

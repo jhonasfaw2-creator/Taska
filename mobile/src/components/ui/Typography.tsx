@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, TextProps } from 'react-native';
 
-type TypographyVariant = 'display' | 'h1' | 'h2' | 'body' | 'caption';
+type TypographyVariant = 'display' | 'headline' | 'title' | 'subtitle' | 'body' | 'caption' | 'button';
 type TypographyWeight = 'regular' | 'medium' | 'semibold' | 'bold';
 type TypographyColor = 'primary' | 'secondary';
 
@@ -15,10 +15,12 @@ interface TypographyProps extends TextProps {
 
 const VARIANT_CLASSES: Record<TypographyVariant, string> = {
   display: 'text-display',
-  h1: 'text-h1',
-  h2: 'text-h2',
+  headline: 'text-headline',
+  title: 'text-title',
+  subtitle: 'text-subtitle',
   body: 'text-body',
   caption: 'text-caption',
+  button: 'text-button',
 };
 
 const WEIGHT_CLASSES: Record<TypographyWeight, string> = {

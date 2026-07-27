@@ -7,4 +7,4 @@ const config = getDefaultConfig(projectRoot);
 
 config.watchFolders = [path.resolve(projectRoot, 'src')];
 
-module.exports = withNativeWind(config, { input: './global.css' });
+module.exports = withNativeWind(config);

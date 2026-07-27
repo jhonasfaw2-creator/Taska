@@ -9,5 +9,5 @@ export const cardTokens = {
     lg: spacingSemantic.lg,
   },
   borderRadius: borderRadiusSemantic.card,
-  elevatedBorderRadius: borderRadiusSemantic['2xl'],
+  elevatedBorderRadius: borderRadiusSemantic.xl,
 } as const;

@@ -25,7 +25,6 @@ export default function LocationSearch({
 
   const handleSearch = useCallback(
     async (text: string) => {
-      setQuery(text);
       if (text.length < 3) {
         setSuggestions([]);
         return;
@@ -43,6 +42,13 @@ export default function LocationSearch({
     },
     [],
   );
+
+  const handleChangeText = useCallback((text: string) => {
+    setQuery(text);
+    if (text.length < 3) {
+      setSuggestions([]);
+    }
+  }, []);
 
   const handleSelect = useCallback(
     (suggestion: GeocodingSuggestion) => {
@@ -77,7 +83,7 @@ export default function LocationSearch({
             </Typography>
             <TextInput
               value={query}
-              onChangeText={handleSearch}
+              onChangeText={handleChangeText}
               placeholder={placeholder}
               placeholderTextColor="rgba(107, 114, 128, 0.5)"
               autoComplete="off"

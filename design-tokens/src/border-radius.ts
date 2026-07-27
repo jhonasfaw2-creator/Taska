@@ -13,20 +13,22 @@ export const borderRadius = {
 
 export const borderRadiusSemantic = {
   none: borderRadius.none,
+  xs: borderRadius.xs,
   sm: borderRadius.sm,
   md: borderRadius.md,
   lg: borderRadius.lg,
   xl: borderRadius.xl,
   '2xl': borderRadius['2xl'],
   full: borderRadius.full,
-  card: borderRadius.xl,
+  card: borderRadius.lg,
   button: borderRadius.lg,
   input: borderRadius.lg,
   badge: borderRadius.full,
-  modal: borderRadius['2xl'],
-  sheet: borderRadius['2xl'],
-  dialog: borderRadius.xl,
-  tooltip: borderRadius.md,
+  modal: borderRadius.xl,
+  sheet: borderRadius.xl,
+  dialog: borderRadius.lg,
+  tooltip: borderRadius.sm,
+  tag: borderRadius.full,
 } as const;
 
 export type BorderRadiusScale = keyof typeof borderRadius;

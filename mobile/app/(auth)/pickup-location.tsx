@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,7 +20,6 @@ export default function PickupLocationScreen() {
   const [selectedLocation, setSelectedLocation] = useState<{ latitude: number; longitude: number; address: string } | null>(null);
 
   const handleSearch = useCallback(async (text: string) => {
-    setSearchQuery(text);
     if (text.length < 3) {
       setSuggestions([]);
       return;
@@ -35,6 +34,22 @@ export default function PickupLocationScreen() {
       setLoading(false);
     }
   }, []);
+
+  const handleChangeText = useCallback((text: string) => {
+    setSearchQuery(text);
+    if (text.length < 3) {
+      setSuggestions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length >= 3) {
+        handleSearch(searchQuery);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, handleSearch]);
 
   const handleSelectSuggestion = useCallback(
     async (suggestion: GeocodingSuggestion) => {
@@ -102,7 +117,7 @@ export default function PickupLocationScreen() {
               </Typography>
               <TextInput
                 value={searchQuery}
-                onChangeText={handleSearch}
+                onChangeText={handleChangeText}
                 placeholder="Search for a location"
                 placeholderTextColor="rgba(107, 114, 128, 0.5)"
                 autoComplete="off"

@@ -26,3 +26,4 @@
     "generate:css": "tsx scripts/generate-css.ts"
   },
   "sideEffects": false
+}

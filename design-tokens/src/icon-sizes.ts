@@ -3,12 +3,6 @@ export const iconSize = {
   sm: 16,
   md: 20,
   lg: 24,
-  xl: 28,
-  '2xl': 32,
-  '3xl': 40,
-  '4xl': 48,
-  '5xl': 56,
-  '6xl': 64,
 } as const;
 
 export const iconSizeSemantic = {
@@ -16,15 +10,15 @@ export const iconSizeSemantic = {
   inline: iconSize.sm,
   action: iconSize.md,
   button: iconSize.lg,
-  buttonLarge: iconSize.xl,
-  tab: iconSize['2xl'],
+  buttonLarge: iconSize.lg,
+  tab: iconSize.lg,
   input: iconSize.md,
   inputClear: iconSize.sm,
   nav: iconSize.lg,
-  navLarge: iconSize['2xl'],
-  avatar: iconSize['3xl'],
-  illustration: iconSize['5xl'],
-  emptyState: iconSize['6xl'],
+  navLarge: iconSize.lg,
+  avatar: iconSize.lg,
+  illustration: iconSize.lg,
+  emptyState: iconSize.lg,
 } as const;
 
 export type IconSize = keyof typeof iconSize;

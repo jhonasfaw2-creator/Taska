@@ -49,8 +49,8 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const labelStyle: TextStyle = {
-    color: isPrimary || isOutline ? theme.colors.primary : theme.colors.textSecondary,
-    fontSize: theme.typography.fontSize.body,
+    color: isPrimary ? theme.colors.background : theme.colors.primary,
+    fontSize: theme.typography.fontSize.button,
     fontWeight: theme.typography.fontWeight.semibold,
   };
 
