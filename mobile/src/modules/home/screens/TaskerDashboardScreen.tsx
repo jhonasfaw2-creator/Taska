@@ -99,7 +99,7 @@ function NearbyTaskCard({ task, onPress }: { task: NearbyTask; onPress: () => vo
           </View>
           {task.customerRating !== null && (
             <View className="mt-1 flex-row items-center gap-1">
-              <Typography variant="caption" className="text-amber-500">⭐</Typography>
+              <Typography variant="caption" className="text-warning">⭐</Typography>
               <Typography variant="caption" weight="semibold" className="text-text-primary">
                 {task.customerRating.toFixed(1)}
               </Typography>
@@ -108,7 +108,7 @@ function NearbyTaskCard({ task, onPress }: { task: NearbyTask; onPress: () => vo
         </View>
         <View className="ml-sm items-end">
           <Typography variant="caption" color="secondary">Estimated</Typography>
-          <Typography variant="body" weight="bold" className="text-green-600">
+          <Typography variant="body" weight="bold" className="text-success">
             ETB {task.estimatedPrice.toFixed(2)}
           </Typography>
         </View>
@@ -345,7 +345,7 @@ export default function TaskerDashboardScreen() {
 
             <View className="flex-row items-center gap-sm">
               <View className="flex-row items-center gap-1">
-                <View className={['h-2 w-2 rounded-full', isOnline ? 'bg-green-300' : 'bg-background/40'].join(' ')} />
+                <View className={['h-2 w-2 rounded-full', isOnline ? 'bg-success' : 'bg-text-secondary/40'].join(' ')} />
                 <Typography variant="caption" weight="medium" className="text-background/80" style={{ fontSize: 11 }}>
                   {isOnline ? 'Online' : 'Offline'}
                 </Typography>
@@ -370,7 +370,7 @@ export default function TaskerDashboardScreen() {
               <View
                 className={[
                   'h-12 w-12 items-center justify-center rounded-full',
-                  isOnline ? 'bg-green-100' : 'bg-text-secondary/10',
+                  isOnline ? 'bg-success/10' : 'bg-text-secondary/10',
                 ].join(' ')}
               >
                 <Typography variant="h2">{isOnline ? '🟢' : '⭕'}</Typography>
@@ -388,8 +388,8 @@ export default function TaskerDashboardScreen() {
             </View>
 
             {isOnline && (
-              <View className="rounded-full bg-green-100 px-sm py-xs">
-                <Typography variant="caption" weight="semibold" className="text-green-700">
+              <View className="rounded-full bg-success/10 px-sm py-xs">
+                <Typography variant="caption" weight="semibold" className="text-success">
                   Listening
                 </Typography>
               </View>
@@ -450,7 +450,7 @@ export default function TaskerDashboardScreen() {
                 testID="dashboard-go-online"
                 className="mt-lg flex-row items-center gap-sm rounded-full bg-primary px-xl py-md"
                 style={{
-                  shadowColor: '#4F46E5',
+                  shadowColor: '#2563EB',
                   shadowOffset: { width: 0, height: 6 },
                   shadowOpacity: 0.25,
                   shadowRadius: 12,

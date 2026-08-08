@@ -2,22 +2,21 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { fetchRecentTasks } from '@/services/task.service';
 import type { RecentTask } from '@/types/task';
 
-// ── Status Helpers ───────────────────────────────────────────────────────────
-
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; text: string; label: string }> = {
     ACTIVE: { bg: 'bg-primary/10', text: 'text-primary', label: 'In Progress' },
-    PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-    SEARCHING: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Searching' },
+    PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'Pending' },
+    SEARCHING: { bg: 'bg-primary/10', text: 'text-primary', label: 'Searching' },
     ACCEPTED: { bg: 'bg-primary/10', text: 'text-primary', label: 'Accepted' },
-    PICKED_UP: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Picked Up' },
+    PICKED_UP: { bg: 'bg-primary/10', text: 'text-primary', label: 'Picked Up' },
     IN_PROGRESS: { bg: 'bg-primary/10', text: 'text-primary', label: 'In Progress' },
-    COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+    COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Completed' },
     CANCELLED: { bg: 'bg-text-secondary/10', text: 'text-text-secondary', label: 'Cancelled' },
   };
 
@@ -45,7 +44,6 @@ function TaskCard({ task, onPress }: { task: RecentTask; onPress: () => void }) 
       testID={`task-card-${task.id}`}
       className="mb-sm overflow-hidden rounded-2xl border border-border bg-surface active:opacity-80"
     >
-      {/* Top row */}
       <View className="flex-row items-center justify-between px-lg pt-lg pb-md">
         <View className="flex-1">
           <Typography variant="body" weight="semibold" className="text-text-primary" numberOfLines={1}>
@@ -64,10 +62,8 @@ function TaskCard({ task, onPress }: { task: RecentTask; onPress: () => void }) 
         <StatusBadge status={task.status} />
       </View>
 
-      {/* Divider */}
       <View className="mx-lg border-b border-border" />
 
-      {/* Bottom row */}
       <View className="flex-row items-center justify-between px-lg py-md">
         <View className="flex-1">
           {isActive && (
@@ -80,7 +76,6 @@ function TaskCard({ task, onPress }: { task: RecentTask; onPress: () => void }) 
           )}
         </View>
 
-        {/* Amount */}
         <View className="ml-md items-end">
           <Typography variant="body" weight="bold" className="text-primary">
             ETB {amount.toFixed(2)}
@@ -105,8 +100,6 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-// ── Status filter mapping ────────────────────────────────────────────────────
-
 const ACTIVE_STATUSES = new Set(['PENDING', 'SEARCHING', 'ACCEPTED', 'PICKED_UP', 'IN_PROGRESS']);
 const COMPLETED_STATUSES = new Set(['COMPLETED', 'CANCELLED']);
 
@@ -117,8 +110,6 @@ function filterTasks(tasks: RecentTask[], filter: FilterKey): RecentTask[] {
   if (filter === 'completed') return tasks.filter((t) => COMPLETED_STATUSES.has(t.status));
   return tasks;
 }
-
-// ── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function TaskHistoryScreen() {
   const router = useRouter();
@@ -180,7 +171,6 @@ export default function TaskHistoryScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ────────────────────────────────────────────── */}
         <View className="px-screen-padding pt-md">
           <TouchableOpacity
             accessibilityRole="button"
@@ -190,9 +180,7 @@ export default function TaskHistoryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={20} color="#0F172A" className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -205,7 +193,6 @@ export default function TaskHistoryScreen() {
           </View>
         </View>
 
-        {/* ── Filter Tabs ──────────────────────────────────────────── */}
         <View className="mx-screen-padding mt-lg flex-row gap-sm rounded-2xl border border-border bg-surface p-sm">
           {tabs.map((tab) => {
             const isActive = filter === tab.key;
@@ -233,7 +220,6 @@ export default function TaskHistoryScreen() {
           })}
         </View>
 
-        {/* ── Task List ──────────────────────────────────────────── */}
         <View className="px-screen-padding pt-lg">
           {loading ? (
             <View className="gap-sm">
@@ -267,11 +253,9 @@ export default function TaskHistoryScreen() {
           )}
         </View>
 
-        {/* Bottom spacing */}
         <View className="h-lg" />
       </ScrollView>
 
-      {/* ── Quick Create ──────────────────────────────────────────── */}
       <View
         className="border-t border-border bg-background px-screen-padding pb-xl pt-lg"
         style={{ paddingBottom: insets.bottom + 16 }}
@@ -282,18 +266,10 @@ export default function TaskHistoryScreen() {
           onPress={handleCreateTask}
           testID="task-history-create"
           activeOpacity={0.85}
-          className="flex-row items-center justify-center gap-sm rounded-2xl bg-primary py-lg"
-          style={{
-            shadowColor: '#4F46E5',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.25,
-            shadowRadius: 12,
-            elevation: 5,
-          }}
+          className="flex-row items-center justify-center gap-sm rounded-2xl bg-primary py-lg shadow-lg"
         >
-          <Typography variant="body" className="text-background">+</Typography>
           <Typography variant="body" weight="semibold" className="text-background">
-            Create New Task
+            + Create New Task
           </Typography>
         </TouchableOpacity>
       </View>

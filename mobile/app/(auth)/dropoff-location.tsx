@@ -2,8 +2,8 @@ import { useCallback, useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 import { searchAddresses, reverseGeocode } from '@/modules/location/services/geocoding.service';
 import { getCurrentPosition } from '@/modules/location/services/location.service';
@@ -104,10 +104,28 @@ export default function DropoffLocationScreen() {
           paddingBottom: insets.bottom,
         }}
       >
-        <ScreenHeader
-          title="Drop-off location"
-          subtitle="Where should the task be completed?"
-        />
+        <View className="border-b border-border bg-background px-screen-padding pb-lg pt-sm">
+          <View className="flex-row items-center">
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+              testID="dropoff-back"
+              onPress={() => router.back()}
+              className="mr-sm h-10 w-10 items-center justify-center rounded-xl active:opacity-60"
+              hitSlop={8}
+            >
+              <ArrowLeft size={24} color="#111827" />
+            </TouchableOpacity>
+            <View className="flex-1">
+              <Typography variant="h3" weight="bold" className="text-text-primary">
+                Drop-off location
+              </Typography>
+              <Typography variant="caption" color="secondary">
+                Where should the task be completed?
+              </Typography>
+            </View>
+          </View>
+        </View>
 
         <View className="flex-1 px-screen-padding pt-xl">
           <View className="overflow-hidden rounded-xl border border-border bg-surface">

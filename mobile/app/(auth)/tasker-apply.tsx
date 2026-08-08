@@ -84,7 +84,6 @@ export default function TaskerApplyScreen() {
         />
 
         <View className="flex-1 px-screen-padding pt-xl">
-          {/* Vehicle type */}
           <Typography
             variant="caption"
             weight="semibold"
@@ -109,7 +108,6 @@ export default function TaskerApplyScreen() {
                     ? 'border-primary bg-primary/5 shadow-sm'
                     : 'border-border',
                 ].join(' ')}
-                style={selected ? { shadowColor: '#4F46E5', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 } : {}}
               >
                 <View
                   className={[
@@ -138,12 +136,11 @@ export default function TaskerApplyScreen() {
             );
           })}
           {touched && errors.vehicleType && (
-            <Typography variant="caption" className="mb-sm text-red-500">
+            <Typography variant="caption" className="mb-sm text-error">
               {errors.vehicleType}
             </Typography>
           )}
 
-          {/* Experience (optional) */}
           <View className="pt-xl">
             <Typography
               variant="caption"
@@ -167,7 +164,6 @@ export default function TaskerApplyScreen() {
             </View>
           </View>
 
-          {/* Bio (optional) */}
           <View className="pt-xl">
             <Typography
               variant="caption"

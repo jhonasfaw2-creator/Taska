@@ -2,9 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
-
-// ── Types ────────────────────────────────────────────────────────────────────
 
 type VehicleId = 'walking' | 'motorcycle' | 'car' | 'van' | 'truck';
 
@@ -22,8 +21,6 @@ interface VehicleForm {
   color: string;
   photo: string;
 }
-
-// ── Constants ────────────────────────────────────────────────────────────────
 
 const VEHICLES: VehicleOption[] = [
   {
@@ -66,8 +63,6 @@ const EMPTY_FORM: VehicleForm = {
   photo: '',
 };
 
-// ── Screen Component ─────────────────────────────────────────────────────────
-
 export default function VehicleRegistrationScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -75,12 +70,8 @@ export default function VehicleRegistrationScreen() {
   const [form, setForm] = useState<VehicleForm>(EMPTY_FORM);
   const [touched, setTouched] = useState<Set<string>>(new Set());
 
-  // ── Derived state ──────────────────────────────────────────────────────────
-
   const selectedVehicle = form.vehicle;
   const needsVehicleFields = selectedVehicle !== null && selectedVehicle !== 'walking';
-
-  // ── Field updaters ─────────────────────────────────────────────────────────
 
   const updateField = useCallback(
     <K extends keyof VehicleForm>(field: K, value: VehicleForm[K]) => {
@@ -93,7 +84,6 @@ export default function VehicleRegistrationScreen() {
     setForm((prev) => ({
       ...prev,
       vehicle: id,
-      // Clear vehicle-specific fields when switching
       licensePlate: '',
       color: '',
       photo: '',
@@ -105,7 +95,6 @@ export default function VehicleRegistrationScreen() {
       next.delete('photo');
       return next;
     });
-    // Mark vehicle as touched so validation triggers on Continue press
     setTouched((prev) => new Set(prev).add('vehicle'));
   }, []);
 
@@ -121,8 +110,6 @@ export default function VehicleRegistrationScreen() {
     setTouched(new Set(fields));
   }, [needsVehicleFields]);
 
-  // ── Validation ─────────────────────────────────────────────────────────────
-
   const isFormValid = useMemo(() => {
     if (selectedVehicle === null) return false;
     if (selectedVehicle === 'walking') return true;
@@ -133,15 +120,11 @@ export default function VehicleRegistrationScreen() {
     );
   }, [selectedVehicle, form]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
-
   const handleContinue = useCallback(() => {
     markAllTouched();
     if (!isFormValid) return;
     router.replace('/tasker-dashboard');
   }, [isFormValid, markAllTouched, router]);
-
-  // ── Render helpers ─────────────────────────────────────────────────────────
 
   const renderInput = (
     label: string,
@@ -169,7 +152,7 @@ export default function VehicleRegistrationScreen() {
         <View
           className={[
             'flex-row items-center rounded-xl border bg-surface px-md',
-            showError ? 'border-red-500' : 'border-border',
+            showError ? 'border-error' : 'border-border',
           ].join(' ')}
         >
           <TextInput
@@ -185,13 +168,13 @@ export default function VehicleRegistrationScreen() {
             accessibilityLabel={label}
           />
           {isFieldTouched && value.trim().length > 0 && (
-            <Typography variant="caption" className="text-green-500">
+            <Typography variant="caption" className="text-success">
               ✓
             </Typography>
           )}
         </View>
         {showError && (
-          <Typography variant="caption" className="mt-xs px-xs text-red-500">
+          <Typography variant="caption" className="mt-xs px-xs text-error">
             {label} is required.
           </Typography>
         )}
@@ -217,20 +200,8 @@ export default function VehicleRegistrationScreen() {
             ? 'border-primary bg-primary/10'
             : 'border-border bg-surface',
         ].join(' ')}
-        style={
-          isSelected
-            ? {
-                shadowColor: '#4F46E5',
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.15,
-                shadowRadius: 10,
-                elevation: 4,
-              }
-            : {}
-        }
       >
         <View className="flex-row items-center gap-md">
-          {/* Icon */}
           <View
             className={[
               'h-12 w-12 items-center justify-center rounded-xl',
@@ -240,7 +211,6 @@ export default function VehicleRegistrationScreen() {
             <Typography variant="h2">{vehicle.icon}</Typography>
           </View>
 
-          {/* Name + Description */}
           <View className="flex-1">
             <Typography
               variant="body"
@@ -254,7 +224,6 @@ export default function VehicleRegistrationScreen() {
             </Typography>
           </View>
 
-          {/* Selection indicator */}
           <View
             className={[
               'h-6 w-6 items-center justify-center rounded-full border-2',
@@ -284,7 +253,6 @@ export default function VehicleRegistrationScreen() {
 
     return (
       <View className="rounded-xl border border-border bg-surface p-md">
-        {/* Section header */}
         <View className="mb-md flex-row items-center gap-sm">
           <View className="h-2 w-2 rounded-full bg-primary" />
           <Typography variant="caption" weight="semibold" className="uppercase tracking-wide text-primary">
@@ -292,7 +260,6 @@ export default function VehicleRegistrationScreen() {
           </Typography>
         </View>
 
-        {/* Nickname — available for all */}
         {renderInput(
           'Vehicle Nickname',
           form.nickname,
@@ -319,7 +286,6 @@ export default function VehicleRegistrationScreen() {
               { placeholder: 'e.g. White, Blue, Red' }
             )}
 
-            {/* Vehicle photo upload */}
             <View className="pb-md">
               <Typography
                 variant="caption"
@@ -339,16 +305,16 @@ export default function VehicleRegistrationScreen() {
                 className={[
                   'flex-row items-center justify-center rounded-xl border-2 py-lg',
                   form.photo.trim().length > 0
-                    ? 'border-green-400 bg-green-50'
+                    ? 'border-success bg-success-light'
                     : 'border-dashed border-border bg-surface',
                 ].join(' ')}
               >
                 {form.photo.trim().length > 0 ? (
                   <View className="flex-row items-center gap-sm">
-                    <Typography variant="body" className="text-green-600">
+                    <Typography variant="body" className="text-success">
                       ✓
                     </Typography>
-                    <Typography variant="body" weight="medium" className="text-green-600">
+                    <Typography variant="body" weight="medium" className="text-success">
                       Photo uploaded
                     </Typography>
                   </View>
@@ -364,7 +330,7 @@ export default function VehicleRegistrationScreen() {
                 )}
               </TouchableOpacity>
               {touched.has('photo') && form.photo.trim().length === 0 && (
-                <Typography variant="caption" className="mt-xs px-xs text-red-500">
+                <Typography variant="caption" className="mt-xs px-xs text-error">
                   Vehicle photo is required.
                 </Typography>
               )}
@@ -372,7 +338,6 @@ export default function VehicleRegistrationScreen() {
           </>
         )}
 
-        {/* Fields summary hint */}
         {!needsVehicleFields && (
           <View className="flex-row items-center gap-sm rounded-lg bg-primary/5 px-sm py-sm">
             <Typography variant="caption" className="text-text-secondary">
@@ -383,8 +348,6 @@ export default function VehicleRegistrationScreen() {
       </View>
     );
   };
-
-  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <View
@@ -397,9 +360,7 @@ export default function VehicleRegistrationScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="px-screen-padding pt-md">
-          {/* Back button */}
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Go back"
@@ -408,17 +369,13 @@ export default function VehicleRegistrationScreen() {
             className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
           </TouchableOpacity>
 
-          {/* Title */}
           <Typography variant="h2" weight="bold" className="text-text-primary">
             Vehicle Information
           </Typography>
 
-          {/* Subtitle */}
           <View className="mt-sm">
             <Typography variant="body" color="secondary" className="leading-relaxed">
               Choose how you&apos;ll complete tasks.
@@ -426,11 +383,10 @@ export default function VehicleRegistrationScreen() {
           </View>
         </View>
 
-        {/* Vehicle selection */}
         <View className="px-screen-padding pt-lg">
           <Typography
             variant="caption"
-            weight="semibold"
+            weight="medium"
             className="mb-sm px-xs uppercase tracking-wide text-text-secondary"
           >
             Select your vehicle
@@ -438,28 +394,24 @@ export default function VehicleRegistrationScreen() {
 
           {VEHICLES.map(renderVehicleCard)}
 
-          {/* No selection error */}
           {touched.has('vehicle') && selectedVehicle === null && (
             <View className="px-xs pb-sm">
-              <Typography variant="caption" className="text-red-500">
+              <Typography variant="caption" className="text-error">
                 Please select a vehicle to continue.
               </Typography>
             </View>
           )}
         </View>
 
-        {/* Dynamic fields */}
         {selectedVehicle !== null && (
           <View className="px-screen-padding pt-md">
             {renderVehicleFields()}
           </View>
         )}
 
-        {/* Spacer for bottom area */}
         <View className="h-16" />
       </ScrollView>
 
-      {/* Bottom CTA */}
       <View className="border-t border-border bg-background px-screen-padding pb-xl pt-lg">
         <Button
           label={

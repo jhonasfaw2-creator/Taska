@@ -2,9 +2,9 @@ import { useCallback, useState } from 'react';
 import { View, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 
-// Mock data — in production this would come from state/API
 const MOCK_COMPLETION = {
   category: 'Delivery',
   taskerName: 'Abebe Kebede',
@@ -41,7 +41,7 @@ function StarSelector({
             <Typography
               variant="h1"
               weight="bold"
-              className={isFilled ? 'text-amber-500' : 'text-border'}
+              className={isFilled ? 'text-warning' : 'text-border'}
             >
               ★
             </Typography>
@@ -69,7 +69,6 @@ export default function TaskCompletionScreen() {
   }, []);
 
   const handleSubmitReview = useCallback(() => {
-    // In production, submit rating + review to API
     router.push('/task-history');
   }, [router]);
 
@@ -93,9 +92,7 @@ export default function TaskCompletionScreen() {
       }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Header section */}
       <View className="px-screen-padding pt-md">
-        {/* Back button */}
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -104,26 +101,21 @@ export default function TaskCompletionScreen() {
           className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
           hitSlop={8}
         >
-          <Typography variant="body" weight="medium" className="text-text-primary">
-            ←
-          </Typography>
+          <ArrowLeft size={20} color="#0F172A" className="text-text-primary" />
         </TouchableOpacity>
 
-        {/* Success icon */}
         <View className="mb-md items-center">
-          <View className="h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <Typography variant="h1" className="text-green-600">
+          <View className="h-16 w-16 items-center justify-center rounded-full bg-success/20">
+            <Typography variant="h1" className="text-success">
               ✓
             </Typography>
           </View>
         </View>
 
-        {/* Title */}
         <Typography variant="h2" weight="bold" className="text-center text-text-primary">
           Task completed!
         </Typography>
 
-        {/* Subtitle */}
         <View className="mt-sm">
           <Typography
             variant="body"
@@ -135,12 +127,9 @@ export default function TaskCompletionScreen() {
         </View>
       </View>
 
-      {/* Summary cards */}
       <View className="flex-1 px-screen-padding pt-xl">
-        {/* Completion summary card */}
         <View className="mb-md overflow-hidden rounded-2xl border border-border bg-surface">
-          {/* Card header */}
-          <View className="border-b border-border bg-primary/[0.03] px-lg py-md">
+          <View className="border-b border-border bg-surface-secondary/50 px-lg py-md">
             <Typography
               variant="caption"
               weight="semibold"
@@ -150,7 +139,6 @@ export default function TaskCompletionScreen() {
             </Typography>
           </View>
 
-          {/* Summary rows */}
           <View className="px-lg py-sm">
             <SummaryRow
               icon="📂"
@@ -186,7 +174,6 @@ export default function TaskCompletionScreen() {
           </View>
         </View>
 
-        {/* Payment section */}
         <View className="mb-md overflow-hidden rounded-2xl border border-border bg-surface px-lg py-lg">
           <Typography
             variant="caption"
@@ -206,15 +193,15 @@ export default function TaskCompletionScreen() {
               </Typography>
             </View>
 
-            <View className="items-end rounded-full bg-green-100 px-md py-sm">
+            <View className="items-end rounded-full bg-success/20 px-md py-sm">
               <View className="flex-row items-center gap-xs">
-                <Typography variant="caption" className="text-green-700">
+                <Typography variant="caption" className="text-success">
                   ✓
                 </Typography>
                 <Typography
                   variant="caption"
                   weight="semibold"
-                  className="text-green-700"
+                  className="text-success"
                 >
                   Payment completed
                 </Typography>
@@ -223,7 +210,6 @@ export default function TaskCompletionScreen() {
           </View>
         </View>
 
-        {/* Rating section */}
         <View className="mb-md overflow-hidden rounded-2xl border border-border bg-surface px-lg py-lg">
           <Typography
             variant="caption"
@@ -233,10 +219,8 @@ export default function TaskCompletionScreen() {
             Rate your tasker
           </Typography>
 
-          {/* Star selector */}
           <StarSelector rating={rating} onRate={handleRate} />
 
-          {/* Rating label */}
           {rating > 0 && (
             <View className="mt-sm">
               <Typography
@@ -249,7 +233,6 @@ export default function TaskCompletionScreen() {
             </View>
           )}
 
-          {/* Review text box */}
           <View className="mt-lg">
             <View className="rounded-xl border border-border bg-surface px-md">
               <TextInput
@@ -278,7 +261,6 @@ export default function TaskCompletionScreen() {
         </View>
       </View>
 
-      {/* Bottom section */}
       <View className="gap-md border-t border-border bg-background px-screen-padding pb-xl pt-lg">
         <Button
           label="Submit Review"

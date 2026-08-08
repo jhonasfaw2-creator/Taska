@@ -32,7 +32,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
       <View
         style={{
           height: 6,
-          backgroundColor: '#E5E7EB',
+          backgroundColor: '#E2E8F0',
           borderRadius: 3,
           overflow: 'hidden',
           width: '100%',
@@ -42,7 +42,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
           style={{
             height: 6,
             width: barWidth as any,
-            backgroundColor: clamped === 100 ? '#22C55E' : '#4F46E5',
+            backgroundColor: clamped === 100 ? '#22C55E' : '#2563EB',
             borderRadius: 3,
           }}
         />

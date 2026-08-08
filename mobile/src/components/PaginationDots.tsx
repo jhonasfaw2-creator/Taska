@@ -1,18 +1,15 @@
 /**
- * Taska Pagination Dots Component (Legacy)
+ * Taska Pagination Dots Component
  *
- * Backward-compatible pagination dots that use the theme prop.
- * New code should use Tailwind classes instead.
+ * Uses NativeWind design system tokens.
  */
 
 import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
-import { Theme } from '../theme/types';
+import { View, ViewStyle } from 'react-native';
 
 interface PaginationDotsProps {
   count: number;
   activeIndex: number;
-  theme: Theme;
   style?: ViewStyle;
   testID?: string;
 }
@@ -20,13 +17,13 @@ interface PaginationDotsProps {
 const PaginationDots: React.FC<PaginationDotsProps> = ({
   count,
   activeIndex,
-  theme,
   style,
   testID,
 }) => {
   return (
     <View
-      style={[styles.container, style]}
+      className="flex-row items-center justify-center"
+      style={style}
       testID={testID}
       accessible
       accessibilityLabel={`Page ${activeIndex + 1} of ${count}`}
@@ -36,31 +33,16 @@ const PaginationDots: React.FC<PaginationDotsProps> = ({
         return (
           <View
             key={`dot-${index}`}
-            style={[
-              styles.dot,
-              {
-                backgroundColor: isActive ? theme.colors.primary : theme.colors.border,
-                width: isActive ? theme.spacing.lg : theme.spacing.sm,
-              },
-            ]}
+            className={[
+              'h-2 rounded-full',
+              isActive ? 'w-6 bg-primary' : 'w-2 bg-border',
+            ].join(' ')}
+            style={{ marginHorizontal: 4 }}
           />
         );
       })}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dot: {
-    height: 8,
-    borderRadius: 9999,
-    marginHorizontal: 4,
-  },
-});
 
 export default PaginationDots;

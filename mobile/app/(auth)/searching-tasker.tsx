@@ -4,9 +4,11 @@ import {
   Animated,
   Easing,
   Alert,
+  TouchableOpacity,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { onSocketEvent, joinTaskRoom, leaveTaskRoom } from '@/services/socket.service';
 
@@ -30,13 +32,11 @@ export default function SearchingTaskerScreen() {
   const [messageIndex, setMessageIndex] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
 
-  // Animations
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const spinAnim = useRef(new Animated.Value(0)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const hasNavigated = useRef(false);
 
-  // Pulsing ring animation
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.sequence([
@@ -58,7 +58,6 @@ export default function SearchingTaskerScreen() {
     return () => pulse.stop();
   }, [pulseAnim]);
 
-  // Spinning ring animation
   useEffect(() => {
     const spin = Animated.loop(
       Animated.timing(spinAnim, {
@@ -72,7 +71,6 @@ export default function SearchingTaskerScreen() {
     return () => spin.stop();
   }, [spinAnim]);
 
-  // Fade-in on mount
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -82,13 +80,11 @@ export default function SearchingTaskerScreen() {
     }).start();
   }, [fadeAnim]);
 
-  // Rotate interpolation for spinning ring
   const spinInterpolation = spinAnim.interpolate({
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
 
-  // Cycling progress messages
   useEffect(() => {
     const messageTimer = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % PROGRESS_MESSAGES.length);
@@ -96,7 +92,6 @@ export default function SearchingTaskerScreen() {
     return () => clearInterval(messageTimer);
   }, []);
 
-  // Elapsed timer
   useEffect(() => {
     const timer = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
@@ -104,7 +99,6 @@ export default function SearchingTaskerScreen() {
     return () => clearInterval(timer);
   }, []);
 
-  // Join the task room and navigate when a tasker accepts
   useEffect(() => {
     if (taskId) {
       joinTaskRoom(taskId);
@@ -165,25 +159,45 @@ export default function SearchingTaskerScreen() {
       className="flex-1 bg-background"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
+      <View className="border-b border-border bg-background px-screen-padding pb-lg pt-sm">
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            testID="searching-tasker-back"
+            onPress={() => router.back()}
+            className="mr-sm h-10 w-10 items-center justify-center rounded-xl active:opacity-60"
+            hitSlop={8}
+          >
+            <ArrowLeft size={24} color="#111827" />
+          </TouchableOpacity>
+          <View className="flex-1">
+            <Typography variant="h3" weight="bold" className="text-text-primary">
+              Finding a tasker...
+            </Typography>
+            <Typography variant="caption" color="secondary">
+              We&apos;re notifying nearby verified taskers.
+            </Typography>
+          </View>
+        </View>
+      </View>
+
       <Animated.View
         className="flex-1 items-center justify-center px-screen-padding"
         style={{ opacity: fadeAnim }}
       >
-        {/* Animated searching indicator */}
         <View className="mb-xl items-center justify-center">
-          {/* Outer spinning ring */}
           <Animated.View
             className="absolute h-28 w-28 rounded-full border-2 border-primary/20"
             style={{
               transform: [{ rotate: spinInterpolation }],
-              borderTopColor: '#4F46E5',
+              borderTopColor: '#2563EB',
               borderRightColor: 'transparent',
               borderBottomColor: 'transparent',
               borderLeftColor: 'transparent',
             }}
           />
 
-          {/* Inner pulsing ring */}
           <Animated.View
             className="h-20 w-20 items-center justify-center rounded-full bg-primary/10"
             style={{ transform: [{ scale: pulseAnim }] }}
@@ -196,19 +210,6 @@ export default function SearchingTaskerScreen() {
           </Animated.View>
         </View>
 
-        {/* Title */}
-        <Typography variant="h2" weight="bold" className="text-center text-text-primary">
-          Finding a tasker...
-        </Typography>
-
-        {/* Subtitle */}
-        <View className="mt-sm">
-          <Typography variant="body" color="secondary" className="text-center leading-relaxed">
-            We&apos;re notifying nearby verified taskers.
-          </Typography>
-        </View>
-
-        {/* Progress message */}
         <View className="mt-lg h-8 items-center justify-center">
           <Typography
             variant="body"
@@ -220,9 +221,7 @@ export default function SearchingTaskerScreen() {
           </Typography>
         </View>
 
-        {/* Stats row */}
         <View className="mt-xl flex-row gap-lg">
-          {/* Nearby taskers */}
           <View className="items-center rounded-2xl border border-border bg-surface px-xl py-lg">
             <Typography variant="h2" weight="bold" className="text-primary">
               {NEARBY_TASKERS}
@@ -232,7 +231,6 @@ export default function SearchingTaskerScreen() {
             </Typography>
           </View>
 
-          {/* Estimated wait time */}
           <View className="items-center rounded-2xl border border-border bg-surface px-xl py-lg">
             <Typography variant="h2" weight="bold" className="text-primary">
               {ESTIMATED_WAIT_MIN}–{ESTIMATED_WAIT_MAX}
@@ -242,7 +240,6 @@ export default function SearchingTaskerScreen() {
             </Typography>
           </View>
 
-          {/* Elapsed time */}
           <View className="items-center rounded-2xl border border-border bg-surface px-xl py-lg">
             <Typography variant="h2" weight="bold" className="text-primary">
               {formatTime(elapsedSeconds)}
@@ -253,7 +250,6 @@ export default function SearchingTaskerScreen() {
           </View>
         </View>
 
-        {/* Reassuring message */}
         <View className="mt-xl max-w-xs">
           <Typography variant="caption" color="secondary" className="text-center leading-relaxed">
             Hang tight! A tasker will be assigned to you shortly. You can track their progress once accepted.
@@ -261,7 +257,6 @@ export default function SearchingTaskerScreen() {
         </View>
       </Animated.View>
 
-      {/* Cancel Task button */}
       <View
         className="px-screen-padding pb-xl pt-lg"
         style={{ paddingBottom: insets.bottom + 16 }}

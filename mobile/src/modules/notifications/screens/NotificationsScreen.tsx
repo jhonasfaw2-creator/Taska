@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
@@ -21,9 +22,9 @@ const TYPE_CONFIG: Record<
   string,
   { icon: string; bg: string }
 > = {
-  TASK_REQUEST: { icon: '📋', bg: 'bg-blue-100' },
+  TASK_REQUEST: { icon: '📋', bg: 'bg-primary/10' },
   TASK_UPDATE: { icon: '🔄', bg: 'bg-purple-100' },
-  PAYMENT: { icon: '💰', bg: 'bg-green-100' },
+  PAYMENT: { icon: '💰', bg: 'bg-success/10' },
   SYSTEM: { icon: '🔔', bg: 'bg-primary/10' },
 };
 
@@ -193,8 +194,8 @@ export default function NotificationsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -218,9 +219,7 @@ export default function NotificationsScreen() {
             className="h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">
-              ✕
-            </Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
         </View>
 

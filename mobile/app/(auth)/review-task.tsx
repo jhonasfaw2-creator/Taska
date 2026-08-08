@@ -22,7 +22,7 @@ function SummaryCard({
       testID={testID}
       className="mb-md overflow-hidden rounded-2xl border border-border bg-surface"
     >
-      <View className="border-b border-border bg-primary/[0.03] px-lg py-md">
+      <View className="border-b border-border bg-surface-secondary/50 px-lg py-md">
         <Typography
           variant="caption"
           weight="semibold"
@@ -115,7 +115,6 @@ export default function ReviewTaskScreen() {
     try {
       const created = await createTask(state);
 
-      // Transition the task to SEARCHING immediately
       try {
         await updateTaskStatus(created.id, 'SEARCHING');
       } catch {

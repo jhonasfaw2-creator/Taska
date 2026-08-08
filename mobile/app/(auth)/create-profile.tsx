@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { updateProfile, clearSession, ApiError } from '@/services';
 
@@ -83,9 +84,7 @@ export default function CreateProfileScreen() {
             className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -131,7 +130,7 @@ export default function CreateProfileScreen() {
             <View
               className={[
                 'flex-row items-center rounded-xl border bg-surface px-md',
-                showNameError ? 'border-red-500' : 'border-border',
+                showNameError ? 'border-error' : 'border-border',
               ].join(' ')}
             >
               <TextInput
@@ -151,7 +150,7 @@ export default function CreateProfileScreen() {
             </View>
             {showNameError && (
               <View className="mt-xs px-xs">
-                <Typography variant="caption" className="text-red-500">
+                <Typography variant="caption" className="text-error">
                   Please enter your full name.
                 </Typography>
               </View>
@@ -269,7 +268,7 @@ export default function CreateProfileScreen() {
 
             {nameTouched && !accountType && (
               <View className="mt-sm px-xs">
-                <Typography variant="caption" className="text-red-500">
+                <Typography variant="caption" className="text-error">
                   Please select an account type.
                 </Typography>
               </View>

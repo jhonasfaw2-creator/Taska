@@ -2,12 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
-import { getTransactions } from '@/services/wallet.service';
+import { getTransactions, getBalanceSummary } from '@/services/wallet.service';
 import type { WalletTransaction, BalanceSummary } from '@/types/wallet';
-import { getBalanceSummary } from '@/services/wallet.service';
 
 const TX_ICONS: Record<string, string> = {
   CREDIT: '💰',
@@ -45,7 +45,7 @@ function TransactionRow({ tx }: { tx: WalletTransaction }) {
         <Typography
           variant="body"
           weight="semibold"
-          className={isCredit ? 'text-green-600' : 'text-text-primary'}
+          className={isCredit ? 'text-success' : 'text-text-primary'}
         >
           {isCredit ? '+' : '-'}ETB {tx.amount.toFixed(2)}
         </Typography>
@@ -110,8 +110,8 @@ export default function EarningsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -123,7 +123,7 @@ export default function EarningsScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -139,13 +139,13 @@ export default function EarningsScreen() {
             <View className="flex-row gap-sm">
               <View className="flex-1 rounded-xl border border-border bg-surface p-md">
                 <Typography variant="caption" color="secondary">Credits</Typography>
-                <Typography variant="body" weight="bold" className="mt-xs text-green-600">
+                <Typography variant="body" weight="bold" className="mt-xs text-success">
                   +{curr} {totalCredits.toFixed(2)}
                 </Typography>
               </View>
               <View className="flex-1 rounded-xl border border-border bg-surface p-md">
                 <Typography variant="caption" color="secondary">Debits</Typography>
-                <Typography variant="body" weight="bold" className="mt-xs text-red-600">
+                <Typography variant="body" weight="bold" className="mt-xs text-error">
                   -{curr} {totalDebits.toFixed(2)}
                 </Typography>
               </View>

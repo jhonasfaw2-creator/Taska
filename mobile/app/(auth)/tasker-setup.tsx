@@ -2,9 +2,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
-
-// ── Types ────────────────────────────────────────────────────────────────────
 
 type IdType = 'passport' | 'drivers_license' | 'national_id' | '';
 
@@ -27,8 +26,6 @@ const ID_TYPE_OPTIONS: { value: IdType; label: string }[] = [
   { value: 'national_id', label: 'National ID' },
 ];
 
-// ── Verification Section Configuration ───────────────────────────────────────
-
 interface SectionConfig {
   key: SectionKey;
   icon: string;
@@ -42,8 +39,6 @@ const SECTIONS: SectionConfig[] = [
   { key: 'photo', icon: '📷', title: 'Profile Photo' },
 ];
 
-// ── Helper ───────────────────────────────────────────────────────────────────
-
 const EMPTY_STATE: VerificationState = {
   fullName: '',
   dateOfBirth: '',
@@ -55,8 +50,6 @@ const EMPTY_STATE: VerificationState = {
   profilePhoto: '',
 };
 
-// ── Screen Component ─────────────────────────────────────────────────────────
-
 export default function TaskerSetupScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -67,7 +60,6 @@ export default function TaskerSetupScreen() {
     'personal'
   );
 
-  // ── Field updater ────────────────────────────────────────────────────────────
   const updateField = useCallback(
     <K extends keyof VerificationState>(field: K, value: VerificationState[K]) => {
       setForm((prev) => ({ ...prev, [field]: value }));
@@ -90,8 +82,6 @@ export default function TaskerSetupScreen() {
     ];
     setTouched(new Set(allFields));
   }, []);
-
-  // ── Section completion checks ────────────────────────────────────────────────
 
   const sectionStatus = useMemo(() => {
     const personalComplete =
@@ -121,19 +111,15 @@ export default function TaskerSetupScreen() {
     [sectionStatus]
   );
 
-  // ── Toggle accordion section ─────────────────────────────────────────────────
   const toggleSection = useCallback((key: SectionKey) => {
     setExpandedSection((prev) => (prev === key ? null : key));
   }, []);
 
-  // ── Handle continue ──────────────────────────────────────────────────────────
   const handleContinue = useCallback(() => {
     markAllTouched();
     if (!isContinueEnabled) return;
     router.push('/vehicle-registration');
   }, [isContinueEnabled, markAllTouched, router]);
-
-  // ── Render helpers ───────────────────────────────────────────────────────────
 
   const renderInput = (
     label: string,
@@ -162,7 +148,7 @@ export default function TaskerSetupScreen() {
         <View
           className={[
             'flex-row items-center rounded-xl border bg-surface px-md',
-            showError ? 'border-red-500' : 'border-border',
+            showError ? 'border-error' : 'border-border',
           ].join(' ')}
         >
           <TextInput
@@ -179,13 +165,13 @@ export default function TaskerSetupScreen() {
             accessibilityLabel={label}
           />
           {isFieldTouched && value.trim().length > 0 && (
-            <Typography variant="caption" className="text-green-500">
+            <Typography variant="caption" className="text-success">
               ✓
             </Typography>
           )}
         </View>
         {showError && (
-          <Typography variant="caption" className="mt-xs px-xs text-red-500">
+          <Typography variant="caption" className="mt-xs px-xs text-error">
             {label} is required.
           </Typography>
         )}
@@ -203,10 +189,9 @@ export default function TaskerSetupScreen() {
         key={section.key}
         className={[
           'mb-md overflow-hidden rounded-xl border',
-          isCompleted ? 'border-green-200' : 'border-border',
+          isCompleted ? 'border-success/30' : 'border-border',
         ].join(' ')}
       >
-        {/* Card Header (always visible) */}
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel={`${section.title} section, ${isCompleted ? 'completed' : 'not completed'}`}
@@ -215,12 +200,10 @@ export default function TaskerSetupScreen() {
           activeOpacity={0.7}
           className="flex-row items-center bg-surface px-md py-lg"
         >
-          {/* Icon */}
           <View className="mr-md h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Typography variant="h2">{section.icon}</Typography>
           </View>
 
-          {/* Title and Status */}
           <View className="flex-1">
             <Typography variant="body" weight="semibold" className="text-text-primary">
               {section.title}
@@ -229,19 +212,18 @@ export default function TaskerSetupScreen() {
               <View
                 className={[
                   'h-2 w-2 rounded-full',
-                  isCompleted ? 'bg-green-500' : 'bg-text-secondary',
+                  isCompleted ? 'bg-success' : 'bg-text-secondary',
                 ].join(' ')}
               />
               <Typography
                 variant="caption"
-                className={isCompleted ? 'text-green-600' : 'text-text-secondary'}
+                className={isCompleted ? 'text-success' : 'text-text-secondary'}
               >
                 {isCompleted ? 'Completed' : 'Not completed'}
               </Typography>
             </View>
           </View>
 
-          {/* Expand indicator */}
           <Typography
             variant="body"
             weight="medium"
@@ -251,7 +233,6 @@ export default function TaskerSetupScreen() {
           </Typography>
         </TouchableOpacity>
 
-        {/* Expanded Content */}
         {isExpanded && (
           <View className="border-t border-border bg-background px-md pb-sm pt-md">
             {renderSectionFields(section.key)}
@@ -282,7 +263,6 @@ export default function TaskerSetupScreen() {
       case 'identity':
         return (
           <>
-            {/* ID Type Selector */}
             <View className="pb-md">
               <Typography
                 variant="caption"
@@ -335,13 +315,12 @@ export default function TaskerSetupScreen() {
                 })}
               </View>
               {touched.has('idType') && form.idType === '' && (
-                <Typography variant="caption" className="mt-xs px-xs text-red-500">
+                <Typography variant="caption" className="mt-xs px-xs text-error">
                   Please select an ID type.
                 </Typography>
               )}
             </View>
 
-            {/* Upload ID Document */}
             {renderInput(
               'Upload ID Document',
               form.idDocument,
@@ -389,20 +368,18 @@ export default function TaskerSetupScreen() {
       case 'photo':
         return (
           <View className="items-center py-md">
-            {/* Profile photo upload */}
             <TouchableOpacity
               accessibilityRole="button"
               accessibilityLabel="Upload profile photo"
               accessibilityHint="Tap to upload a profile photo"
               onPress={() => {
-                /* file upload placeholder */
                 updateField('profilePhoto', 'uploaded');
                 markTouched('profilePhoto');
               }}
               className={[
                 'h-28 w-28 items-center justify-center rounded-full border-2',
                 form.profilePhoto.trim().length > 0
-                  ? 'border-green-400 bg-green-50'
+                  ? 'border-success bg-success-light'
                   : 'border-border bg-surface',
               ].join(' ')}
             >
@@ -420,7 +397,7 @@ export default function TaskerSetupScreen() {
               )}
             </TouchableOpacity>
             {form.profilePhoto.trim().length > 0 ? (
-              <Typography variant="caption" className="mt-sm text-green-600">
+              <Typography variant="caption" className="mt-sm text-success">
                 Photo uploaded ✓
               </Typography>
             ) : (
@@ -429,7 +406,7 @@ export default function TaskerSetupScreen() {
               </Typography>
             )}
             {touched.has('profilePhoto') && form.profilePhoto.trim().length === 0 && (
-              <Typography variant="caption" className="mt-xs text-red-500">
+              <Typography variant="caption" className="mt-xs text-error">
                 Profile photo is required.
               </Typography>
             )}
@@ -441,14 +418,11 @@ export default function TaskerSetupScreen() {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
-
   return (
     <View
       className="flex-1 bg-background"
       style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
-      {/* Header with back button */}
       <View className="px-screen-padding pt-md">
         <TouchableOpacity
           accessibilityRole="button"
@@ -458,17 +432,13 @@ export default function TaskerSetupScreen() {
           className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
           hitSlop={8}
         >
-          <Typography variant="body" weight="medium" className="text-text-primary">
-            ←
-          </Typography>
+          <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
         </TouchableOpacity>
 
-        {/* Title */}
         <Typography variant="h2" weight="bold" className="text-text-primary">
           Become a Tasker
         </Typography>
 
-        {/* Subtitle */}
         <View className="mt-sm">
           <Typography variant="body" color="secondary" className="leading-relaxed">
             Complete verification to start receiving tasks.
@@ -476,7 +446,6 @@ export default function TaskerSetupScreen() {
         </View>
       </View>
 
-      {/* Verification Sections */}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }}
@@ -486,7 +455,6 @@ export default function TaskerSetupScreen() {
         {SECTIONS.map(renderSectionCard)}
       </ScrollView>
 
-      {/* Bottom CTA */}
       <View className="px-screen-padding pb-xl">
         <Button
           label="Continue"

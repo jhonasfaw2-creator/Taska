@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
@@ -70,7 +71,7 @@ function SummaryCard({
       testID={testID}
       className="mb-md overflow-hidden rounded-2xl border border-border bg-surface"
     >
-      <View className="border-b border-border bg-primary/[0.03] px-lg py-md">
+      <View className="border-b border-border bg-surface-secondary/50 px-lg py-md">
         <Typography
           variant="caption"
           weight="semibold"
@@ -138,9 +139,7 @@ export default function ConfirmTaskScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={20} color="#0F172A" className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -226,7 +225,7 @@ export default function ConfirmTaskScreen() {
               <Switch
                 value={isConfirmed}
                 onValueChange={handleToggleConfirm}
-                trackColor={{ false: '#E5E7EB', true: '#4F46E5' }}
+                trackColor={{ false: '#E5E7EB', true: '#2563EB' }}
                 thumbColor={isConfirmed ? '#FFFFFF' : '#F9FAFB'}
                 testID="confirm-task-checkbox"
                 accessibilityLabel="I confirm that this task follows Taska guidelines"

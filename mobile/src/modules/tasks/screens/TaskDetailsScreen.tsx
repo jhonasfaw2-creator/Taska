@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { FormField } from '@/components/FormField';
 import { ProgressTimeline, StatusBadge } from '@/components/ProgressTimeline';
 import { useTaskContext } from '@/store/TaskContext';
@@ -14,8 +14,6 @@ import type { TaskResponse } from '@/types/task';
 const TITLE_MAX = 100;
 const DESCRIPTION_MAX = 500;
 const INSTRUCTIONS_MAX = 300;
-
-// ── Creation Mode (no taskId) ────────────────────────────────────────────────
 
 function TaskCreationForm({ onContinue }: { onContinue: () => void }) {
   const router = useRouter();
@@ -43,10 +41,28 @@ function TaskCreationForm({ onContinue }: { onContinue: () => void }) {
         paddingBottom: insets.bottom,
       }}
     >
-      <ScreenHeader
-        title="Task details"
-        subtitle="Help the tasker understand what needs to be done."
-      />
+      <View className="border-b border-border bg-background px-screen-padding pb-lg pt-sm">
+        <View className="flex-row items-center">
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel="Go back"
+            testID="task-details-back"
+            onPress={() => router.back()}
+            className="mr-sm h-10 w-10 items-center justify-center rounded-xl active:opacity-60"
+            hitSlop={8}
+          >
+            <ArrowLeft size={24} color="#111827" />
+          </TouchableOpacity>
+          <View className="flex-1">
+            <Typography variant="h3" weight="bold" className="text-text-primary">
+              Task details
+            </Typography>
+            <Typography variant="caption" color="secondary">
+              Help the tasker understand what needs to be done.
+            </Typography>
+          </View>
+        </View>
+      </View>
 
       <View className="flex-1 px-screen-padding pt-xl">
         <FormField
@@ -236,20 +252,20 @@ function TaskViewMode({
         <Typography variant="caption" weight="semibold" className="mb-xs uppercase tracking-wide text-text-secondary">
           Locations
         </Typography>
-        <View className="flex-row gap-md">
-          <View className="items-center">
-            <View className="h-5 w-5 items-center justify-center rounded-full bg-green-100">
-              <Typography variant="caption" weight="bold" className="text-green-700" style={{ fontSize: 10 }}>A</Typography>
+          <View className="flex-row gap-md">
+            <View className="items-center">
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-success/10">
+                <Typography variant="caption" weight="bold" className="text-success" style={{ fontSize: 10 }}>A</Typography>
+              </View>
+              <View className="my-1 h-8 w-0.5 bg-success/20" />
+              <View className="h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                <Typography variant="caption" weight="bold" className="text-primary" style={{ fontSize: 10 }}>B</Typography>
+              </View>
             </View>
-            <View className="my-1 h-8 w-0.5 bg-green-200" />
-            <View className="h-5 w-5 items-center justify-center rounded-full bg-primary/10">
-              <Typography variant="caption" weight="bold" className="text-primary" style={{ fontSize: 10 }}>B</Typography>
-            </View>
-          </View>
-          <View className="flex-1">
-            <Typography variant="caption" weight="semibold" className="mb-1 text-green-700">
-              Pickup
-            </Typography>
+            <View className="flex-1">
+              <Typography variant="caption" weight="semibold" className="mb-1 text-success">
+                Pickup
+              </Typography>
             <Typography variant="caption" color="secondary" className="mb-3 leading-relaxed">
               {task.pickupAddress}
             </Typography>

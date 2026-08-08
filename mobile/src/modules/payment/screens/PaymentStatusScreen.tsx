@@ -49,28 +49,28 @@ export default function PaymentStatusScreen() {
     };
   }, [loadPayment]);
 
-  const handleConfirm = useCallback(async () => {
+   const handleConfirm = useCallback(async () => {
     if (!paymentId) return;
     setActionLoading(true);
     setError(null);
     try {
       const updated = await confirmPayment(paymentId);
       setPayment(updated);
-    } catch (err) {
+    } catch {
       setError('Failed to confirm payment');
     } finally {
       setActionLoading(false);
     }
   }, [paymentId]);
 
-  const handleCancel = useCallback(async () => {
+   const handleCancel = useCallback(async () => {
     if (!paymentId) return;
     setActionLoading(true);
     setError(null);
     try {
       const updated = await cancelPayment(paymentId);
       setPayment(updated);
-    } catch (err) {
+    } catch {
       setError('Failed to cancel payment');
     } finally {
       setActionLoading(false);
@@ -87,28 +87,28 @@ export default function PaymentStatusScreen() {
           icon: '⏳',
           title: 'Processing Payment',
           subtitle: 'Please wait while we process your payment...',
-          color: 'text-blue-600',
+          color: 'text-primary',
         };
       case 'PAID':
         return {
           icon: '✅',
           title: 'Payment Successful',
           subtitle: 'Your payment has been confirmed successfully.',
-          color: 'text-green-600',
+          color: 'text-success',
         };
       case 'FAILED':
         return {
           icon: '❌',
           title: 'Payment Failed',
           subtitle: 'Something went wrong. Please try again or use a different payment method.',
-          color: 'text-red-600',
+          color: 'text-error',
         };
       case 'CANCELLED':
         return {
           icon: '↩️',
           title: 'Payment Cancelled',
           subtitle: 'This payment has been cancelled.',
-          color: 'text-gray-500',
+          color: 'text-text-secondary',
         };
       case 'REFUNDED':
         return {

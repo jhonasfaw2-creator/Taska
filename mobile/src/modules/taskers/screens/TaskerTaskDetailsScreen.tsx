@@ -2,13 +2,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { ProgressTimeline, StatusBadge } from '@/components/ProgressTimeline';
 import { getTaskById, updateTaskStatus } from '@/services/task.service';
 import { onSocketEvent, joinTaskRoom, leaveTaskRoom } from '@/services/socket.service';
 import type { TaskResponse, TaskStatus } from '@/types/task';
-
-// ── What the tasker can do at each stage ──────────────────────────────────────
 
 interface ActionConfig {
   nextStatus: TaskStatus;
@@ -100,12 +99,10 @@ export default function TaskerTaskDetailsScreen() {
   useEffect(() => {
     loadTask();
 
-    // Join the task room for real-time updates
     if (taskId) {
       joinTaskRoom(taskId);
     }
 
-    // Listen for status changes and auto-refresh
     const unsubStatus = onSocketEvent('task_status_changed', (data: any) => {
       if (data.taskId === taskId) {
         loadTask();
@@ -167,7 +164,6 @@ export default function TaskerTaskDetailsScreen() {
     ]);
   }, []);
 
-  // Loading
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-background">
@@ -198,17 +194,16 @@ export default function TaskerTaskDetailsScreen() {
         contentContainerStyle={{ paddingTop: insets.top, paddingBottom: insets.bottom + 24 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header ──────────────────────────────────────────────── */}
         <View className="px-screen-padding pt-md">
           <TouchableOpacity
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => router.back()}
             testID="tasker-task-details-back"
-            className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
+            className="mb-xl h-10 w-10 items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -223,7 +218,6 @@ export default function TaskerTaskDetailsScreen() {
           </View>
         </View>
 
-        {/* ── Progress Timeline ───────────────────────────────────── */}
         <View className="mx-screen-padding mt-lg rounded-2xl border border-border bg-surface px-lg py-lg">
           <Typography variant="caption" weight="semibold" className="mb-md uppercase tracking-wider text-text-secondary">
             Progress
@@ -231,7 +225,6 @@ export default function TaskerTaskDetailsScreen() {
           <ProgressTimeline currentStatus={task.status} />
         </View>
 
-        {/* ── Task Information ────────────────────────────────────── */}
         <View className="px-screen-padding pt-xl">
           <SectionHeader icon="📋" title="Task Information" />
           <DetailCard>
@@ -258,23 +251,22 @@ export default function TaskerTaskDetailsScreen() {
           </DetailCard>
         </View>
 
-        {/* ── Locations ───────────────────────────────────────────── */}
         <View className="px-screen-padding pt-sm">
           <SectionHeader icon="📍" title="Locations" />
           <DetailCard>
             <View className="flex-row gap-md">
               <View className="items-center">
-                <View className="h-5 w-5 items-center justify-center rounded-full bg-green-100">
-                  <Typography variant="caption" weight="bold" className="text-green-700" style={{ fontSize: 10 }}>A</Typography>
+                <View className="h-5 w-5 items-center justify-center rounded-full bg-success/10">
+                  <Typography variant="caption" weight="bold" className="text-success" style={{ fontSize: 10 }}>A</Typography>
                 </View>
-                <View className="my-1 h-8 w-0.5 bg-green-200" />
+                <View className="my-1 h-8 w-0.5 bg-success/20" />
                 <View className="h-5 w-5 items-center justify-center rounded-full bg-primary/10">
                   <Typography variant="caption" weight="bold" className="text-primary" style={{ fontSize: 10 }}>B</Typography>
                 </View>
               </View>
               <View className="flex-1 pb-sm">
                 <View className="pb-sm">
-                  <Typography variant="caption" weight="semibold" className="mb-1 text-green-700">Pickup Location</Typography>
+                  <Typography variant="caption" weight="semibold" className="mb-1 text-success">Pickup Location</Typography>
                   <Typography variant="caption" color="secondary" className="leading-relaxed">{task.pickupAddress}</Typography>
                 </View>
                 <View className="my-sm border-b border-border" />
@@ -287,7 +279,6 @@ export default function TaskerTaskDetailsScreen() {
           </DetailCard>
         </View>
 
-        {/* ── Task Summary ────────────────────────────────────────── */}
         <View className="px-screen-padding pt-sm">
           <SectionHeader icon="📊" title="Task Summary" />
           <DetailCard>
@@ -298,12 +289,10 @@ export default function TaskerTaskDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Action Buttons ────────────────────────────────────────── */}
       <View
         className="border-t border-border bg-background px-screen-padding pb-xl pt-lg"
         style={{ paddingBottom: insets.bottom + 16 }}
       >
-        {/* Progress action (only if tasker can advance) */}
         {currentAction && !isTerminal && (
           <Button
             label={actionLoading ? 'Updating...' : currentAction.label}
@@ -317,7 +306,6 @@ export default function TaskerTaskDetailsScreen() {
           />
         )}
 
-        {/* Navigate to pickup (before pickup) */}
         {task.status === 'ACCEPTED' && (
           <View className="mt-md">
             <Button
@@ -331,7 +319,6 @@ export default function TaskerTaskDetailsScreen() {
           </View>
         )}
 
-        {/* Contact customer (always available during active tasks) */}
         {!isTerminal && (
           <View className="mt-md">
             <Button

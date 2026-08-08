@@ -1,33 +1,26 @@
 import React from 'react';
-import { View, ActivityIndicator, StyleSheet, ViewStyle } from 'react-native';
-import { Theme } from '../theme/types';
+import { View, ActivityIndicator, ViewStyle } from 'react-native';
 
 interface LoadingIndicatorProps {
-  theme: Theme;
   size?: 'small' | 'large';
   color?: string;
   style?: ViewStyle;
 }
 
 const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({
-  theme,
   size = 'large',
   color,
   style,
 }) => {
   return (
-    <View style={[styles.container, { paddingVertical: theme.spacing.md }, style]}>
+    <View className="items-center justify-center py-xl" style={style}>
       <ActivityIndicator
         size={size}
-        color={color || theme.colors.primary}
+        color={color || '#2563EB'}
         testID="splash-loading-indicator"
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {},
-});
 
 export default LoadingIndicator;

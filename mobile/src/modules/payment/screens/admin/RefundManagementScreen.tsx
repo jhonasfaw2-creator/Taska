@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { listAllPayments, refundPayment } from '@/services/payment.service';
@@ -147,7 +148,7 @@ export default function RefundManagementScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -172,8 +173,8 @@ export default function RefundManagementScreen() {
               </Typography>
 
               {error && (
-                <View className="mb-md rounded-xl bg-red-50 px-md py-sm">
-                  <Typography variant="caption" className="text-red-700">
+                <View className="mb-md rounded-xl bg-error-light px-md py-sm">
+                  <Typography variant="caption" className="text-error">
                     {error}
                   </Typography>
                 </View>

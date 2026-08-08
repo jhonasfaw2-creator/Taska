@@ -67,10 +67,9 @@ export default function TaskAcceptedScreen() {
         contentContainerStyle={{ flexGrow: 1, paddingTop: insets.top, paddingBottom: insets.bottom + 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View className="items-center pt-xl">
-          <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <Typography variant="h1" className="text-green-600">✓</Typography>
+          <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-success/20">
+            <Typography variant="h1" className="text-success">✓</Typography>
           </View>
           <Typography variant="h2" weight="bold" className="text-center text-text-primary">
             Task Accepted!
@@ -82,7 +81,6 @@ export default function TaskAcceptedScreen() {
           </View>
         </View>
 
-        {/* Tasker Information card */}
         <View className="mx-screen-padding mt-lg overflow-hidden rounded-2xl border border-border bg-surface">
           <View className="flex-row items-center gap-md px-lg pt-lg pb-md">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-primary/10">
@@ -113,7 +111,6 @@ export default function TaskAcceptedScreen() {
           </View>
         </View>
 
-        {/* Progress tracker */}
         <View className="mx-screen-padding mt-lg overflow-hidden rounded-2xl border border-border bg-surface px-lg py-lg">
           <Typography variant="caption" weight="semibold" className="mb-md uppercase tracking-wider text-text-secondary">
             Task Status
@@ -125,7 +122,6 @@ export default function TaskAcceptedScreen() {
           )}
         </View>
 
-        {/* Action buttons */}
         <View className="mx-screen-padding mt-lg flex-row gap-md">
           <TouchableOpacity
             accessibilityRole="button"
@@ -153,7 +149,6 @@ export default function TaskAcceptedScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Task info */}
         {task && (
           <View className="mx-screen-padding mt-lg items-center rounded-2xl border border-border bg-surface px-lg py-md">
             <View className="w-full flex-row items-center justify-between">
@@ -170,7 +165,6 @@ export default function TaskAcceptedScreen() {
         )}
       </ScrollView>
 
-      {/* Bottom section */}
       <View
         className="border-t border-border bg-background px-screen-padding pb-xl pt-lg"
         style={{ paddingBottom: insets.bottom + 16 }}

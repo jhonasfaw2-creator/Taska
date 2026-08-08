@@ -2,7 +2,6 @@ import React, { useRef, useState, useCallback } from 'react';
 import {
   View,
   ScrollView,
-  StyleSheet,
   StatusBar,
   useColorScheme,
   useWindowDimensions,
@@ -10,9 +9,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Theme } from '../theme/types';
-import { lightTheme, darkTheme } from '../theme/tokens';
-import { OnboardingSlide, PaginationDots, Button } from '../components';
+import { Button, OnboardingSlide, PaginationDots } from '@/components';
 import { ONBOARDING_SLIDES } from './onboarding/onboardingData';
 import { useOnboardingStorage } from './onboarding/useOnboardingStorage';
 
@@ -22,7 +19,7 @@ interface OnboardingScreenProps {
 
 const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
   const colorScheme = useColorScheme();
-  const theme: Theme = colorScheme === 'dark' ? darkTheme : lightTheme;
+  const isDark = colorScheme === 'dark';
   const { width } = useWindowDimensions();
 
   const { completeOnboarding } = useOnboardingStorage();
@@ -47,7 +44,7 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
       const clamped = Math.max(0, Math.min(index, total - 1));
       setActiveIndex((prev) => (prev === clamped ? prev : clamped));
     },
-    [width, total]
+    [total, width]
   );
 
   const handleScroll = useCallback(
@@ -83,21 +80,22 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: theme.colors.background }]}
+      className={`flex-1 ${isDark ? 'bg-background' : 'bg-background'}`}
       edges={['top', 'bottom']}
     >
       <StatusBar
-        barStyle={theme.isDark ? 'light-content' : 'dark-content'}
-        backgroundColor={theme.colors.background}
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor="transparent"
+        translucent
       />
 
-      <View style={styles.topBar}>
-        <View style={styles.topBarSpacer} />
+      <View className="flex-row items-center justify-between px-md pt-md">
+        <View style={{ width: 64 }} />
         {!isLastSlide && (
           <Button
             title="Skip"
-            theme={theme}
             variant="text"
+            size="sm"
             onPress={handleSkip}
             testID="onboarding-skip"
           />
@@ -114,38 +112,30 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         onScroll={handleScroll}
         onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={16}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
         testID="onboarding-scroll-view"
       >
         {ONBOARDING_SLIDES.map((slide, index) => (
-          <View key={slide.id} style={[styles.slideWrapper, { width }]}>
+          <View key={slide.id} style={{ width }}>
             <OnboardingSlide
               data={slide}
-              theme={theme}
               testID={`onboarding-slide-${index}`}
             />
           </View>
         ))}
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          { paddingHorizontal: theme.spacing.screenPadding, paddingBottom: theme.spacing.xl },
-        ]}
-      >
+      <View className="w-full px-screen-padding pb-2xl pt-xl">
         <PaginationDots
           count={total}
           activeIndex={activeIndex}
-          theme={theme}
-          style={{ marginBottom: theme.spacing.xl }}
+          style={{ marginBottom: 32 }}
           testID="onboarding-pagination"
         />
 
         <Button
           title={isLastSlide ? 'Get Started' : 'Next'}
-          theme={theme}
           variant="primary"
           fullWidth
           onPress={handleNext}
@@ -155,30 +145,5 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 8,
-    minHeight: 48,
-  },
-  topBarSpacer: {
-    width: 64,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  slideWrapper: {
-    flex: 1,
-  },
-  footer: {
-    width: '100%',
-  },
-});
 
 export default OnboardingScreen;

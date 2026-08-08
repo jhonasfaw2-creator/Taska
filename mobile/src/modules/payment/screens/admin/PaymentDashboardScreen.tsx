@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { listAllPayments } from '@/services/payment.service';
@@ -70,12 +71,12 @@ function PaymentRow({
   onPress: () => void;
 }) {
   const statusColor: Record<string, string> = {
-    PAID: 'text-green-600',
-    PENDING: 'text-amber-600',
-    PROCESSING: 'text-blue-600',
-    FAILED: 'text-red-600',
+    PAID: 'text-success',
+    PENDING: 'text-warning',
+    PROCESSING: 'text-primary',
+    FAILED: 'text-error',
     REFUNDED: 'text-purple-600',
-    CANCELLED: 'text-gray-500',
+    CANCELLED: 'text-text-secondary',
   };
 
   return (
@@ -162,8 +163,8 @@ export default function PaymentDashboardScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -175,7 +176,7 @@ export default function PaymentDashboardScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -196,38 +197,38 @@ export default function PaymentDashboardScreen() {
             <>
               <View className="mb-lg gap-sm">
                 <View className="flex-row gap-sm">
-                  <AdminStatCard
-                    label="Revenue"
-                    value={`ETB ${stats.totalRevenue.toFixed(2)}`}
-                    color="text-green-600"
-                  />
-                  <AdminStatCard
-                    label="Fees"
-                    value={`ETB ${stats.totalFees.toFixed(2)}`}
-                    color="text-primary"
-                  />
-                </View>
-                <View className="flex-row gap-sm">
-                  <AdminStatCard
-                    label="Paid"
-                    value={String(stats.paid)}
-                    color="text-green-600"
-                  />
-                  <AdminStatCard
-                    label="Pending"
-                    value={String(stats.pending)}
-                    color="text-amber-600"
-                  />
-                  <AdminStatCard
-                    label="Failed"
-                    value={String(stats.failed)}
-                    color="text-red-600"
-                  />
-                  <AdminStatCard
-                    label="Refunded"
-                    value={String(stats.refunded)}
-                    color="text-purple-600"
-                  />
+                <AdminStatCard
+                  label="Revenue"
+                  value={`ETB ${stats.totalRevenue.toFixed(2)}`}
+                  color="text-success"
+                />
+                <AdminStatCard
+                  label="Fees"
+                  value={`ETB ${stats.totalFees.toFixed(2)}`}
+                  color="text-primary"
+                />
+              </View>
+              <View className="flex-row gap-sm">
+                <AdminStatCard
+                  label="Paid"
+                  value={String(stats.paid)}
+                  color="text-success"
+                />
+                <AdminStatCard
+                  label="Pending"
+                  value={String(stats.pending)}
+                  color="text-warning"
+                />
+                <AdminStatCard
+                  label="Failed"
+                  value={String(stats.failed)}
+                  color="text-error"
+                />
+                <AdminStatCard
+                  label="Refunded"
+                  value={String(stats.refunded)}
+                  color="text-purple-600"
+                />
                 </View>
               </View>
 

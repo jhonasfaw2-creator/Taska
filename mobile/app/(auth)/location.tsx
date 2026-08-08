@@ -125,7 +125,7 @@ function LocationSection({
           />
           {searchLoading && (
             <View className="h-4 w-4 items-center justify-center">
-              <ActivityIndicator size="small" color="#4F46E5" />
+              <ActivityIndicator size="small" color="#2563EB" />
             </View>
           )}
         </View>

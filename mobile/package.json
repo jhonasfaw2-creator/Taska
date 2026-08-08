@@ -30,6 +30,7 @@
     "expo-splash-screen": "^57.0.5",
     "expo-status-bar": "~3.0.9",
     "expo-updates": "^57.0.8",
+    "lucide-react-native": "^1.30.0",
     "nativewind": "^5.0.0-preview.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",

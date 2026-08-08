@@ -30,7 +30,7 @@ export function FormField({
         >
           {label}
           {required && (
-            <Typography variant="caption" className="text-red-500">
+            <Typography variant="caption" className="text-error">
               {' *'}
             </Typography>
           )}
@@ -39,7 +39,7 @@ export function FormField({
           <Typography
             variant="caption"
             color="secondary"
-            className={characterCount.current > characterCount.max ? 'text-red-500' : ''}
+            className={characterCount.current > characterCount.max ? 'text-error' : ''}
           >
             {characterCount.current}/{characterCount.max}
           </Typography>
@@ -47,7 +47,7 @@ export function FormField({
       </View>
       <View
         className={`rounded-xl border bg-surface px-md ${
-          showError ? 'border-red-500' : 'border-border'
+          showError ? 'border-error' : 'border-border'
         }`}
       >
         <TextInput
@@ -59,7 +59,7 @@ export function FormField({
       </View>
       {showError && (
         <View className="mt-xs px-xs">
-          <Typography variant="caption" className="text-red-500">
+          <Typography variant="caption" className="text-error">
             {error}
           </Typography>
         </View>

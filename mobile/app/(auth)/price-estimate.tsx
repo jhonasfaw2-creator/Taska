@@ -2,11 +2,11 @@ import { useCallback, useMemo } from 'react';
 import { View, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
 
-// Base pricing constants used for estimation
 const PRICING = {
   baseFare: 5.00,
   ratePerKm: 2.50,
@@ -25,10 +25,9 @@ export default function PriceEstimateScreen() {
     ? VEHICLES.find((v) => v.id === state.vehicleType) ?? null
     : null;
 
-  // Estimate distance from pickup/dropoff coords if both are set
   const estimatedDistance = useMemo(() => {
     if (state.pickup && state.dropoff) {
-      const R = 6371; // Earth's radius in km
+      const R = 6371;
       const dLat = ((state.dropoff.latitude - state.pickup.latitude) * Math.PI) / 180;
       const dLon = ((state.dropoff.longitude - state.pickup.longitude) * Math.PI) / 180;
       const a =
@@ -39,9 +38,9 @@ export default function PriceEstimateScreen() {
           Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       const dist = R * c;
-      return dist > 0.1 ? dist : 4.2; // Default to 4.2 km if coords are placeholder
+      return dist > 0.1 ? dist : 4.2;
     }
-    return 4.2; // Fallback distance
+    return 4.2;
   }, [state.pickup, state.dropoff]);
 
   const breakdown = useMemo(() => {
@@ -84,7 +83,6 @@ export default function PriceEstimateScreen() {
         }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header section */}
         <View className="px-screen-padding pt-md">
           <TouchableOpacity
             accessibilityRole="button"
@@ -94,9 +92,7 @@ export default function PriceEstimateScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={20} color="#0F172A" className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -110,9 +106,7 @@ export default function PriceEstimateScreen() {
           </View>
         </View>
 
-        {/* Price content */}
         <View className="flex-1 px-screen-padding pt-xl">
-          {/* Vehicle summary card */}
           <View className="mb-lg rounded-2xl border border-border bg-surface p-lg">
             <Typography
               variant="caption"
@@ -143,7 +137,6 @@ export default function PriceEstimateScreen() {
             </View>
           </View>
 
-          {/* Price breakdown card */}
           <View className="overflow-hidden rounded-2xl border border-border bg-surface">
             <View className="border-b border-border px-lg py-md">
               <Typography
@@ -199,7 +192,6 @@ export default function PriceEstimateScreen() {
             </View>
           </View>
 
-          {/* Info note */}
           <View className="mt-lg flex-row items-start gap-sm rounded-xl border border-border bg-surface px-md py-md">
             <Typography variant="body" className="mt-px text-primary">
               ℹ️
@@ -209,7 +201,6 @@ export default function PriceEstimateScreen() {
             </Typography>
           </View>
 
-          {/* Estimated time badge */}
           <View className="mt-lg items-center">
             <View className="flex-row items-center gap-xs rounded-full bg-primary/10 px-lg py-sm">
               <Typography variant="body" className="text-primary">
@@ -223,7 +214,6 @@ export default function PriceEstimateScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom section */}
       <View
         className="gap-md border-t border-border bg-background px-screen-padding pb-xl pt-lg"
         style={{ paddingBottom: insets.bottom + 16 }}

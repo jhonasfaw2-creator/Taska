@@ -38,7 +38,6 @@ export default function BecomeTaskerScreen() {
           paddingBottom: insets.bottom + 100,
         }}
       >
-        {/* Hero */}
         <View className="items-center bg-primary px-screen-padding pb-xl pt-lg">
           <View className="mb-md h-20 w-20 items-center justify-center rounded-full border-2 border-background/30 bg-background/20">
             <Typography variant="display" className="text-background" style={{ fontSize: 40 }}>🛵</Typography>
@@ -54,7 +53,6 @@ export default function BecomeTaskerScreen() {
           </Typography>
         </View>
 
-        {/* Benefits */}
         <View className="px-screen-padding pt-xl">
           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
             Why become a Tasker?
@@ -79,7 +77,6 @@ export default function BecomeTaskerScreen() {
           ))}
         </View>
 
-        {/* Requirements */}
         <View className="px-screen-padding pt-xl">
           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
             Requirements
@@ -87,8 +84,8 @@ export default function BecomeTaskerScreen() {
           <View className="rounded-2xl border border-border bg-surface px-lg py-lg">
             {REQUIREMENTS.map((req, i) => (
               <View key={i} className="flex-row items-center py-sm">
-                <View className="mr-md h-6 w-6 items-center justify-center rounded-full bg-green-100">
-                  <Typography variant="caption" className="text-green-600">✓</Typography>
+                <View className="mr-md h-6 w-6 items-center justify-center rounded-full bg-success/20">
+                  <Typography variant="caption" className="text-success">✓</Typography>
                 </View>
                 <Typography variant="body" className="flex-1 text-text-primary">
                   {req}
@@ -98,7 +95,6 @@ export default function BecomeTaskerScreen() {
           </View>
         </View>
 
-        {/* Earnings */}
         <View className="px-screen-padding pt-xl">
           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
             How earnings work

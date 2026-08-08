@@ -41,9 +41,14 @@ export default function RootLayout() {
   }, []);
 
   useEffect(() => {
+    // Safety timeout — ensures the splash screen always hides even
+    // if font loading hangs or the effect doesn't fire normally.
+    const timeout = setTimeout(() => SplashScreen.hideAsync(), 4000);
     if (fontsLoaded) {
+      clearTimeout(timeout);
       SplashScreen.hideAsync();
     }
+    return () => clearTimeout(timeout);
   }, [fontsLoaded]);
 
   if (!fontsLoaded) return null;

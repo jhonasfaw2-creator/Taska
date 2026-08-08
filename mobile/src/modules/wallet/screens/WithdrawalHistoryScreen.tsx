@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
@@ -92,8 +93,8 @@ export default function WithdrawalHistoryScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -105,7 +106,7 @@ export default function WithdrawalHistoryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

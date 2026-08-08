@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { sendOTP, ApiError } from '@/services';
 
@@ -46,7 +47,6 @@ export default function PhoneScreen() {
       console.log('[PhoneScreen] Calling sendOTP...');
       const result = await sendOTP(fullPhoneNumber);
       console.log('[PhoneScreen] sendOTP succeeded:', JSON.stringify(result));
-      // Navigate to OTP screen with the phone number
       console.log('[PhoneScreen] Navigating to /otp with phone:', fullPhoneNumber);
       router.push(`/otp?phone=${encodeURIComponent(fullPhoneNumber)}`);
     } catch (error) {
@@ -74,9 +74,7 @@ export default function PhoneScreen() {
         paddingBottom: insets.bottom,
       }}
     >
-      {/* Top section with back button, title, and subtitle */}
       <View className="px-screen-padding pt-md">
-        {/* Back button */}
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Go back"
@@ -85,17 +83,13 @@ export default function PhoneScreen() {
           className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
           hitSlop={8}
         >
-          <Typography variant="body" weight="medium" className="text-text-primary">
-            ←
-          </Typography>
+          <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
         </TouchableOpacity>
 
-        {/* Title */}
         <Typography variant="h2" weight="bold" className="text-text-primary">
           Enter your phone number
         </Typography>
 
-        {/* Subtitle */}
         <View className="mt-sm">
           <Typography variant="body" color="secondary" className="leading-relaxed">
             We&apos;ll send you a verification code.
@@ -103,9 +97,7 @@ export default function PhoneScreen() {
         </View>
       </View>
 
-      {/* Input area */}
       <View className="flex-1 px-screen-padding pt-xl">
-        {/* Country selector */}
         <TouchableOpacity
           accessibilityRole="button"
           accessibilityLabel="Selected country: Ethiopia, code +251"
@@ -126,10 +118,8 @@ export default function PhoneScreen() {
           </Typography>
         </TouchableOpacity>
 
-        {/* Phone number input */}
         <View className="mt-md flex-row items-center rounded-xl border border-border bg-surface px-md">
-          {/* Country code prefix */}
-          <View className="pr-sm" style={{ borderRightWidth: 1, borderRightColor: '#E5E7EB' }}>
+          <View className="pr-sm border-r border-border">
             <Typography
               variant="body"
               weight="semibold"
@@ -139,7 +129,6 @@ export default function PhoneScreen() {
             </Typography>
           </View>
 
-          {/* Phone input */}
           <TextInput
             value={phoneNumber}
             onChangeText={handlePhoneChange}
@@ -157,7 +146,6 @@ export default function PhoneScreen() {
           />
         </View>
 
-        {/* Hint text */}
         {phoneNumber.length > 0 && !isValid && (
           <View className="mt-sm">
             <Typography variant="caption" className="text-text-secondary">
@@ -166,17 +154,15 @@ export default function PhoneScreen() {
           </View>
         )}
 
-        {/* Error message */}
         {errorMessage && (
-          <View className="mt-md rounded-xl border border-red-200 bg-red-50 px-md py-sm">
-            <Typography variant="caption" className="text-red-600">
+          <View className="mt-md rounded-xl border border-error/30 bg-error-light px-md py-sm">
+            <Typography variant="caption" className="text-error">
               {errorMessage}
             </Typography>
           </View>
         )}
       </View>
 
-      {/* Bottom section with Continue and Back buttons */}
       <View className="gap-md px-screen-padding pb-xl">
         <Button
           label={isLoading ? 'Sending code...' : 'Continue'}

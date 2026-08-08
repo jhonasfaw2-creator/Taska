@@ -35,12 +35,12 @@ const STATUS_CONFIG: Record<
   TaskStatusType,
   { bg: string; text: string; label: string }
 > = {
-  PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-  SEARCHING: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Searching' },
+  PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'Pending' },
+  SEARCHING: { bg: 'bg-primary/10', text: 'text-primary', label: 'Searching' },
   ACCEPTED: { bg: 'bg-primary/10', text: 'text-primary', label: 'Accepted' },
   PICKED_UP: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Picked Up' },
   IN_PROGRESS: { bg: 'bg-primary/10', text: 'text-primary', label: 'In Progress' },
-  COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+  COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Completed' },
   CANCELLED: { bg: 'bg-text-secondary/10', text: 'text-text-secondary', label: 'Cancelled' },
 };
 
@@ -195,8 +195,8 @@ function NotificationButton({
     >
       <Text className="text-lg">🔔</Text>
       {unreadCount > 0 && (
-        <View className="absolute -right-1 -top-1 h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-1">
-          <Text className="text-[10px] font-bold text-white">
+        <View className="absolute -right-1 -top-1 h-5 min-w-[20px] items-center justify-center rounded-full bg-error px-1">
+          <Text className="text-[10px] font-bold text-background">
             {unreadCount > 99 ? '99+' : unreadCount}
           </Text>
         </View>
@@ -213,8 +213,8 @@ function ErrorSection({
   onRetry: () => void;
 }) {
   return (
-    <View className="items-center rounded-2xl border border-border bg-surface px-lg py-xl">
-      <View className="mb-md h-14 w-14 items-center justify-center rounded-full bg-red-100">
+      <View className="items-center rounded-2xl border border-border bg-error/10 px-lg py-xl">
+      <View className="mb-md h-14 w-14 items-center justify-center rounded-full bg-error/10">
         <Text className="text-2xl">⚠️</Text>
       </View>
       <Typography variant="body" weight="semibold" className="text-center text-text-primary">
@@ -362,8 +362,8 @@ export default function CustomerHomeScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -510,7 +510,7 @@ export default function CustomerHomeScreen() {
           activeOpacity={0.85}
           className="flex-row items-center justify-center gap-sm rounded-2xl bg-primary py-lg"
           style={{
-            shadowColor: '#4F46E5',
+            shadowColor: '#2563EB',
             shadowOffset: { width: 0, height: 6 },
             shadowOpacity: 0.3,
             shadowRadius: 12,

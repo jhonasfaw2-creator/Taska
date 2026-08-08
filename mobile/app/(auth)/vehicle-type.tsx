@@ -69,17 +69,6 @@ export default function VehicleTypeScreen() {
                     ? 'border-primary bg-primary/[0.08]'
                     : 'border-border bg-surface'
                 }`}
-                style={
-                  isSelected
-                    ? {
-                        shadowColor: '#4F46E5',
-                        shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.2,
-                        shadowRadius: 12,
-                        elevation: 6,
-                      }
-                    : {}
-                }
               >
                 {isSelected && <View className="h-1 w-full bg-primary" />}
 

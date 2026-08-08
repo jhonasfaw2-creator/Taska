@@ -11,10 +11,10 @@ import {
   ActivityIndicator,
   TouchableOpacityProps,
   View,
-  Text,
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { Typography } from './Typography';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -39,46 +39,61 @@ interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   testID?: string;
 }
 
-// ─── Size Styles ───────────────────────────────────────────────────────────
+// ─── Variant Classes ────────────────────────────────────────────────────────
 
-const SIZE_STYLES: Record<ButtonSize, ViewStyle> = {
-  sm: {
-    height: 36,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+const VARIANT_CLASSES: Record<ButtonVariant, { container: string; text: string; disabledContainer: string; disabledText: string }> = {
+  primary: {
+    container: 'bg-primary',
+    text: 'text-background',
+    disabledContainer: 'bg-primary-variant',
+    disabledText: 'text-background/70',
   },
-  md: {
-    height: 44,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
+  secondary: {
+    container: 'bg-surface-secondary',
+    text: 'text-text-primary',
+    disabledContainer: 'bg-neutral-200',
+    disabledText: 'text-text-disabled',
   },
-  lg: {
-    height: 52,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
+  outline: {
+    container: 'bg-transparent border-primary',
+    text: 'text-primary',
+    disabledContainer: 'bg-transparent border-neutral-300',
+    disabledText: 'text-text-disabled',
   },
-  xl: {
-    height: 56,
-    paddingHorizontal: 32,
-    paddingVertical: 14,
+  ghost: {
+    container: 'bg-transparent',
+    text: 'text-primary',
+    disabledContainer: 'bg-transparent',
+    disabledText: 'text-text-disabled',
+  },
+  success: {
+    container: 'bg-success',
+    text: 'text-on-success',
+    disabledContainer: 'bg-success/60',
+    disabledText: 'text-on-success/70',
+  },
+  warning: {
+    container: 'bg-warning',
+    text: 'text-on-warning',
+    disabledContainer: 'bg-warning/60',
+    disabledText: 'text-on-warning/70',
+  },
+  error: {
+    container: 'bg-error',
+    text: 'text-on-error',
+    disabledContainer: 'bg-error/60',
+    disabledText: 'text-on-error/70',
   },
 };
 
-const SIZE_TEXT_STYLES: Record<ButtonSize, TextStyle> = {
-  sm: { fontSize: 14 },
-  md: { fontSize: 16 },
-  lg: { fontSize: 16 },
-  xl: { fontSize: 18 },
-};
+// ─── Radius Classes ─────────────────────────────────────────────────────────
 
-// ─── Radius Styles ─────────────────────────────────────────────────────────
-
-const RADIUS_STYLES: Record<ButtonRadius, number> = {
-  sm: 8,
-  md: 10,
-  lg: 12,
-  xl: 16,
-  full: 9999,
+const RADIUS_CLASSES: Record<ButtonRadius, string> = {
+  sm: 'rounded-md',
+  md: 'rounded-lg',
+  lg: 'rounded-xl',
+  xl: 'rounded-2xl',
+  full: 'rounded-full',
 };
 
 // ─── Shadow Styles ─────────────────────────────────────────────────────────
@@ -122,18 +137,6 @@ const SHADOW_STYLES: Record<ButtonShadow, ViewStyle> = {
   },
 };
 
-// ─── Variant Colors ────────────────────────────────────────────────────────
-
-const VARIANT_COLORS: Record<ButtonVariant, { bg: string; bgDisabled: string; text: string; border?: string }> = {
-  primary: { bg: '#2563EB', bgDisabled: '#93C5FD', text: '#FFFFFF' },
-  secondary: { bg: '#F1F5F9', bgDisabled: '#E2E8F0', text: '#0F172A' },
-  outline: { bg: 'transparent', bgDisabled: 'transparent', text: '#2563EB', border: '#2563EB' },
-  ghost: { bg: 'transparent', bgDisabled: 'transparent', text: '#2563EB' },
-  success: { bg: '#22C55E', bgDisabled: '#86EFAC', text: '#FFFFFF' },
-  warning: { bg: '#F59E0B', bgDisabled: '#FCD34D', text: '#FFFFFF' },
-  error: { bg: '#EF4444', bgDisabled: '#FCA5A5', text: '#FFFFFF' },
-};
-
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export const Button: React.FC<ButtonProps> = ({
@@ -154,7 +157,25 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const isDisabled = disabled || loading;
-  const colors = VARIANT_COLORS[variant];
+  const variantClasses = VARIANT_CLASSES[variant];
+  const radiusClass = RADIUS_CLASSES[radius];
+  const shadowStyle = SHADOW_STYLES[shadow];
+
+  const containerClassName = [
+    'flex-row items-center justify-center',
+    variantClasses.container,
+    isDisabled ? variantClasses.disabledContainer : '',
+    radiusClass,
+    fullWidth ? 'w-full' : '',
+    isDisabled ? 'opacity-disabled' : '',
+    shadow !== 'none' ? 'shadow-sm' : '',
+  ].filter(Boolean).join(' ');
+
+  const textClassName = [
+    'font-semibold',
+    variantClasses.text,
+    isDisabled ? variantClasses.disabledText : '',
+  ].filter(Boolean).join(' ');
 
   return (
     <TouchableOpacity
@@ -164,42 +185,18 @@ export const Button: React.FC<ButtonProps> = ({
       onPress={onPress}
       testID={testID}
       activeOpacity={0.85}
-      style={[
-        {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: fullWidth ? '100%' : 'auto',
-          opacity: isDisabled ? 0.6 : 1,
-          backgroundColor: isDisabled ? colors.bgDisabled : colors.bg,
-          borderRadius: RADIUS_STYLES[radius],
-          borderWidth: colors.border ? 1 : 0,
-          borderColor: colors.border,
-        },
-        SIZE_STYLES[size],
-        SHADOW_STYLES[shadow],
-        style,
-      ]}
+      className={containerClassName}
+      style={[shadowStyle, style]}
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={colors.text} />
+        <ActivityIndicator color={isDisabled ? 'rgba(255,255,255,0.7)' : '#FFFFFF'} />
       ) : (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {leftIcon && <View>{leftIcon}</View>}
-          <Text
-            style={[
-              {
-                color: colors.text,
-                fontWeight: '600',
-                fontFamily: 'Inter',
-              },
-              SIZE_TEXT_STYLES[size],
-              textStyle,
-            ]}
-          >
+          <Typography variant="label-md" weight="semibold" className={textClassName} style={textStyle}>
             {label}
-          </Text>
+          </Typography>
           {rightIcon && <View>{rightIcon}</View>}
         </View>
       )}

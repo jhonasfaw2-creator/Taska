@@ -52,14 +52,14 @@ export function ProgressTimeline({
     return (
       <View className="flex-row items-center py-md">
         <View className="items-center" style={{ width: 28 }}>
-          <View className="h-6 w-6 items-center justify-center rounded-full border-2 border-red-500 bg-red-100">
-            <Typography variant="caption" weight="bold" className="text-red-600" style={{ fontSize: 10 }}>
+          <View className="h-6 w-6 items-center justify-center rounded-full border-2 border-error bg-error/10">
+            <Typography variant="caption" weight="bold" className="text-error" style={{ fontSize: 10 }}>
               ✕
             </Typography>
           </View>
         </View>
         <View className="ml-md flex-1">
-          <Typography variant="body" weight="semibold" className="text-red-600">
+          <Typography variant="body" weight="semibold" className="text-error">
             Task Cancelled
           </Typography>
         </View>
@@ -138,12 +138,12 @@ export function ProgressTimeline({
  * Status badge component matching the STATUS_CONFIG from customer-home.
  */
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  PENDING: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending' },
-  SEARCHING: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Searching' },
+  PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'Pending' },
+  SEARCHING: { bg: 'bg-primary/10', text: 'text-primary', label: 'Searching' },
   ACCEPTED: { bg: 'bg-primary/10', text: 'text-primary', label: 'Accepted' },
-  PICKED_UP: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Picked Up' },
+  PICKED_UP: { bg: 'bg-primary/10', text: 'text-primary', label: 'Picked Up' },
   IN_PROGRESS: { bg: 'bg-primary/10', text: 'text-primary', label: 'In Progress' },
-  COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
+  COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Completed' },
   CANCELLED: { bg: 'bg-text-secondary/10', text: 'text-text-secondary', label: 'Cancelled' },
 };
 

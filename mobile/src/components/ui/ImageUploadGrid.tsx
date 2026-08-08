@@ -105,7 +105,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
             paddingVertical: 8,
           }}
         >
-          <ActivityIndicator size="small" color="#4F46E5" />
+          <ActivityIndicator size="small" color="#2563EB" />
           <Text style={{ marginLeft: 8, color: '#6B7280', fontSize: 14 }}>Uploading...</Text>
         </View>
       )}
@@ -115,7 +115,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
           onPress={onUpload}
           disabled={uploading}
           style={{
-            backgroundColor: '#4F46E5',
+            backgroundColor: '#2563EB',
             paddingVertical: 12,
             paddingHorizontal: 24,
             borderRadius: 8,

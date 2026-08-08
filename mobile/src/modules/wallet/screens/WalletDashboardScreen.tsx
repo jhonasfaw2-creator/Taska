@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { getBalanceSummary, requestWithdrawal } from '@/services/wallet.service';
@@ -89,7 +90,7 @@ export default function WalletDashboardScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -156,16 +157,16 @@ export default function WalletDashboardScreen() {
 
           <View className="rounded-2xl border border-border bg-surface p-lg">
             {withdrawSuccess && (
-              <View className="mb-md rounded-xl bg-green-50 px-md py-sm">
-                <Typography variant="caption" className="text-green-700">
+              <View className="mb-md rounded-xl bg-success-light px-md py-sm">
+                <Typography variant="caption" className="text-success">
                   Withdrawal request submitted successfully.
                 </Typography>
               </View>
             )}
 
             {withdrawError && (
-              <View className="mb-md rounded-xl bg-red-50 px-md py-sm">
-                <Typography variant="caption" className="text-red-700">
+              <View className="mb-md rounded-xl bg-error-light px-md py-sm">
+                <Typography variant="caption" className="text-error">
                   {withdrawError}
                 </Typography>
               </View>

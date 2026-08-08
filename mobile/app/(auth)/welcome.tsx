@@ -23,7 +23,6 @@ export default function AuthEntryScreen() {
 
   return (
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-background">
-      {/* Brand cluster (vertically centered) */}
       <View className="flex-1 items-center justify-center px-screen-padding">
         <View className="items-center">
           <View className="items-center justify-center rounded-2xl bg-surface p-xl shadow-lg">
@@ -49,7 +48,6 @@ export default function AuthEntryScreen() {
         </View>
       </View>
 
-      {/* Action + legal footer */}
       <View className="px-screen-padding pb-xl">
         <Button
           label="Continue with Phone"
@@ -64,7 +62,7 @@ export default function AuthEntryScreen() {
         <View className="flex-row items-center justify-center">
           <Link label="Terms of Service" onPress={handleOpenTerms} testID="terms-link" />
           <Typography variant="caption" color="secondary" className="px-xs">
-            ·
+            {'·'}
           </Typography>
           <Link label="Privacy Policy" onPress={handleOpenPrivacy} testID="privacy-link" />
         </View>

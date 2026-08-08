@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 
 interface PaymentOption {
@@ -45,7 +46,7 @@ export default function PaymentMethodScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -110,7 +111,7 @@ export default function PaymentMethodScreen() {
           activeOpacity={0.85}
           className="w-full flex-row items-center justify-center rounded-full bg-primary px-lg py-md"
           style={{
-            shadowColor: '#4F46E5',
+            shadowColor: '#2563EB',
             shadowOffset: { width: 0, height: 6 },
             shadowOpacity: 0.25,
             shadowRadius: 12,

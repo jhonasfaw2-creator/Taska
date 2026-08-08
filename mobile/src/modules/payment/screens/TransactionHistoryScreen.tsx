@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
@@ -9,12 +10,12 @@ import { listPayments } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 
 const STATUS_META: Record<string, { icon: string; color: string }> = {
-  PENDING: { icon: '⏳', color: 'text-amber-600' },
-  PROCESSING: { icon: '🔄', color: 'text-blue-600' },
-  AUTHORIZED: { icon: '✓', color: 'text-blue-600' },
-  PAID: { icon: '✅', color: 'text-green-600' },
-  FAILED: { icon: '❌', color: 'text-red-600' },
-  CANCELLED: { icon: '↩️', color: 'text-gray-500' },
+  PENDING: { icon: '⏳', color: 'text-warning' },
+  PROCESSING: { icon: '🔄', color: 'text-primary' },
+  AUTHORIZED: { icon: '✓', color: 'text-primary' },
+  PAID: { icon: '✅', color: 'text-success' },
+  FAILED: { icon: '❌', color: 'text-error' },
+  CANCELLED: { icon: '↩️', color: 'text-text-secondary' },
   REFUNDED: { icon: '💳', color: 'text-purple-600' },
   PARTIALLY_REFUNDED: { icon: '💳', color: 'text-purple-400' },
 };
@@ -120,8 +121,8 @@ export default function TransactionHistoryScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -133,7 +134,7 @@ export default function TransactionHistoryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

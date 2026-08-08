@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
-import { Theme } from '../theme/types';
-import Logo from './Logo';
+import { View, ViewStyle } from 'react-native';
+import { Typography } from '@/components/ui';
+import NewLogo from '@/components/ui/Logo';
 
 export interface OnboardingSlideData {
   id: string;
@@ -12,16 +12,14 @@ export interface OnboardingSlideData {
 
 interface OnboardingSlideProps {
   data: OnboardingSlideData;
-  theme: Theme;
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
-  illustrationStyle?: ImageStyle;
+  illustrationStyle?: ViewStyle;
   testID?: string;
 }
 
 const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
   data,
-  theme,
   style,
   contentContainerStyle,
   illustrationStyle,
@@ -29,76 +27,30 @@ const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
 }) => {
   return (
     <View
-      style={[styles.container, style]}
+      className="flex-1 items-center justify-center px-screen-padding"
+      style={style}
       testID={testID}
       accessible
       accessibilityLabel={`${data.title}. ${data.description}`}
     >
       <View
-        style={[
-          styles.illustrationWrapper,
-          { marginBottom: theme.spacing.xxl },
-          illustrationStyle,
-        ]}
+        className="mb-2xl items-center justify-center"
+        style={illustrationStyle}
       >
-        {data.illustration ?? <Logo size={theme.spacing.xxl * 3} theme={theme} />}
+        {data.illustration ?? <NewLogo size={120} />}
       </View>
 
-      <View style={[styles.content, { paddingHorizontal: theme.spacing.screenPadding }, contentContainerStyle]}>
-        <Text
-          style={[
-            styles.title,
-            {
-              color: theme.colors.textPrimary,
-              fontSize: theme.typography.fontSize.h1,
-              fontWeight: theme.typography.fontWeight.bold,
-              marginTop: theme.spacing.lg,
-            },
-          ]}
-        >
+      <View style={[contentContainerStyle, { width: '100%' }]}>
+        <Typography variant="h2" weight="bold" className="mt-lg text-text-primary">
           {data.title}
-        </Text>
+        </Typography>
 
-        <Text
-          style={[
-            styles.description,
-            {
-              color: theme.colors.textSecondary,
-              fontSize: theme.typography.fontSize.body,
-              fontWeight: theme.typography.fontWeight.regular,
-              lineHeight: theme.typography.lineHeight.relaxed * theme.typography.fontSize.body,
-              marginTop: theme.spacing.md,
-            },
-          ]}
-        >
+        <Typography variant="body" color="secondary" className="mt-md leading-relaxed">
           {data.description}
-        </Text>
+        </Typography>
       </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  illustrationWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    width: '100%',
-    alignItems: 'flex-start',
-  },
-  title: {
-    textAlign: 'left',
-    letterSpacing: -0.5,
-  },
-  description: {
-    textAlign: 'left',
-  },
-});
 
 export default OnboardingSlide;

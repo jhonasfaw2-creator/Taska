@@ -2,17 +2,18 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { getPaymentByTask, createPayment } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 import { ApiError } from '@/services';
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: 'text-amber-600',
-  PROCESSING: 'text-blue-600',
-  PAID: 'text-green-600',
-  FAILED: 'text-red-600',
-  CANCELLED: 'text-gray-500',
+  PENDING: 'text-warning',
+  PROCESSING: 'text-primary',
+  PAID: 'text-success',
+  FAILED: 'text-error',
+  CANCELLED: 'text-text-secondary',
   REFUNDED: 'text-purple-600',
 };
 
@@ -105,7 +106,7 @@ export default function PaymentSummaryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -115,8 +116,8 @@ export default function PaymentSummaryScreen() {
 
         <View className="px-screen-padding pt-xl">
           {error && (
-            <View className="mb-md rounded-xl bg-red-50 px-md py-sm">
-              <Typography variant="caption" className="text-red-700">
+            <View className="mb-md rounded-xl bg-error-light px-md py-sm">
+              <Typography variant="caption" className="text-error">
                 {error}
               </Typography>
             </View>
@@ -176,7 +177,7 @@ export default function PaymentSummaryScreen() {
                     <Typography variant="body" weight="semibold" className="text-text-primary">
                       Tasker Payout
                     </Typography>
-                    <Typography variant="body" weight="bold" className="text-green-600">
+                    <Typography variant="body" weight="bold" className="text-success">
                       {displayCurrency} {taskerAmount.toFixed(2)}
                     </Typography>
                   </View>
@@ -245,7 +246,7 @@ export default function PaymentSummaryScreen() {
             className="w-full flex-row items-center justify-center rounded-full bg-primary px-lg py-md"
             style={{
               opacity: submitting ? 0.6 : 1,
-              shadowColor: '#4F46E5',
+              shadowColor: '#2563EB',
               shadowOffset: { width: 0, height: 6 },
               shadowOpacity: 0.25,
               shadowRadius: 12,

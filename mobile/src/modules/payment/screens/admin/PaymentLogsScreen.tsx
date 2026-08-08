@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, TextInput, RefreshControl } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { listAllPayments, getPaymentAuditLogs } from '@/services/payment.service';
@@ -32,12 +33,12 @@ function AuditLogCard({ log }: { log: PaymentAuditLog }) {
         </View>
         <View className="ml-sm items-end">
           {log.fromStatus && (
-            <Typography variant="caption" className="text-amber-600">
+            <Typography variant="caption" className="text-warning">
               {log.fromStatus}
             </Typography>
           )}
           {log.toStatus && (
-            <Typography variant="caption" className="text-green-600">
+            <Typography variant="caption" className="text-success">
               → {log.toStatus}
             </Typography>
           )}
@@ -126,8 +127,8 @@ export default function PaymentLogsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor="#4F46E5"
-            colors={['#4F46E5']}
+            tintColor="#2563EB"
+            colors={['#2563EB']}
           />
         }
       >
@@ -139,7 +140,7 @@ export default function PaymentLogsScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

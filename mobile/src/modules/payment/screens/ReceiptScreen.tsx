@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { getPayment } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
@@ -25,7 +26,7 @@ function ReceiptRow({
       <Typography
         variant="body"
         weight={bold ? 'bold' : 'medium'}
-        className={highlight ? 'text-green-600' : 'text-text-primary'}
+        className={highlight ? 'text-success' : 'text-text-primary'}
       >
         {value}
       </Typography>
@@ -94,16 +95,16 @@ export default function ReceiptScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <Typography variant="body" className="text-text-primary">←</Typography>
+            <ArrowLeft size={24} color="#111827" />
           </TouchableOpacity>
         </View>
 
         <View className="mx-screen-padding rounded-2xl border-2 border-primary/20 bg-surface p-lg">
           <View className="items-center pb-lg">
-            <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-success/10">
               <Typography variant="h1">✅</Typography>
             </View>
-            <Typography variant="h2" weight="bold" className="text-green-600">
+            <Typography variant="h2" weight="bold" className="text-success">
               Payment Successful
             </Typography>
             <Typography variant="caption" color="secondary" className="mt-xs">
@@ -160,14 +161,14 @@ export default function ReceiptScreen() {
             </Typography>
             <View className="gap-md">
               <View className="flex-row items-center gap-md">
-                <View className="h-2 w-2 rounded-full bg-green-500" />
+                <View className="h-2 w-2 rounded-full bg-success" />
                 <Typography variant="caption" color="secondary">
                   Created — {new Date(payment.createdAt).toLocaleString()}
                 </Typography>
               </View>
               {payment.paidAt && (
                 <View className="flex-row items-center gap-md">
-                  <View className="h-2 w-2 rounded-full bg-green-500" />
+                  <View className="h-2 w-2 rounded-full bg-success" />
                   <Typography variant="caption" color="secondary">
                     Paid — {new Date(payment.paidAt).toLocaleString()}
                   </Typography>
@@ -189,7 +190,7 @@ export default function ReceiptScreen() {
           activeOpacity={0.85}
           className="w-full rounded-full bg-primary px-lg py-md"
           style={{
-            shadowColor: '#4F46E5',
+            shadowColor: '#2563EB',
             shadowOffset: { width: 0, height: 6 },
             shadowOpacity: 0.25,
             shadowRadius: 12,
