@@ -5,7 +5,8 @@
 
 import { color, semanticColor, spacing, borderRadius, shadow, animation, opacity, zIndex, fontSize, fontWeight, fontFamily } from '../index.js';
 
-type NestedRecord = Record<string, string | number | NestedRecord>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NestedRecord = Record<string, any>;
 
 function flatten(obj: NestedRecord, prefix: string): [string, string][] {
   const pairs: [string, string][] = [];
@@ -14,7 +15,7 @@ function flatten(obj: NestedRecord, prefix: string): [string, string][] {
     if (typeof val === 'string' || typeof val === 'number') {
       pairs.push([k, String(val)]);
     } else if (typeof val === 'object' && val !== null) {
-      pairs.push(...flatten(val as NestedRecord, k));
+      pairs.push(...flatten(val, k));
     }
   }
   return pairs;
@@ -44,13 +45,13 @@ export function generateCssVariables(): string {
   /* ── Semantic (light) ────────────────────────────────── */
   lines.push('');
   lines.push('/* Light mode semantic colors */');
-  for (const [key, val] of flatten(semanticColor.light as unknown as NestedRecord, '--semantic')) {
+  for (const [key, val] of flatten(semanticColor.light, '--semantic')) {
     lines.push(`${key}: ${val};`);
   }
 
   lines.push('');
   lines.push('/* Dark mode semantic colors */');
-  for (const [key, val] of flatten(semanticColor.dark as unknown as NestedRecord, '--semantic')) {
+  for (const [key, val] of flatten(semanticColor.dark, '--semantic')) {
     lines.push(`@media (prefers-color-scheme: dark) { ${key}: ${val}; }`);
   }
 
@@ -65,7 +66,6 @@ export function generateCssVariables(): string {
   lines.push('');
   lines.push('/* Border radius */');
   for (const [key, val] of Object.entries(borderRadius)) {
-    const k = key === 'none' ? null : key;
     lines.push(`--radius-${key}: ${val}px;`);
   }
 
