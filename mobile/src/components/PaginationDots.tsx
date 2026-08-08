@@ -1,3 +1,10 @@
+/**
+ * Taska Pagination Dots Component (Legacy)
+ *
+ * Backward-compatible pagination dots that use the theme prop.
+ * New code should use Tailwind classes instead.
+ */
+
 import React from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
 import { Theme } from '../theme/types';
