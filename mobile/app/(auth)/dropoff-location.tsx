@@ -114,7 +114,7 @@ export default function DropoffLocationScreen() {
               className="mr-sm h-10 w-10 items-center justify-center rounded-xl active:opacity-60"
               hitSlop={8}
             >
-              <ArrowLeft size={24} color="#111827" />
+              <ArrowLeft size={24} className="text-text-primary" />
             </TouchableOpacity>
             <View className="flex-1">
               <Typography variant="h3" weight="bold" className="text-text-primary">

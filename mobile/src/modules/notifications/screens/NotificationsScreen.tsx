@@ -23,7 +23,7 @@ const TYPE_CONFIG: Record<
   { icon: string; bg: string }
 > = {
   TASK_REQUEST: { icon: '📋', bg: 'bg-primary/10' },
-  TASK_UPDATE: { icon: '🔄', bg: 'bg-purple-100' },
+  TASK_UPDATE: { icon: '🔄', bg: 'bg-primary/10' },
   PAYMENT: { icon: '💰', bg: 'bg-success/10' },
   SYSTEM: { icon: '🔔', bg: 'bg-primary/10' },
 };
@@ -219,7 +219,7 @@ export default function NotificationsScreen() {
             className="h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
         </View>
 

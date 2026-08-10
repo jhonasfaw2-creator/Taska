@@ -83,7 +83,7 @@ export default function PhoneScreen() {
           className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
           hitSlop={8}
         >
-          <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
+          <ArrowLeft size={24} className="text-text-primary" />
         </TouchableOpacity>
 
         <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -133,7 +133,7 @@ export default function PhoneScreen() {
             value={phoneNumber}
             onChangeText={handlePhoneChange}
             placeholder="91 234 5678"
-            placeholderTextColor="rgba(107, 114, 128, 0.5)"
+            placeholderTextColor="#94A3B8"
             keyboardType="phone-pad"
             textContentType="telephoneNumber"
             autoComplete="tel"

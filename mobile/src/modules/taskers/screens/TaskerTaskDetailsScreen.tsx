@@ -203,7 +203,7 @@ export default function TaskerTaskDetailsScreen() {
             className="mb-xl h-10 w-10 items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

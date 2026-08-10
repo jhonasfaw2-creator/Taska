@@ -39,7 +39,7 @@ function PaidPaymentCard({
             Paid: ETB {payment.amount.toFixed(2)}
           </Typography>
           {payment.refundedAmount > 0 && (
-            <Typography variant="caption" className="text-purple-600">
+            <Typography variant="caption" className="text-primary">
               Refunded: ETB {payment.refundedAmount.toFixed(2)}
             </Typography>
           )}
@@ -48,10 +48,10 @@ function PaidPaymentCard({
           accessibilityRole="button"
           accessibilityLabel={`Refund payment ${payment.id}`}
           onPress={() => onRefund(payment)}
-          className="rounded-full bg-purple-100 px-md py-sm"
+          className="rounded-full bg-primary/10 px-md py-sm"
           activeOpacity={0.7}
         >
-          <Typography variant="caption" weight="semibold" className="text-purple-700">
+          <Typography variant="caption" weight="semibold" className="text-primary">
             Refund
           </Typography>
         </TouchableOpacity>
@@ -148,7 +148,7 @@ export default function RefundManagementScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -200,7 +200,7 @@ export default function RefundManagementScreen() {
                 value={refundAmount}
                 onChangeText={setRefundAmount}
                 placeholder="Amount"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor="#94A3B8"
                 keyboardType="decimal-pad"
                 className="mb-lg rounded-xl border border-border bg-background px-md py-lg text-body text-text-primary"
                 accessibilityLabel="Refund amount"
@@ -247,7 +247,7 @@ export default function RefundManagementScreen() {
                   onPress={handleSubmitRefund}
                   disabled={submitting}
                   activeOpacity={0.85}
-                  className="flex-1 items-center rounded-full bg-purple-600 px-lg py-md"
+                  className="flex-1 items-center rounded-full bg-primary px-lg py-md"
                   style={{ opacity: submitting ? 0.6 : 1 }}
                 >
                   <Typography variant="body" weight="semibold" className="text-background">

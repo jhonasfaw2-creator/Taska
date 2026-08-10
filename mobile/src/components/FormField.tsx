@@ -51,7 +51,7 @@ export function FormField({
         }`}
       >
         <TextInput
-          placeholderTextColor="rgba(107, 114, 128, 0.5)"
+          placeholderTextColor="#94A3B8"
           autoComplete="off"
           className={`py-md text-body text-text-primary ${className ?? ''}`}
           {...inputProps}

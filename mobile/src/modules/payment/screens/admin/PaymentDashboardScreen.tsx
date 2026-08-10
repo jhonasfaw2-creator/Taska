@@ -75,7 +75,7 @@ function PaymentRow({
     PENDING: 'text-warning',
     PROCESSING: 'text-primary',
     FAILED: 'text-error',
-    REFUNDED: 'text-purple-600',
+    REFUNDED: 'text-primary',
     CANCELLED: 'text-text-secondary',
   };
 
@@ -176,7 +176,7 @@ export default function PaymentDashboardScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
@@ -227,7 +227,7 @@ export default function PaymentDashboardScreen() {
                 <AdminStatCard
                   label="Refunded"
                   value={String(stats.refunded)}
-                  color="text-purple-600"
+                  color="text-primary"
                 />
                 </View>
               </View>

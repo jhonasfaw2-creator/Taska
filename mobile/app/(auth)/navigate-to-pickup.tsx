@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { View, ScrollView, TouchableOpacity, Linking, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
@@ -86,14 +87,12 @@ export default function NavigateToPickupScreen() {
             activeOpacity={0.7}
             hitSlop={8}
           >
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              ←
-            </Typography>
+            <ArrowLeft size={20} className="text-text-primary" />
           </TouchableOpacity>
 
           <View className="ml-md flex-1 rounded-xl bg-background/90 px-md py-sm shadow-sm">
             <View className="flex-row items-center gap-sm">
-              <Typography variant="caption" weight="semibold" className="text-green-700">
+              <Typography variant="caption" weight="semibold" className="text-success-700">
                 🟢
               </Typography>
               <Typography variant="caption" weight="semibold" className="text-text-primary">
@@ -143,11 +142,11 @@ export default function NavigateToPickupScreen() {
         {/* Pickup location (top-right area) */}
         <View className="absolute right-[10%] top-[15%] items-center">
           {/* Pulse ring */}
-          <View className="absolute h-20 w-20 rounded-full bg-green-100/50" />
-          <View className="absolute h-12 w-12 rounded-full bg-green-100/70" />
+          <View className="absolute h-20 w-20 rounded-full bg-success-100/50" />
+          <View className="absolute h-12 w-12 rounded-full bg-success-100/70" />
           {/* Marker pin */}
           <View className="items-center">
-            <View className="h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-green-500 shadow-md">
+            <View className="h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-success shadow-md">
               <Typography
                 variant="caption"
                 weight="bold"
@@ -157,13 +156,13 @@ export default function NavigateToPickupScreen() {
                 A
               </Typography>
             </View>
-            <View className="h-0 w-0 border-x-4 border-t-4 border-x-transparent border-t-green-500" />
+            <View className="h-0 w-0 border-x-4 border-t-4 border-x-transparent border-t-success" />
           </View>
           <View className="mt-1 rounded-md bg-background/90 px-sm py-px shadow-sm">
             <Typography
               variant="caption"
               weight="semibold"
-              className="text-green-700"
+              className="text-success-700"
               style={{ fontSize: 9 }}
             >
               Pickup
@@ -187,8 +186,8 @@ export default function NavigateToPickupScreen() {
         >
           <View className="mb-xs h-1.5 w-12 rounded-full bg-text-secondary/30" />
           <View className="flex-row items-center gap-1">
-            <View className="h-2 w-2 rounded-full bg-green-500" />
-            <Typography variant="caption" weight="semibold" className="text-green-700">
+            <View className="h-2 w-2 rounded-full bg-success" />
+            <Typography variant="caption" weight="semibold" className="text-success-700">
               {MOCK_NAV.eta} to pickup
             </Typography>
           </View>
@@ -214,7 +213,7 @@ export default function NavigateToPickupScreen() {
                     {MOCK_CUSTOMER.name}
                   </Typography>
                   <View className="mt-0.5 flex-row items-center gap-1">
-                    <Typography variant="caption" className="text-amber-500">
+                    <Typography variant="caption" className="text-warning">
                       ★
                     </Typography>
                     <Typography variant="caption" weight="semibold" className="text-text-primary">
@@ -230,11 +229,11 @@ export default function NavigateToPickupScreen() {
               {/* Pickup address */}
               <View className="flex-row gap-md pb-md">
                 <View className="items-center">
-                  <View className="h-6 w-6 items-center justify-center rounded-full bg-green-100">
+                  <View className="h-6 w-6 items-center justify-center rounded-full bg-success-100">
                     <Typography
                       variant="caption"
                       weight="bold"
-                      className="text-green-700"
+                      className="text-success-700"
                       style={{ fontSize: 10 }}
                     >
                       A
@@ -242,7 +241,7 @@ export default function NavigateToPickupScreen() {
                   </View>
                 </View>
                 <View className="flex-1">
-                  <Typography variant="caption" weight="semibold" className="mb-1 text-green-700">
+                  <Typography variant="caption" weight="semibold" className="mb-1 text-success-700">
                     Pickup Address
                   </Typography>
                   <Typography variant="caption" color="secondary" className="leading-relaxed">

@@ -115,7 +115,7 @@ export default function PaymentStatusScreen() {
           icon: '💳',
           title: 'Payment Refunded',
           subtitle: 'Your payment has been refunded.',
-          color: 'text-purple-600',
+          color: 'text-primary',
         };
       default:
         return {

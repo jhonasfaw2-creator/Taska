@@ -46,7 +46,7 @@ export default function PaymentMethodScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

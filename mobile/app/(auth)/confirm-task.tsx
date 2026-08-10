@@ -139,7 +139,7 @@ export default function ConfirmTaskScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={20} color="#0F172A" className="text-text-primary" />
+            <ArrowLeft size={20} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

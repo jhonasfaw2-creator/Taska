@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { View, TextInput, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { sendOTP, verifyOTP, getUserProfile, isProfileComplete, ApiError } from '@/services';
 
@@ -137,9 +138,7 @@ export default function OtpScreen() {
           className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
           hitSlop={8}
         >
-          <Typography variant="body" weight="medium" className="text-text-primary">
-            ←
-          </Typography>
+          <ArrowLeft size={24} className="text-text-primary" />
         </TouchableOpacity>
 
         {/* Title */}
@@ -219,8 +218,8 @@ export default function OtpScreen() {
 
         {/* Error message */}
         {errorMessage && (
-          <View className="mt-md w-full rounded-xl border border-red-200 bg-red-50 px-md py-sm">
-            <Typography variant="caption" className="text-center text-red-600">
+          <View className="mt-md w-full rounded-xl border border-error/30 bg-error-light px-md py-sm">
+            <Typography variant="caption" className="text-center text-error">
               {errorMessage}
             </Typography>
           </View>

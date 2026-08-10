@@ -138,6 +138,7 @@ export const Typography: React.FC<TypographyProps> = ({
   return (
     <Text
       className={[
+        'font-sans',
         VARIANT_CLASSES[variant],
         WEIGHT_CLASSES[weight],
         COLOR_CLASSES[color],

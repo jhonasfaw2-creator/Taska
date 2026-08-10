@@ -7,24 +7,9 @@ const config = getDefaultConfig(projectRoot);
 
 config.watchFolders = [path.resolve(projectRoot, 'src')];
 
-/* ── Platform-specific CSS resolution ───────────────────
- * Importing 'global.css' resolves to:
- *   global.web.css on web (has @import "tailwindcss" for PostCSS)
- *   global.css       on native (LightningCSS-safe, no import)
+/* ── NativeWind (Tailwind v4 / react-native-css) ──────────────
+ * `withNativeWind` wires the CSS transformer for both platforms.
+ * A single `global.css` is processed by PostCSS (@tailwindcss/postcss)
+ * and compiled to native styles on iOS/Android and real CSS on web.
  */
-const origResolveRequest = config.resolver.resolveRequest;
-config.resolver.resolveRequest = (context, moduleName, platform) => {
-  if (platform === 'web' && moduleName.endsWith('global.css')) {
-    return context.resolveRequest(
-      context,
-      moduleName.replace(/\.css$/, '.web.css'),
-      platform,
-    );
-  }
-  if (typeof origResolveRequest === 'function') {
-    return origResolveRequest(context, moduleName, platform);
-  }
-  return context.resolveRequest(context, moduleName, platform);
-};
-
 module.exports = withNativeWind(config);

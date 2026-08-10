@@ -1,19 +1,25 @@
 /* ════════════════════════════════════════════════════════════
-   Taska Design System — CSS Custom Properties
+   Taska Design System — Tailwind v4 + NativeWind v5 (CSS-first)
    ════════════════════════════════════════════════════════════ */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-:root {
-  /* ── Fonts ── */
+@config "./tailwind.config.js";
+
+/* ── Design Tokens ─────────────────────────────────────────
+   All tokens are declared via `@theme` so Tailwind generates
+   utilities (bg-primary, text-text-primary, px-screen-padding,
+   rounded-2xl, shadow-lg, …) from a single source of truth.
+   Semantic colors are emitted as CSS variables and resolved at
+   runtime by NativeWind, with `.dark` overriding them for
+   dark mode. */
+
+@theme {
+  /* ── Fonts ─────────────────────────────────────────────── */
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Consolas, Monaco, monospace;
 
-  /* ── Light Mode Colors ──────────────────────────────────── */
-
-  /* Primary — Blue #2563EB */
+  /* ── Primary — Blue #2563EB ────────────────────────────── */
   --color-primary-50: #EFF6FF;
   --color-primary-100: #DBEAFE;
   --color-primary-200: #BFDBFE;
@@ -29,8 +35,11 @@
   --color-primary-active: #1E40AF;
   --color-primary-light: #EFF6FF;
   --color-primary-light-hover: #DBEAFE;
+  --color-primary-variant: #1D4ED8;
+  --color-on-primary: #FFFFFF;
+  --color-on-light: #1E40AF;
 
-  /* Success — Green #22C55E */
+  /* ── Success — Green #22C55E ───────────────────────────── */
   --color-success-50: #F0FDF4;
   --color-success-100: #DCFCE7;
   --color-success-200: #BBF7D0;
@@ -41,8 +50,9 @@
   --color-success-700: #15803D;
   --color-success-hover: #16A34A;
   --color-success-light: #F0FDF4;
+  --color-on-success: #FFFFFF;
 
-  /* Warning — Amber #F59E0B */
+  /* ── Warning — Amber #F59E0B ───────────────────────────── */
   --color-warning-50: #FFFBEB;
   --color-warning-100: #FEF3C7;
   --color-warning-200: #FDE68A;
@@ -53,8 +63,9 @@
   --color-warning-700: #B45309;
   --color-warning-hover: #D97706;
   --color-warning-light: #FFFBEB;
+  --color-on-warning: #78350F;
 
-  /* Error — Red #EF4444 */
+  /* ── Error — Red #EF4444 ───────────────────────────────── */
   --color-error-50: #FEF2F2;
   --color-error-100: #FEE2E2;
   --color-error-200: #FECACA;
@@ -65,9 +76,10 @@
   --color-error-700: #B91C1C;
   --color-error-hover: #DC2626;
   --color-error-light: #FEF2F2;
+  --color-on-error: #FFFFFF;
 
-  /* Neutral — Slate */
-  --color-neutral-white: #FFFFFF;
+  /* ── Neutral — Slate ───────────────────────────────────── */
+  --color-neutral-0: #FFFFFF;
   --color-neutral-50: #F8FAFC;
   --color-neutral-100: #F1F5F9;
   --color-neutral-200: #E2E8F0;
@@ -80,14 +92,16 @@
   --color-neutral-900: #0F172A;
   --color-neutral-950: #020617;
 
-  /* Semantic Colors */
+  /* ── Semantic (light defaults; `.dark` overrides below) ── */
   --color-background: #F8FAFC;
   --color-background-secondary: #FFFFFF;
   --color-background-tertiary: #F1F5F9;
   --color-surface: #FFFFFF;
   --color-surface-secondary: #F8FAFC;
   --color-surface-elevated: #FFFFFF;
-
+  --color-border: #E2E8F0;
+  --color-border-secondary: #CBD5E1;
+  --color-border-focus: #2563EB;
   --color-text-primary: #0F172A;
   --color-text-secondary: #6B7280;
   --color-text-tertiary: #94A3B8;
@@ -95,32 +109,10 @@
   --color-text-disabled: #CBD5E1;
   --color-text-link: #2563EB;
   --color-text-link-hover: #1D4ED8;
-
-  --color-border: #E2E8F0;
-  --color-border-secondary: #CBD5E1;
-  --color-border-focus: #2563EB;
-
   --color-overlay: rgba(15, 23, 42, 0.5);
   --color-overlay-modal: rgba(15, 23, 42, 0.4);
 
-  /* ── Spacing ── */
-  --spacing-0: 0px;
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
-  --spacing-5: 20px;
-  --spacing-6: 24px;
-  --spacing-7: 28px;
-  --spacing-8: 32px;
-  --spacing-9: 36px;
-  --spacing-10: 40px;
-  --spacing-12: 48px;
-  --spacing-14: 56px;
-  --spacing-16: 64px;
-  --spacing-20: 80px;
-  --spacing-24: 96px;
-
+  /* ── Spacing ───────────────────────────────────────────── */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
@@ -131,8 +123,7 @@
   --spacing-4xl: 96px;
   --spacing-screen-padding: 24px;
 
-  /* ── Border Radius ── */
-  --radius-none: 0px;
+  /* ── Border Radius ─────────────────────────────────────── */
   --radius-xs: 2px;
   --radius-sm: 4px;
   --radius-md: 6px;
@@ -143,93 +134,94 @@
   --radius-4xl: 24px;
   --radius-full: 9999px;
 
-  /* ── Typography ── */
-  --font-size-display-2xl: 72px;
-  --font-size-display-xl: 60px;
-  --font-size-display-lg: 48px;
-  --font-size-display-md: 36px;
-  --font-size-display-sm: 30px;
-  --font-size-display-xs: 24px;
+  /* ── Typography ────────────────────────────────────────── */
+  /* Display */
+  --text-display-2xl: 72px;
+  --text-display-2xl--line-height: 1.1;
+  --text-display-2xl--letter-spacing: -0.03em;
+  --text-display-xl: 60px;
+  --text-display-xl--line-height: 1.1;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-lg: 48px;
+  --text-display-lg--line-height: 1.15;
+  --text-display-lg--letter-spacing: -0.025em;
+  --text-display-md: 36px;
+  --text-display-md--line-height: 1.2;
+  --text-display-md--letter-spacing: -0.02em;
+  --text-display-sm: 30px;
+  --text-display-sm--line-height: 1.25;
+  --text-display-sm--letter-spacing: -0.015em;
+  --text-display-xs: 24px;
+  --text-display-xs--line-height: 1.3;
+  --text-display-xs--letter-spacing: -0.01em;
 
-  --font-size-h1: 30px;
-  --font-size-h2: 24px;
-  --font-size-h3: 20px;
-  --font-size-h4: 18px;
-  --font-size-h5: 16px;
-  --font-size-h6: 14px;
+  /* Headings */
+  --text-h1: 30px;
+  --text-h1--line-height: 1.25;
+  --text-h1--letter-spacing: -0.015em;
+  --text-h2: 24px;
+  --text-h2--line-height: 1.3;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h3: 20px;
+  --text-h3--line-height: 1.35;
+  --text-h3--letter-spacing: -0.005em;
+  --text-h4: 18px;
+  --text-h4--line-height: 1.4;
+  --text-h4--letter-spacing: 0em;
+  --text-h5: 16px;
+  --text-h5--line-height: 1.45;
+  --text-h5--letter-spacing: 0em;
+  --text-h6: 14px;
+  --text-h6--line-height: 1.5;
+  --text-h6--letter-spacing: 0.01em;
 
-  --font-size-body-xl: 20px;
-  --font-size-body-lg: 18px;
-  --font-size-body-md: 16px;
-  --font-size-body-sm: 14px;
-  --font-size-body-xs: 12px;
+  /* Body */
+  --text-body-xl: 20px;
+  --text-body-xl--line-height: 1.6;
+  --text-body-lg: 18px;
+  --text-body-lg--line-height: 1.6;
+  --text-body-md: 16px;
+  --text-body-md--line-height: 1.6;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 1.5;
+  --text-body-sm--letter-spacing: 0.01em;
+  --text-body-xs: 12px;
+  --text-body-xs--line-height: 1.5;
+  --text-body-xs--letter-spacing: 0.01em;
 
-  --font-size-label-lg: 16px;
-  --font-size-label-md: 14px;
-  --font-size-label-sm: 12px;
-  --font-size-label-xs: 11px;
+  /* Labels */
+  --text-label-lg: 16px;
+  --text-label-lg--line-height: 1.5;
+  --text-label-lg--letter-spacing: 0.01em;
+  --text-label-md: 14px;
+  --text-label-md--line-height: 1.5;
+  --text-label-md--letter-spacing: 0.01em;
+  --text-label-sm: 12px;
+  --text-label-sm--line-height: 1.5;
+  --text-label-sm--letter-spacing: 0.02em;
+  --text-label-xs: 11px;
+  --text-label-xs--line-height: 1.5;
+  --text-label-xs--letter-spacing: 0.02em;
 
-  --font-weight-thin: 100;
-  --font-weight-extralight: 200;
-  --font-weight-light: 300;
-  --font-weight-regular: 400;
-  --font-weight-medium: 500;
-  --font-weight-semibold: 600;
-  --font-weight-bold: 700;
-  --font-weight-extrabold: 800;
-  --font-weight-black: 900;
+  /* Legacy (backward compatibility) */
+  --text-body: 16px;
+  --text-body--line-height: 1.625;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.5;
+  --text-caption--letter-spacing: 0.025em;
+  --text-button: 16px;
+  --text-button--line-height: 1.5;
+  --text-button--letter-spacing: 0.01em;
 
-  --line-height-none: 1;
-  --line-height-tight: 1.15;
-  --line-height-snug: 1.25;
-  --line-height-normal: 1.5;
-  --line-height-relaxed: 1.625;
-  --line-height-loose: 2;
+  /* ── Shadows ───────────────────────────────────────────── */
+  --shadow-xs: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+  --shadow-sm: 0 1px 2px 0 rgb(15 23 42 / 0.04);
+  --shadow-md: 0 2px 4px 0 rgb(15 23 42 / 0.06);
+  --shadow-lg: 0 4px 8px 0 rgb(15 23 42 / 0.08);
+  --shadow-xl: 0 8px 16px 0 rgb(15 23 42 / 0.10);
+  --shadow-2xl: 0 16px 24px 0 rgb(15 23 42 / 0.12);
 
-  /* ── Shadows ── */
-  --shadow-xs-color: #0F172A;
-  --shadow-xs-opacity: 0.03;
-  --shadow-xs-radius: 1px;
-  --shadow-xs-offset-y: 1px;
-
-  --shadow-sm-color: #0F172A;
-  --shadow-sm-opacity: 0.04;
-  --shadow-sm-radius: 2px;
-  --shadow-sm-offset-y: 1px;
-
-  --shadow-md-color: #0F172A;
-  --shadow-md-opacity: 0.06;
-  --shadow-md-radius: 4px;
-  --shadow-md-offset-y: 2px;
-
-  --shadow-lg-color: #0F172A;
-  --shadow-lg-opacity: 0.08;
-  --shadow-lg-radius: 8px;
-  --shadow-lg-offset-y: 4px;
-
-  --shadow-xl-color: #0F172A;
-  --shadow-xl-opacity: 0.10;
-  --shadow-xl-radius: 16px;
-  --shadow-xl-offset-y: 8px;
-
-  /* ── Motion ── */
-  --duration-instant: 0ms;
-  --duration-fastest: 50ms;
-  --duration-fast: 100ms;
-  --duration-normal: 200ms;
-  --duration-slow: 300ms;
-  --duration-slower: 400ms;
-  --duration-slowest: 500ms;
-
-  --easing-linear: linear;
-  --easing-ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --easing-ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --easing-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --easing-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --easing-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-  /* ── Opacity ── */
-  --opacity-transparent: 0;
+  /* ── Opacity ───────────────────────────────────────────── */
   --opacity-disabled: 0.4;
   --opacity-pressed: 0.8;
   --opacity-hover: 0.9;
@@ -251,6 +243,7 @@
   --color-primary-active: #BFDBFE;
   --color-primary-light: #1E293B;
   --color-primary-light-hover: #334155;
+  --color-primary-variant: #60A5FA;
 
   --color-success: #22C55E;
   --color-success-hover: #4ADE80;
@@ -278,10 +271,4 @@
 
   --color-overlay: rgba(0, 0, 0, 0.7);
   --color-overlay-modal: rgba(0, 0, 0, 0.5);
-
-  --shadow-xs-color: #FFFFFF;
-  --shadow-sm-color: #FFFFFF;
-  --shadow-md-color: #FFFFFF;
-  --shadow-lg-color: #FFFFFF;
-  --shadow-xl-color: #FFFFFF;
 }

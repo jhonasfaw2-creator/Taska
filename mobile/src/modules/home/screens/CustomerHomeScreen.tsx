@@ -38,7 +38,7 @@ const STATUS_CONFIG: Record<
   PENDING: { bg: 'bg-warning/10', text: 'text-warning', label: 'Pending' },
   SEARCHING: { bg: 'bg-primary/10', text: 'text-primary', label: 'Searching' },
   ACCEPTED: { bg: 'bg-primary/10', text: 'text-primary', label: 'Accepted' },
-  PICKED_UP: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Picked Up' },
+  PICKED_UP: { bg: 'bg-primary/10', text: 'text-primary', label: 'Picked Up' },
   IN_PROGRESS: { bg: 'bg-primary/10', text: 'text-primary', label: 'In Progress' },
   COMPLETED: { bg: 'bg-success/10', text: 'text-success', label: 'Completed' },
   CANCELLED: { bg: 'bg-text-secondary/10', text: 'text-text-secondary', label: 'Cancelled' },

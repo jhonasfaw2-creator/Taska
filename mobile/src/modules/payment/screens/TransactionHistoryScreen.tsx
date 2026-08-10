@@ -16,8 +16,8 @@ const STATUS_META: Record<string, { icon: string; color: string }> = {
   PAID: { icon: '✅', color: 'text-success' },
   FAILED: { icon: '❌', color: 'text-error' },
   CANCELLED: { icon: '↩️', color: 'text-text-secondary' },
-  REFUNDED: { icon: '💳', color: 'text-purple-600' },
-  PARTIALLY_REFUNDED: { icon: '💳', color: 'text-purple-400' },
+  REFUNDED: { icon: '💳', color: 'text-primary' },
+  PARTIALLY_REFUNDED: { icon: '💳', color: 'text-primary/70' },
 };
 
 function PaymentCard({
@@ -134,7 +134,7 @@ export default function TransactionHistoryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

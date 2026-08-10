@@ -84,7 +84,7 @@ export default function CreateProfileScreen() {
             className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#0F172A" className="text-text-primary" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">

@@ -1,5 +1,6 @@
 import { View, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 
 interface ScreenHeaderProps {
@@ -22,9 +23,7 @@ export function ScreenHeader({ title, subtitle, onBack }: ScreenHeaderProps) {
         className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
         hitSlop={8}
       >
-        <Typography variant="body" weight="medium" className="text-text-primary">
-          ←
-        </Typography>
+        <ArrowLeft size={20} className="text-text-primary" />
       </TouchableOpacity>
 
       <Typography variant="h2" weight="bold" className="text-text-primary">

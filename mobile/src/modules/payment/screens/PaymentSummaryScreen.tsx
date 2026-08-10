@@ -14,7 +14,7 @@ const STATUS_COLORS: Record<string, string> = {
   PAID: 'text-success',
   FAILED: 'text-error',
   CANCELLED: 'text-text-secondary',
-  REFUNDED: 'text-purple-600',
+  REFUNDED: 'text-primary',
 };
 
 export default function PaymentSummaryScreen() {
@@ -106,7 +106,7 @@ export default function PaymentSummaryScreen() {
             className="mb-xl h-11 w-11 items-center justify-center rounded-full bg-surface active:opacity-60"
             hitSlop={8}
           >
-            <ArrowLeft size={24} color="#111827" />
+            <ArrowLeft size={24} className="text-text-primary" />
           </TouchableOpacity>
 
           <Typography variant="h2" weight="bold" className="text-text-primary">
