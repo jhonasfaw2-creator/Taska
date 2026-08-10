@@ -28,11 +28,15 @@ export function SkeletonBlock({ className }: { className?: string }) {
     return () => pulse.stop();
   }, [opacity]);
 
+  // Animated.View does not support `className` on native (react-native-css
+  // polyfills only core components), so sizing/rounding live on a regular
+  // patched View while the pulse animates an inner fill.
   return (
-    <Animated.View
-      className={`rounded-md bg-border/50 ${className ?? ''}`}
-      style={{ opacity }}
-    />
+    <View className={`rounded-md ${className ?? ''}`} style={{ overflow: 'hidden' }}>
+      <Animated.View
+        style={{ flex: 1, alignSelf: 'stretch', backgroundColor: '#E2E8F0', opacity }}
+      />
+    </View>
   );
 }
 

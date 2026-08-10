@@ -176,8 +176,14 @@ export default function LiveTrackingScreen() {
         {/* Tasker current location (center-ish) */}
         <View className="absolute left-[30%] top-[35%] items-center">
           <Animated.View
-            className="absolute h-20 w-20 rounded-full bg-primary/10"
-            style={{ transform: [{ scale: pulseAnim }] }}
+            style={{
+              position: 'absolute',
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              transform: [{ scale: pulseAnim }],
+            }}
           />
           <View className="h-5 w-5 items-center justify-center rounded-full border-2 border-background bg-primary shadow-md">
             <View className="h-2 w-2 rounded-full bg-background" />

@@ -135,8 +135,11 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAuthCheckComplete }) => {
       >
         <View className="h-1.5 w-24 overflow-hidden rounded-full bg-neutral-200">
           <Animated.View
-            className="h-full w-full rounded-full bg-primary"
             style={{
+              width: '100%',
+              height: '100%',
+              borderRadius: 9999,
+              backgroundColor: '#2563EB',
               opacity: loaderFadeAnim.interpolate({
                 inputRange: [0, 1],
                 outputRange: [0.3, 1],

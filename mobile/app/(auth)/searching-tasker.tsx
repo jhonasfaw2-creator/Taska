@@ -183,13 +183,25 @@ export default function SearchingTaskerScreen() {
       </View>
 
       <Animated.View
-        className="flex-1 items-center justify-center px-screen-padding"
-        style={{ opacity: fadeAnim }}
+        style={[
+          {
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center',
+            paddingHorizontal: 24,
+            opacity: fadeAnim,
+          },
+        ]}
       >
         <View className="mb-xl items-center justify-center">
           <Animated.View
-            className="absolute h-28 w-28 rounded-full border-2 border-primary/20"
             style={{
+              position: 'absolute',
+              width: 112,
+              height: 112,
+              borderRadius: 56,
+              borderWidth: 2,
+              borderColor: 'rgba(37, 99, 235, 0.2)',
               transform: [{ rotate: spinInterpolation }],
               borderTopColor: '#2563EB',
               borderRightColor: 'transparent',
@@ -199,10 +211,26 @@ export default function SearchingTaskerScreen() {
           />
 
           <Animated.View
-            className="h-20 w-20 items-center justify-center rounded-full bg-primary/10"
-            style={{ transform: [{ scale: pulseAnim }] }}
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 40,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              transform: [{ scale: pulseAnim }],
+            }}
           >
-            <Animated.View className="h-14 w-14 items-center justify-center rounded-full bg-primary/20">
+            <Animated.View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: 'rgba(37, 99, 235, 0.2)',
+              }}
+            >
               <Typography variant="h1" className="text-primary">
                 🔍
               </Typography>
