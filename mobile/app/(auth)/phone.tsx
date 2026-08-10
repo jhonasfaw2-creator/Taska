@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { sendOTP, ApiError } from '@/services';
 
 const ETHIOPIA_COUNTRY_CODE = '+251';
@@ -106,16 +107,19 @@ export default function PhoneScreen() {
           disabled
         >
           <View className="flex-row items-center gap-sm">
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              🇪🇹
-            </Typography>
-            <Typography variant="body" weight="medium" className="text-text-primary">
-              Ethiopia
-            </Typography>
+            <View className="h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Icon name="globe" size={18} color="#2563EB" accessibilityLabel="Country" />
+            </View>
+            <View>
+              <Typography variant="body" weight="semibold" className="text-text-primary">
+                Ethiopia
+              </Typography>
+              <Typography variant="caption" color="secondary">
+                +251
+              </Typography>
+            </View>
           </View>
-          <Typography variant="caption" color="secondary">
-            ▾
-          </Typography>
+          <Icon name="chevronDown" size={18} color="#6B7280" accessibilityLabel="Select country" />
         </TouchableOpacity>
 
         <View className="mt-md flex-row items-center rounded-xl border border-border bg-surface px-md">

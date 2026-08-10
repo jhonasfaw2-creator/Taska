@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { getBalanceSummary, requestWithdrawal } from '@/services/wallet.service';
 import type { BalanceSummary } from '@/types/wallet';
@@ -211,7 +212,7 @@ export default function WalletDashboardScreen() {
           >
             <View className="flex-row items-center gap-md">
               <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="body">📋</Typography>
+                <Icon name="tasks" size={20} color="#2563EB" accessibilityLabel="Transactions" />
               </View>
               <View>
                 <Typography variant="body" weight="medium" className="text-text-primary">
@@ -222,7 +223,7 @@ export default function WalletDashboardScreen() {
                 </Typography>
               </View>
             </View>
-            <Typography variant="body" className="text-text-secondary">→</Typography>
+            <Icon name="arrowRight" size={18} color="#6B7280" accessibilityLabel="" />
           </TouchableOpacity>
         </View>
 
@@ -235,7 +236,7 @@ export default function WalletDashboardScreen() {
           >
             <View className="flex-row items-center gap-md">
               <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="body">💰</Typography>
+                <Icon name="banknote" size={20} color="#22C55E" accessibilityLabel="Balance" />
               </View>
               <View>
                 <Typography variant="body" weight="medium" className="text-text-primary">
@@ -246,7 +247,7 @@ export default function WalletDashboardScreen() {
                 </Typography>
               </View>
             </View>
-            <Typography variant="body" className="text-text-secondary">→</Typography>
+            <Icon name="arrowRight" size={18} color="#6B7280" accessibilityLabel="" />
           </TouchableOpacity>
         </View>
       </ScrollView>

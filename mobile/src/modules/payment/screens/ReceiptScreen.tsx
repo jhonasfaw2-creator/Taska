@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { getPayment } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 
@@ -60,7 +61,7 @@ export default function ReceiptScreen() {
   if (!payment) {
     return (
       <View className="flex-1 items-center justify-center bg-background px-screen-padding">
-        <Typography variant="h1" className="mb-md">🔍</Typography>
+        <Icon name="search" size={32} color="#2563EB" accessibilityLabel="Receipt" />
         <Typography variant="body" weight="semibold" className="text-text-primary">
           Receipt not found
         </Typography>
@@ -102,7 +103,7 @@ export default function ReceiptScreen() {
         <View className="mx-screen-padding rounded-2xl border-2 border-primary/20 bg-surface p-lg">
           <View className="items-center pb-lg">
             <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-success/10">
-              <Typography variant="h1">✅</Typography>
+              <Icon name="success" size={32} color="#22C55E" accessibilityLabel="Receipt paid" />
             </View>
             <Typography variant="h2" weight="bold" className="text-success">
               Payment Successful

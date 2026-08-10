@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { getPaymentByTask, createPayment } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 import { ApiError } from '@/services';
@@ -125,7 +126,7 @@ export default function PaymentSummaryScreen() {
 
           {payment && payment.paymentStatus === 'PAID' ? (
             <View className="items-center rounded-2xl border border-border bg-surface px-lg py-xl">
-              <Typography variant="h1" className="mb-sm">✅</Typography>
+              <Icon name="success" size={32} color="#22C55E" accessibilityLabel="Payment completed" />
               <Typography variant="body" weight="semibold" className="text-center text-text-primary">
                 Payment already completed
               </Typography>
@@ -213,7 +214,7 @@ export default function PaymentSummaryScreen() {
                 >
                   <View className="flex-row items-center gap-md">
                     <View className="h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                      <Typography variant="body">💳</Typography>
+                      <Icon name="card" size={20} color="#2563EB" accessibilityLabel="Payment method" />
                     </View>
                     <View>
                       <Typography variant="body" weight="medium" className="text-text-primary">

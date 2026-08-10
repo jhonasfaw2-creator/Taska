@@ -18,17 +18,18 @@ import { useTaskContext } from '@/store/TaskContext';
 import { setUnreadCountListener } from '@/services/notification.service';
 import { onSocketEvent } from '@/services/socket.service';
 import type { Category, RecentTask, TaskStatus as TaskStatusType } from '@/types/task';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
-const CATEGORY_ICONS: Record<string, string> = {
-  delivery: '🚚',
-  'document-processing': '📄',
-  shopping: '🛒',
-  cleaning: '🧹',
-  moving: '📦',
-  repair: '🔧',
-  grocery: '🥦',
-  pharmacy: '💊',
-  'custom-task': '✨',
+const CATEGORY_ICONS: Record<string, MobileIconName> = {
+  delivery: 'package',
+  'document-processing': 'document',
+  shopping: 'archive',
+  cleaning: 'refresh',
+  moving: 'package',
+  repair: 'briefcase',
+  grocery: 'archive',
+  pharmacy: 'plus',
+  'custom-task': 'target',
 };
 
 const STATUS_CONFIG: Record<
@@ -65,8 +66,8 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
 }
 
-function getCategoryIcon(slug: string): string {
-  return CATEGORY_ICONS[slug] ?? '📌';
+function getCategoryIcon(slug: string): MobileIconName {
+  return CATEGORY_ICONS[slug] ?? 'pin';
 }
 
 function StatusBadge({ status }: { status: TaskStatusType }) {
@@ -105,7 +106,7 @@ function CategoryCard({
       testID={`category-${category.slug}`}
     >
       <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-        <Text className="text-2xl">{getCategoryIcon(category.slug)}</Text>
+        <Icon name={getCategoryIcon(category.slug)} size={24} color="#2563EB" />
       </View>
       <Typography
         variant="caption"
@@ -193,7 +194,7 @@ function NotificationButton({
       className="h-11 w-11 items-center justify-center rounded-full bg-surface"
       activeOpacity={0.7}
     >
-      <Text className="text-lg">🔔</Text>
+      <Icon name="bell" size={20} color="#111827" accessibilityLabel="Notifications" />
       {unreadCount > 0 && (
         <View className="absolute -right-1 -top-1 h-5 min-w-[20px] items-center justify-center rounded-full bg-error px-1">
           <Text className="text-[10px] font-bold text-background">
@@ -215,7 +216,7 @@ function ErrorSection({
   return (
       <View className="items-center rounded-2xl border border-border bg-error/10 px-lg py-xl">
       <View className="mb-md h-14 w-14 items-center justify-center rounded-full bg-error/10">
-        <Text className="text-2xl">⚠️</Text>
+        <Icon name="alert" size={24} color="#F59E0B" accessibilityLabel="Warning" />
       </View>
       <Typography variant="body" weight="semibold" className="text-center text-text-primary">
         Something went wrong
@@ -389,7 +390,7 @@ export default function CustomerHomeScreen() {
                   className="mt-xs flex-row items-center"
                   activeOpacity={0.7}
                 >
-                  <Text className="mr-1 text-sm">📍</Text>
+                  <Icon name="mapPin" size={14} color="#6B7280" accessibilityLabel="Location" />
                   <Typography variant="caption" color="secondary">
                     Addis Ababa, Ethiopia
                   </Typography>
@@ -405,11 +406,12 @@ export default function CustomerHomeScreen() {
                   accessibilityLabel="Become a Tasker"
                   onPress={() => router.push('/tasker-become')}
                   testID="home-become-tasker"
-                  className="h-11 items-center justify-center rounded-full bg-primary/10 px-md"
+                  className="h-11 flex-row items-center justify-center gap-1 rounded-full bg-primary/10 px-3 active:opacity-70"
                   activeOpacity={0.7}
                 >
+                  <Icon name="bike" size={16} color="#2563EB" accessibilityLabel="Tasker" />
                   <Typography variant="caption" weight="semibold" className="text-primary" style={{ fontSize: 11 }}>
-                    🛵 Tasker
+                    Tasker
                   </Typography>
                 </TouchableOpacity>
               </View>
@@ -423,7 +425,7 @@ export default function CustomerHomeScreen() {
                 activeOpacity={0.85}
                 className="flex-row items-center rounded-2xl border border-border bg-surface px-md py-md"
               >
-                <Text className="mr-sm text-lg">🔍</Text>
+                <Icon name="search" size={20} color="#2563EB" accessibilityLabel="Search" />
                 <Typography variant="body" color="secondary" className="flex-1">
                   What do you need help with?
                 </Typography>
@@ -478,7 +480,7 @@ export default function CustomerHomeScreen() {
               </View>
               {tasks.length === 0 && !tasksLoading ? (
                 <EmptyState
-                  icon="✨"
+                  icon="target"
                   title="No tasks yet"
                   subtitle="Create your first task and it will show up here."
                 />
@@ -517,7 +519,7 @@ export default function CustomerHomeScreen() {
             elevation: 6,
           }}
         >
-          <Text className="text-xl text-background">+</Text>
+          <Icon name="plus" size={20} color="#FFFFFF" />
           <Typography variant="body" weight="semibold" className="text-background">
             Create Task
           </Typography>

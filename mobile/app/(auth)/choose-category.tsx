@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { View, ScrollView, TouchableOpacity, Text } from 'react-native';
+import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 import { TASK_CATEGORIES } from '@/data/taskCategories';
 import type { TaskCategory } from '@/data/taskCategories';
+import { Icon } from '@/components/Icon';
 
 function CategoryCard({
   category,
@@ -35,14 +36,14 @@ function CategoryCard({
             selected ? 'bg-primary' : 'bg-primary/10'
           }`}
         >
-          <Text className="text-2xl">{category.icon}</Text>
+          <Icon name={category.icon} size={28} color={selected ? '#FFFFFF' : '#2563EB'} accessibilityLabel={category.title} />
         </View>
         <View
           className={`h-6 w-6 items-center justify-center rounded-full ${
             selected ? 'bg-primary' : 'border-2 border-border'
           }`}
         >
-          {selected && <Text className="text-xs font-bold text-background">✓</Text>}
+          {selected && <Icon name="check" size={14} color="#FFFFFF" accessibilityLabel="Selected" />}
         </View>
       </View>
 

@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
+import { Icon } from '@/components/Icon';
 import { listAllPayments, getPaymentAuditLogs } from '@/services/payment.service';
 import type { Payment, PaymentAuditLog } from '@/types/payment';
 
@@ -39,7 +40,8 @@ function AuditLogCard({ log }: { log: PaymentAuditLog }) {
           )}
           {log.toStatus && (
             <Typography variant="caption" className="text-success">
-              → {log.toStatus}
+              <Icon name="arrowRight" size={12} color="#22C55E" accessibilityLabel="" />
+              {log.toStatus}
             </Typography>
           )}
         </View>

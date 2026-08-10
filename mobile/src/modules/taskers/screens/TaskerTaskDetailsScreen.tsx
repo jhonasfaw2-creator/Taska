@@ -8,6 +8,7 @@ import { ProgressTimeline, StatusBadge } from '@/components/ProgressTimeline';
 import { getTaskById, updateTaskStatus } from '@/services/task.service';
 import { onSocketEvent, joinTaskRoom, leaveTaskRoom } from '@/services/socket.service';
 import type { TaskResponse, TaskStatus } from '@/types/task';
+import { Icon } from '@/components/Icon';
 
 interface ActionConfig {
   nextStatus: TaskStatus;
@@ -21,21 +22,21 @@ const TASKER_ACTIONS: Record<string, ActionConfig> = {
   ACCEPTED: {
     nextStatus: 'PICKED_UP',
     label: "I've Picked Up the Item",
-    icon: '📦',
+    icon: 'package',
     confirmTitle: 'Confirm Pickup',
     confirmMessage: 'Have you picked up the item from the pickup location?',
   },
   PICKED_UP: {
     nextStatus: 'IN_PROGRESS',
     label: 'En Route to Destination',
-    icon: '🚗',
+    icon: 'car',
     confirmTitle: 'Start Delivery',
     confirmMessage: 'Are you on your way to the drop-off location?',
   },
   IN_PROGRESS: {
     nextStatus: 'COMPLETED',
     label: 'Mark as Completed',
-    icon: '✅',
+    icon: 'success',
     confirmTitle: 'Complete Task',
     confirmMessage: 'Have you delivered the item and completed the task?',
   },
@@ -226,7 +227,7 @@ export default function TaskerTaskDetailsScreen() {
         </View>
 
         <View className="px-screen-padding pt-xl">
-          <SectionHeader icon="📋" title="Task Information" />
+          <SectionHeader icon="tasks" title="Task Information" />
           <DetailCard>
             <Typography variant="body" weight="semibold" className="mb-sm text-text-primary">
               {task.title}
@@ -252,7 +253,7 @@ export default function TaskerTaskDetailsScreen() {
         </View>
 
         <View className="px-screen-padding pt-sm">
-          <SectionHeader icon="📍" title="Locations" />
+          <SectionHeader icon="mapPin" title="Locations" />
           <DetailCard>
             <View className="flex-row gap-md">
               <View className="items-center">
@@ -280,7 +281,7 @@ export default function TaskerTaskDetailsScreen() {
         </View>
 
         <View className="px-screen-padding pt-sm">
-          <SectionHeader icon="📊" title="Task Summary" />
+          <SectionHeader icon="reports" title="Task Summary" />
           <DetailCard>
             <InfoRow label="Estimated Earnings" value={`ETB ${task.estimatedPrice.toFixed(2)}`} />
             <View className="border-b border-border" />
@@ -312,7 +313,7 @@ export default function TaskerTaskDetailsScreen() {
               label="Start Navigation"
               variant="outline"
               radius="lg"
-              leftIcon={<Typography variant="body" className="text-primary">🗺️</Typography>}
+              leftIcon={<Icon name="map" size={20} color="#2563EB" accessibilityLabel="Map" />}
               onPress={handleStartNavigation}
               testID="tasker-task-details-start-nav"
             />
@@ -325,7 +326,7 @@ export default function TaskerTaskDetailsScreen() {
               label="Contact Customer"
               variant="outline"
               radius="lg"
-              leftIcon={<Typography variant="body" className="text-primary">💬</Typography>}
+              leftIcon={<Icon name="message" size={20} color="#2563EB" accessibilityLabel="Message" />}
               onPress={handleContactCustomer}
               testID="tasker-task-details-contact"
             />

@@ -3,6 +3,7 @@ import { View, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { searchAddresses } from '../services/geocoding.service';
 import type { GeocodingSuggestion } from '../services/geocoding.service';
 
@@ -78,9 +79,7 @@ export default function LocationSearch({
       <View className="px-screen-padding pt-lg">
         <View className="overflow-hidden rounded-xl border border-border bg-surface">
           <View className="flex-row items-center px-md">
-            <Typography variant="body" color="secondary" className="mr-md">
-              🔍
-            </Typography>
+            <Icon name="search" size={20} color="#6B7280" />
             <TextInput
               value={query}
               onChangeText={handleChangeText}
@@ -117,9 +116,7 @@ export default function LocationSearch({
                 ].join(' ')}
               >
                 <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Typography variant="caption" className="text-primary">
-                    📍
-                  </Typography>
+                  <Icon name="mapPin" size={16} color="#2563EB" />
                 </View>
                 <View className="flex-1">
                   <Typography variant="body" className="text-text-primary" numberOfLines={1}>
@@ -138,9 +135,7 @@ export default function LocationSearch({
           testID="use-current-location"
           className="mt-md flex-row items-center justify-center gap-sm rounded-xl border border-primary bg-primary/5 px-md py-md active:opacity-80"
         >
-          <Typography variant="body" weight="medium" className="text-primary">
-            📍
-          </Typography>
+          <Icon name="mapPin" size={20} color="#2563EB" />
           <Typography variant="body" weight="semibold" className="text-primary">
             Use Current Location
           </Typography>

@@ -6,6 +6,7 @@ import { Button, Typography } from '@/components/ui';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
+import { Icon } from '@/components/Icon';
 
 export default function VehicleTypeScreen() {
   const router = useRouter();
@@ -137,7 +138,7 @@ export default function VehicleTypeScreen() {
                         className="text-background"
                         style={{ fontSize: 11, lineHeight: 14 }}
                       >
-                        ✓
+                        <Icon name="check" size={14} color="#FFFFFF" accessibilityLabel="Selected" />
                       </Typography>
                     )}
                   </View>

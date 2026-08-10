@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -93,7 +94,7 @@ export default function NavigateToPickupScreen() {
           <View className="ml-md flex-1 rounded-xl bg-background/90 px-md py-sm shadow-sm">
             <View className="flex-row items-center gap-sm">
               <Typography variant="caption" weight="semibold" className="text-success-700">
-                🟢
+                <Icon name="success" size={16} color="#22C55E" accessibilityLabel="Online" />
               </Typography>
               <Typography variant="caption" weight="semibold" className="text-text-primary">
                 Navigating to Pickup
@@ -206,7 +207,7 @@ export default function NavigateToPickupScreen() {
               {/* Customer row */}
               <View className="flex-row items-center gap-md pb-md">
                 <View className="h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Typography variant="h2">👤</Typography>
+                  <Icon name="user" size={28} color="#2563EB" accessibilityLabel="Tasker" />
                 </View>
                 <View className="flex-1">
                   <Typography variant="body" weight="semibold" className="text-text-primary">
@@ -214,7 +215,7 @@ export default function NavigateToPickupScreen() {
                   </Typography>
                   <View className="mt-0.5 flex-row items-center gap-1">
                     <Typography variant="caption" className="text-warning">
-                      ★
+                      <Icon name="star" size={14} color="#F59E0B" fill="#F59E0B" accessibilityLabel="Rating" />
                     </Typography>
                     <Typography variant="caption" weight="semibold" className="text-text-primary">
                       {MOCK_CUSTOMER.rating.toFixed(1)}
@@ -267,7 +268,7 @@ export default function NavigateToPickupScreen() {
                   </View>
                 </View>
                 <View className="flex-1 flex-row items-center gap-sm rounded-xl bg-primary/5 px-md py-md">
-                  <Typography variant="body">📍</Typography>
+                  <Icon name="mapPin" size={18} color="#2563EB" accessibilityLabel="Location" />
                   <View>
                     <Typography variant="caption" color="secondary">
                       Distance
@@ -291,7 +292,7 @@ export default function NavigateToPickupScreen() {
                   className="flex-1 items-center rounded-xl border border-border bg-surface px-sm py-md"
                 >
                   <Typography variant="body" className="mb-1">
-                    🗺️
+                    <Icon name="map" size={24} color="#2563EB" accessibilityLabel="Map" />
                   </Typography>
                   <Typography
                     variant="caption"
@@ -313,7 +314,7 @@ export default function NavigateToPickupScreen() {
                   className="flex-1 items-center rounded-xl border border-border bg-surface px-sm py-md"
                 >
                   <Typography variant="body" className="mb-1">
-                    📞
+                    <Icon name="phone" size={20} color="#2563EB" accessibilityLabel="Call" />
                   </Typography>
                   <Typography
                     variant="caption"
@@ -335,7 +336,7 @@ export default function NavigateToPickupScreen() {
                   className="flex-1 items-center rounded-xl border border-border bg-surface px-sm py-md"
                 >
                   <Typography variant="body" className="mb-1">
-                    💬
+                    <Icon name="message" size={20} color="#2563EB" accessibilityLabel="Message" />
                   </Typography>
                   <Typography
                     variant="caption"
@@ -355,7 +356,7 @@ export default function NavigateToPickupScreen() {
                 shadow="lg"
                 leftIcon={
                   <Typography variant="body" className="text-background">
-                    📍
+                    <Icon name="mapPin" size={18} color="#2563EB" accessibilityLabel="Location" />
                   </Typography>
                 }
                 onPress={handleArrived}

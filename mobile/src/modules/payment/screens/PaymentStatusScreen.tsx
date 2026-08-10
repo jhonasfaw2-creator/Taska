@@ -3,6 +3,7 @@ import { View, TouchableOpacity } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { getPayment, confirmPayment, cancelPayment } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 import { ApiError } from '@/services';
@@ -84,42 +85,42 @@ export default function PaymentStatusScreen() {
       case 'PENDING':
       case 'PROCESSING':
         return {
-          icon: '⏳',
+          icon: 'clock',
           title: 'Processing Payment',
           subtitle: 'Please wait while we process your payment...',
           color: 'text-primary',
         };
       case 'PAID':
         return {
-          icon: '✅',
+          icon: 'success',
           title: 'Payment Successful',
           subtitle: 'Your payment has been confirmed successfully.',
           color: 'text-success',
         };
       case 'FAILED':
         return {
-          icon: '❌',
+          icon: 'error',
           title: 'Payment Failed',
           subtitle: 'Something went wrong. Please try again or use a different payment method.',
           color: 'text-error',
         };
       case 'CANCELLED':
         return {
-          icon: '↩️',
+          icon: 'arrowLeft',
           title: 'Payment Cancelled',
           subtitle: 'This payment has been cancelled.',
           color: 'text-text-secondary',
         };
       case 'REFUNDED':
         return {
-          icon: '💳',
+          icon: 'card',
           title: 'Payment Refunded',
           subtitle: 'Your payment has been refunded.',
           color: 'text-primary',
         };
       default:
         return {
-          icon: '❓',
+          icon: 'help',
           title: 'Unknown Status',
           subtitle: 'Payment status unknown.',
           color: 'text-text-secondary',
@@ -136,12 +137,12 @@ export default function PaymentStatusScreen() {
       <View className="flex-1 items-center justify-center px-screen-padding">
         {loading ? (
           <View className="items-center">
-            <Typography variant="h1" className="mb-md animate-pulse">⏳</Typography>
-            <Typography variant="body" color="secondary">Loading payment status...</Typography>
+            <Icon name="loading" size={48} color="#2563EB" accessibilityLabel="Loading" />
+            <Typography variant="body" color="secondary" className="mt-md">Loading payment status...</Typography>
           </View>
         ) : error && !payment ? (
           <View className="items-center">
-            <Typography variant="h1" className="mb-md">❌</Typography>
+            <Icon name="error" size={32} color="#EF4444" accessibilityLabel="Payment failed" />
             <Typography variant="body" weight="semibold" className="text-center text-text-primary">
               {error}
             </Typography>

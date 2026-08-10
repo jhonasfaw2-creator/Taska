@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { listAllPayments } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
@@ -238,7 +239,7 @@ export default function PaymentDashboardScreen() {
                   activeOpacity={0.7}
                   className="flex-1 flex-row items-center justify-center gap-sm rounded-xl border border-border bg-surface py-md"
                 >
-                  <Typography variant="body">💳</Typography>
+                  <Icon name="card" size={20} color="#2563EB" accessibilityLabel="Payment" />
                   <Typography variant="body" weight="medium" className="text-text-primary">
                     Refunds
                   </Typography>
@@ -248,7 +249,7 @@ export default function PaymentDashboardScreen() {
                   activeOpacity={0.7}
                   className="flex-1 flex-row items-center justify-center gap-sm rounded-xl border border-border bg-surface py-md"
                 >
-                  <Typography variant="body">📋</Typography>
+                  <Icon name="tasks" size={20} color="#2563EB" accessibilityLabel="Task" />
                   <Typography variant="body" weight="medium" className="text-text-primary">
                     Audit Logs
                   </Typography>

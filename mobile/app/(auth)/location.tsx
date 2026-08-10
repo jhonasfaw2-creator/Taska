@@ -3,6 +3,7 @@ import { View, ScrollView, TouchableOpacity, TextInput, Alert, ActivityIndicator
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 import { searchAddresses, reverseGeocode } from '@/modules/location/services/geocoding.service';
@@ -108,7 +109,7 @@ function LocationSection({
       <View className="overflow-hidden rounded-xl border border-border bg-surface">
         <View className="flex-row items-center px-md">
           <Typography variant="body" color="secondary" className="mr-md">
-            🔍
+            <Icon name="search" size={20} color="#6B7280" accessibilityLabel="Search" />
           </Typography>
           <TextInput
             value={searchQuery}
@@ -139,7 +140,7 @@ function LocationSection({
         className="mt-md flex-row items-center justify-center gap-sm rounded-xl border border-primary bg-primary/5 px-md py-md active:opacity-80"
       >
         <Typography variant="body" weight="medium" className="text-primary">
-          📍
+          <Icon name="mapPin" size={20} color="#2563EB" accessibilityLabel="Location" />
         </Typography>
         <Typography variant="body" weight="semibold" className="text-primary">
           Use Current Location
@@ -161,7 +162,7 @@ function LocationSection({
             >
               <View className="h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
                 <Typography variant="caption" className="text-primary">
-                  📍
+                  <Icon name="mapPin" size={16} color="#2563EB" accessibilityLabel="Location" />
                 </Typography>
               </View>
               <View className="flex-1">
@@ -178,7 +179,7 @@ function LocationSection({
         <View className="mt-md rounded-xl border border-primary bg-primary/5 p-md">
           <View className="flex-row items-start gap-md">
             <Typography variant="body" className="mt-1 text-primary">
-              📍
+              <Icon name="mapPin" size={20} color="#2563EB" accessibilityLabel="Location" />
             </Typography>
             <View className="flex-1">
               <Typography
@@ -203,7 +204,7 @@ function LocationSection({
               className="p-1 active:opacity-60"
             >
               <Typography variant="body" color="secondary">
-                ✕
+                <Icon name="close" size={16} color="#6B7280" accessibilityLabel="Clear" />
               </Typography>
             </TouchableOpacity>
           </View>

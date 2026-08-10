@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 
@@ -128,16 +129,10 @@ export default function UploadPhotosScreen() {
           onPress={showPickerOptions}
           disabled={hasReachedLimit}
           testID="upload-photos-upload-area"
-          className={`items-center justify-center rounded-2xl border-2 border-dashed px-md py-xxl ${
-            hasReachedLimit
-              ? 'border-border bg-surface/50 opacity-50'
-              : 'border-primary/30 bg-primary/5 active:bg-primary/10'
-          }`}
+          className="items-center justify-center rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 px-md py-xxl"
         >
           <View className="mb-md h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-            <Typography variant="h1" className="text-primary">
-              📸
-            </Typography>
+            <Icon name="camera" size={32} color="#2563EB" accessibilityLabel="Take photo" />
           </View>
 
           <Typography
@@ -166,7 +161,7 @@ export default function UploadPhotosScreen() {
             className="mt-md flex-row items-center justify-center gap-sm rounded-xl border border-primary bg-primary/5 px-md py-md active:opacity-80"
           >
             <Typography variant="body" weight="medium" className="text-primary">
-              🖼️
+              <Icon name="image" size={24} color="#2563EB" accessibilityLabel="Photos" />
             </Typography>
             <Typography variant="body" weight="semibold" className="text-primary">
               Choose Photos
@@ -214,7 +209,7 @@ export default function UploadPhotosScreen() {
                       className="text-background"
                       style={{ fontSize: 10, lineHeight: 14 }}
                     >
-                      ✕
+                      <Icon name="close" size={16} color="#FFFFFF" accessibilityLabel="Remove photo" />
                     </Typography>
                   </TouchableOpacity>
                 </View>

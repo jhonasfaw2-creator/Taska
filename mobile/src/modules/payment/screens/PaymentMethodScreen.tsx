@@ -4,18 +4,19 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 interface PaymentOption {
   id: string;
   label: string;
   description: string;
-  icon: string;
+  icon: MobileIconName;
 }
 
 const PAYMENT_OPTIONS: PaymentOption[] = [
-  { id: 'STRIPE', label: 'Card Payment', description: 'Pay with credit or debit card', icon: '💳' },
-  { id: 'CASH', label: 'Cash', description: 'Pay in cash at pickup or drop-off', icon: '💵' },
-  { id: 'MOBILE_MONEY', label: 'Mobile Money', description: 'Pay with mobile money transfer', icon: '📱' },
+  { id: 'STRIPE', label: 'Card Payment', description: 'Pay with credit or debit card', icon: 'card' },
+  { id: 'CASH', label: 'Cash', description: 'Pay in cash at pickup or drop-off', icon: 'banknote' },
+  { id: 'MOBILE_MONEY', label: 'Mobile Money', description: 'Pay with mobile money transfer', icon: 'phone' },
 ];
 
 export default function PaymentMethodScreen() {
@@ -74,7 +75,7 @@ export default function PaymentMethodScreen() {
                 ].join(' ')}
               >
                 <View className="h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                  <Typography variant="h2">{option.icon}</Typography>
+                  <Icon name={option.icon} size={24} color="#2563EB" accessibilityLabel={option.label} />
                 </View>
                 <View className="flex-1">
                   <Typography variant="body" weight="semibold" className="text-text-primary">

@@ -4,6 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { updateProfile, clearSession, ApiError } from '@/services';
 
 type AccountType = 'customer' | 'tasker';
@@ -80,7 +81,6 @@ export default function CreateProfileScreen() {
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={() => router.back()}
-            testID="profile-back-button"
             className="mb-xl h-xl w-xl items-center justify-center rounded-full active:opacity-60"
             hitSlop={8}
           >
@@ -108,9 +108,7 @@ export default function CreateProfileScreen() {
               className="h-24 w-24 items-center justify-center rounded-full border-2 border-border bg-surface active:opacity-70"
               disabled
             >
-              <Typography variant="h2" className="text-text-secondary">
-                📷
-              </Typography>
+              <Icon name="camera" size={24} color="#6B7280" accessibilityLabel="Profile photo" />
             </TouchableOpacity>
             <View className="mt-sm">
               <Typography variant="caption" color="secondary" className="text-center">
@@ -140,7 +138,6 @@ export default function CreateProfileScreen() {
                 placeholder="Enter your full name"
                 placeholderTextColor="rgba(107, 114, 128, 0.5)"
                 autoComplete="name"
-                textContentType="name"
                 returnKeyType="done"
                 testID="profile-name-input"
                 nativeID="full-name"
@@ -171,7 +168,8 @@ export default function CreateProfileScreen() {
               </Typography>
               <View className="ml-sm">
                 <Typography variant="caption" className="text-text-secondary">
-                  Verified ✓
+                  Verified
+                  <Icon name="check" size={14} color="#22C55E" accessibilityLabel="Verified" />
                 </Typography>
               </View>
             </View>
@@ -211,7 +209,7 @@ export default function CreateProfileScreen() {
                   >
                     {accountType === 'customer' && (
                       <Typography variant="caption" weight="bold" className="text-background">
-                        ✓
+                        <Icon name="check" size={14} color="#FFFFFF" accessibilityLabel="Selected" />
                       </Typography>
                     )}
                   </View>
@@ -250,7 +248,7 @@ export default function CreateProfileScreen() {
                   >
                     {accountType === 'tasker' && (
                       <Typography variant="caption" weight="bold" className="text-background">
-                        ✓
+                        <Icon name="check" size={14} color="#FFFFFF" accessibilityLabel="Selected" />
                       </Typography>
                     )}
                   </View>

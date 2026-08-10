@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 const MOCK_COMPLETION = {
   category: 'Delivery',
@@ -43,7 +44,7 @@ function StarSelector({
               weight="bold"
               className={isFilled ? 'text-warning' : 'text-border'}
             >
-              ★
+              <Icon name="star" size={28} color={isFilled ? '#F59E0B' : '#E5E7EB'} accessibilityLabel={`${starValue} star${starValue !== 1 ? 's' : ''}`} fill={isFilled ? '#F59E0B' : 'none'} />
             </Typography>
           </TouchableOpacity>
         );
@@ -107,7 +108,7 @@ export default function TaskCompletionScreen() {
         <View className="mb-md items-center">
           <View className="h-16 w-16 items-center justify-center rounded-full bg-success/20">
             <Typography variant="h1" className="text-success">
-              ✓
+              <Icon name="success" size={32} color="#22C55E" accessibilityLabel="Task completed" />
             </Typography>
           </View>
         </View>
@@ -141,32 +142,32 @@ export default function TaskCompletionScreen() {
 
           <View className="px-lg py-sm">
             <SummaryRow
-              icon="📂"
+              icon="folder"
               label="Category"
               value={MOCK_COMPLETION.category}
             />
             <SummaryRow
-              icon="👤"
+              icon="user"
               label="Tasker"
               value={MOCK_COMPLETION.taskerName}
             />
             <SummaryRow
-              icon="📍"
+              icon="mapPin"
               label="Pickup"
               value={MOCK_COMPLETION.pickup}
             />
             <SummaryRow
-              icon="🏁"
+              icon="target"
               label="Drop-off"
               value={MOCK_COMPLETION.dropoff}
             />
             <SummaryRow
-              icon="⏱️"
+              icon="clock"
               label="Completed at"
               value={MOCK_COMPLETION.completionTime}
             />
             <SummaryRow
-              icon="💰"
+              icon="banknote"
               label="Total payment"
               value={formatCurrency(MOCK_COMPLETION.total)}
               isLast
@@ -196,7 +197,7 @@ export default function TaskCompletionScreen() {
             <View className="items-end rounded-full bg-success/20 px-md py-sm">
               <View className="flex-row items-center gap-xs">
                 <Typography variant="caption" className="text-success">
-                  ✓
+                  <Icon name="success" size={14} color="#22C55E" accessibilityLabel="Payment completed" />
                 </Typography>
                 <Typography
                   variant="caption"
@@ -289,7 +290,7 @@ function SummaryRow({
   value,
   isLast = false,
 }: {
-  icon: string;
+  icon: MobileIconName;
   label: string;
   value: string;
   isLast?: boolean;
@@ -300,7 +301,7 @@ function SummaryRow({
     >
       <View className="mr-md h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
         <Typography variant="caption" className="text-primary">
-          {icon}
+          <Icon name={icon} size={18} color="#2563EB" accessibilityLabel="" />
         </Typography>
       </View>
       <View className="flex-1">

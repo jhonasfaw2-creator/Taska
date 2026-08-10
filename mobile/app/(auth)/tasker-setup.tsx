@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 type IdType = 'passport' | 'drivers_license' | 'national_id' | '';
 
@@ -33,10 +34,10 @@ interface SectionConfig {
 }
 
 const SECTIONS: SectionConfig[] = [
-  { key: 'personal', icon: '👤', title: 'Personal Information' },
-  { key: 'identity', icon: '🆔', title: 'Identity Verification' },
-  { key: 'contact', icon: '📞', title: 'Contact Information' },
-  { key: 'photo', icon: '📷', title: 'Profile Photo' },
+  { key: 'personal', icon: 'user', title: 'Personal Information' },
+  { key: 'identity', icon: 'shield', title: 'Identity Verification' },
+  { key: 'contact', icon: 'phone', title: 'Contact Information' },
+  { key: 'photo', icon: 'camera', title: 'Profile Photo' },
 ];
 
 const EMPTY_STATE: VerificationState = {
@@ -165,9 +166,7 @@ export default function TaskerSetupScreen() {
             accessibilityLabel={label}
           />
           {isFieldTouched && value.trim().length > 0 && (
-            <Typography variant="caption" className="text-success">
-              ✓
-            </Typography>
+            <Icon name="check" size={18} color="#22C55E" accessibilityLabel="Valid" />
           )}
         </View>
         {showError && (
@@ -201,7 +200,7 @@ export default function TaskerSetupScreen() {
           className="flex-row items-center bg-surface px-md py-lg"
         >
           <View className="mr-md h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-            <Typography variant="h2">{section.icon}</Typography>
+            <Icon name={section.icon as MobileIconName} size={24} color="#2563EB" accessibilityLabel={section.title} />
           </View>
 
           <View className="flex-1">
@@ -224,13 +223,14 @@ export default function TaskerSetupScreen() {
             </View>
           </View>
 
-          <Typography
-            variant="body"
-            weight="medium"
-            className="ml-sm text-text-secondary"
-          >
-            {isExpanded ? '−' : '+'}
-          </Typography>
+          <View className="ml-sm h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+            <Icon 
+              name={isExpanded ? 'chevronUp' : 'chevronDown'} 
+              size={18} 
+              color="#2563EB" 
+              accessibilityLabel={isExpanded ? 'Collapse' : 'Expand'} 
+            />
+          </View>
         </TouchableOpacity>
 
         {isExpanded && (
@@ -297,9 +297,7 @@ export default function TaskerSetupScreen() {
                           ].join(' ')}
                         >
                           {selected && (
-                            <Typography variant="caption" weight="bold" className="text-background">
-                              ✓
-                            </Typography>
+                            <Icon name="check" size={14} color="#FFFFFF" />
                           )}
                         </View>
                         <Typography
@@ -384,12 +382,10 @@ export default function TaskerSetupScreen() {
               ].join(' ')}
             >
               {form.profilePhoto.trim().length > 0 ? (
-                <Typography variant="h1">✓</Typography>
+                <Icon name="check" size={24} color="#22C55E" />
               ) : (
                 <>
-                  <Typography variant="h2" className="text-text-secondary">
-                    📷
-                  </Typography>
+                  <Icon name="camera" size={24} color="#6B7280" />
                   <Typography variant="caption" color="secondary" className="mt-1 text-center">
                     Tap to upload
                   </Typography>
@@ -397,9 +393,12 @@ export default function TaskerSetupScreen() {
               )}
             </TouchableOpacity>
             {form.profilePhoto.trim().length > 0 ? (
-              <Typography variant="caption" className="mt-sm text-success">
-                Photo uploaded ✓
-              </Typography>
+              <View className="mt-sm flex-row items-center gap-1">
+                <Icon name="check" size={14} color="#22C55E" accessibilityLabel="Uploaded" />
+                <Typography variant="caption" className="text-success">
+                  Photo uploaded
+                </Typography>
+              </View>
             ) : (
               <Typography variant="caption" color="secondary" className="mt-sm">
                 Upload a clear photo of your face

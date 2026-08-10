@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '@/components/Icon';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
@@ -68,7 +69,7 @@ function TaskCard({ task, onPress }: { task: RecentTask; onPress: () => void }) 
         <View className="flex-1">
           {isActive && (
             <View className="flex-row items-center gap-1">
-              <Typography variant="caption" className="text-text-secondary">🔄</Typography>
+                <Icon name="refresh" size={14} color="#6B7280" />
               <Typography variant="caption" color="secondary">
                 In progress
               </Typography>
@@ -193,7 +194,7 @@ export default function TaskHistoryScreen() {
           </View>
         </View>
 
-        <View className="mx-screen-padding mt-lg flex-row gap-sm rounded-2xl border border-border bg-surface p-sm">
+        <View className="mx-screen-padding mt-lg flex-row gap-sm rounded-2xl border border-border bg-surface p-1">
           {tabs.map((tab) => {
             const isActive = filter === tab.key;
             return (
@@ -204,7 +205,7 @@ export default function TaskHistoryScreen() {
                 onPress={() => setFilter(tab.key)}
                 testID={`task-history-tab-${tab.key}`}
                 activeOpacity={0.7}
-                className={`flex-1 items-center rounded-xl py-md ${
+                className={`flex-1 items-center rounded-xl py-2.5 ${
                   isActive ? 'bg-primary shadow-sm' : ''
                 }`}
               >
@@ -233,7 +234,7 @@ export default function TaskHistoryScreen() {
           ) : filteredTasks.length === 0 ? (
             <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-lg py-xl">
               <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="h1">📋</Typography>
+                <Icon name="tasks" size={32} color="#2563EB" />
               </View>
               <Typography variant="body" weight="semibold" className="text-center text-text-primary">
                 No tasks found

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, Text } from 'react-native';
+import { Icon } from '@/components/Icon';
 
 interface ImagePreviewProps {
   uri: string;
@@ -48,7 +49,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
           accessibilityRole="button"
         >
           <Text style={{ color: '#FFFFFF', fontSize: 12, fontWeight: 'bold', lineHeight: 14 }}>
-            ×
+            <Icon name="close" size={14} color="#FFFFFF" accessibilityLabel="Remove image" />
           </Text>
         </TouchableOpacity>
       )}

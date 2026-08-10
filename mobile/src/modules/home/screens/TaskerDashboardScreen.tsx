@@ -8,6 +8,7 @@ import type { TaskerProfile } from '@/types/tasker';
 import { ApiError } from '@/services';
 import { onSocketEvent } from '@/services/socket.service';
 import { startLocationUpdates, type LocationSubscription } from '@/modules/location/services/location.service';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,29 +29,29 @@ interface NearbyTask {
 interface NavItem {
   id: string;
   label: string;
-  icon: string;
-  activeIcon: string;
+  icon: MobileIconName;
+  activeIcon: MobileIconName;
 }
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const NAV_ITEMS: NavItem[] = [
-  { id: 'dashboard', label: 'Dashboard', icon: '📊', activeIcon: '📊' },
-  { id: 'tasks', label: 'Tasks', icon: '📋', activeIcon: '📋' },
-  { id: 'earnings', label: 'Earnings', icon: '💵', activeIcon: '💵' },
-  { id: 'messages', label: 'Messages', icon: '💬', activeIcon: '💬' },
-  { id: 'profile', label: 'Profile', icon: '👤', activeIcon: '👤' },
+  { id: 'dashboard', label: 'Dashboard', icon: 'tasks', activeIcon: 'tasks' },
+  { id: 'tasks', label: 'Tasks', icon: 'tasks', activeIcon: 'tasks' },
+  { id: 'earnings', label: 'Earnings', icon: 'banknote', activeIcon: 'banknote' },
+  { id: 'messages', label: 'Messages', icon: 'message', activeIcon: 'message' },
+  { id: 'profile', label: 'Profile', icon: 'user', activeIcon: 'user' },
 ];
 
 const ACTIVE_NAV_ID = 'dashboard';
 
 // ── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({ icon, label, value }: { icon: string; label: string; value: string }) {
+function StatCard({ icon, label, value }: { icon: MobileIconName; label: string; value: string }) {
   return (
     <View className="flex-1 items-center rounded-xl border border-border bg-surface px-sm py-lg">
       <View className="mb-sm h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-        <Typography variant="body">{icon}</Typography>
+        <Icon name={icon} size={20} color="#2563EB" accessibilityLabel="" />
       </View>
       <Typography variant="h2" weight="bold" className="text-text-primary">
         {value}
@@ -85,13 +86,13 @@ function NearbyTaskCard({ task, onPress }: { task: NearbyTask; onPress: () => vo
           </View>
           <View className="mt-1 flex-row items-center gap-md">
             <View className="flex-row items-center gap-1">
-              <Typography variant="caption" className="text-text-secondary">📍</Typography>
+              <Icon name="mapPin" size={14} color="#6B7280" accessibilityLabel="Pickup location" />
               <Typography variant="caption" color="secondary" numberOfLines={1}>
                 {task.pickupAddress}
               </Typography>
             </View>
             <View className="flex-row items-center gap-1">
-              <Typography variant="caption" className="text-text-secondary">📏</Typography>
+              <Icon name="target" size={14} color="#6B7280" accessibilityLabel="Distance" />
               <Typography variant="caption" color="secondary">
                 {task.distanceKm.toFixed(1)} km
               </Typography>
@@ -99,7 +100,7 @@ function NearbyTaskCard({ task, onPress }: { task: NearbyTask; onPress: () => vo
           </View>
           {task.customerRating !== null && (
             <View className="mt-1 flex-row items-center gap-1">
-              <Typography variant="caption" className="text-warning">⭐</Typography>
+              <Icon name="star" size={14} color="#F59E0B" fill="#F59E0B" accessibilityLabel="Rating" />
               <Typography variant="caption" weight="semibold" className="text-text-primary">
                 {task.customerRating.toFixed(1)}
               </Typography>
@@ -140,7 +141,7 @@ function BottomNavBar({ onPress }: { onPress: (item: { id: string; label: string
               ].join(' ')}
             >
               <Typography variant="body" className={isActive ? '' : 'opacity-50'}>
-                {isActive ? item.activeIcon : item.icon}
+                <Icon name={isActive ? item.activeIcon : item.icon} size={20} color={isActive ? '#2563EB' : '#6B7280'} accessibilityLabel={item.label} />
               </Typography>
             </View>
             <Typography
@@ -302,10 +303,10 @@ export default function TaskerDashboardScreen() {
     return 'Good Evening';
   };
 
-  const stats = [
-    { id: 'tasks', label: 'Completed Tasks', value: String(profile?.totalTasksCompleted ?? 0), icon: '✅' },
-    { id: 'rating', label: 'Rating', value: profile?.rating ? profile.rating.toFixed(1) : '—', icon: '⭐' },
-    { id: 'earnings', label: 'Earnings', value: 'ETB 0', icon: '💰' },
+  const stats: { id: string; label: string; value: string; icon: MobileIconName }[] = [
+    { id: 'tasks', label: 'Completed Tasks', value: String(profile?.totalTasksCompleted ?? 0), icon: 'success' },
+    { id: 'rating', label: 'Rating', value: profile?.rating ? profile.rating.toFixed(1) : '—', icon: 'star' },
+    { id: 'earnings', label: 'Earnings', value: 'ETB 0', icon: 'banknote' },
   ];
 
   const displayName = profile?.userId ? 'Tasker' : 'Tasker';
@@ -326,7 +327,7 @@ export default function TaskerDashboardScreen() {
           <View className="flex-row items-center justify-between">
             <View className="flex-row items-center gap-md">
               <View className="h-14 w-14 items-center justify-center rounded-full border-2 border-background/30 bg-background/20">
-                <Typography variant="h2" className="opacity-90">👤</Typography>
+                <Icon name="user" size={32} color="#FFFFFF" accessibilityLabel="Profile" />
               </View>
               <View>
                 <Typography
@@ -363,161 +364,120 @@ export default function TaskerDashboardScreen() {
           </View>
         </View>
 
-        {/* ── Status Card ─────────────────────────────────────────── */}
-        <View className="mx-screen-padding -mt-md rounded-2xl border border-border bg-surface p-lg shadow-sm">
-          <View className="flex-row items-center justify-between">
-            <View className="flex-row items-center gap-md">
-              <View
-                className={[
-                  'h-12 w-12 items-center justify-center rounded-full',
-                  isOnline ? 'bg-success/10' : 'bg-text-secondary/10',
-                ].join(' ')}
-              >
-                <Typography variant="h2">{isOnline ? '🟢' : '⭕'}</Typography>
-              </View>
-              <View>
-                <Typography variant="body" weight="semibold" className="text-text-primary">
-                  {isOnline ? 'Waiting for tasks' : 'You are offline'}
-                </Typography>
-                <Typography variant="caption" color="secondary" className="mt-0.5">
-                  {isOnline
-                    ? 'Nearby tasks will appear here'
-                    : 'Go online to start receiving tasks'}
-                </Typography>
-              </View>
-            </View>
+         {/* ── Status Card ─────────────────────────────────────────── */}
+         <View className="mx-screen-padding -mt-md rounded-2xl border border-border bg-surface p-lg shadow-sm">
+           <View className="flex-row items-center justify-between">
+             <View className="flex-row items-center gap-md">
+               <View
+                 className={[
+                   'h-12 w-12 items-center justify-center rounded-full',
+                   isOnline ? 'bg-success/10' : 'bg-text-secondary/10',
+                 ].join(' ')}
+               >
+                 <Icon name={isOnline ? 'success' : 'error'} size={24} color={isOnline ? '#22C55E' : '#6B7280'} accessibilityLabel={isOnline ? 'Online' : 'Offline'} />
+               </View>
+               <View>
+                 <Typography variant="body" weight="semibold" className="text-text-primary">
+                   {isOnline ? 'Waiting for tasks' : 'You are offline'}
+                 </Typography>
+                 <Typography variant="caption" color="secondary" className="mt-0.5">
+                   {isOnline
+                     ? 'Nearby tasks will appear here'
+                     : 'Go online to start receiving tasks'}
+                 </Typography>
+               </View>
+             </View>
 
-            {isOnline && (
-              <View className="rounded-full bg-success/10 px-sm py-xs">
-                <Typography variant="caption" weight="semibold" className="text-success">
-                  Listening
-                </Typography>
-              </View>
-            )}
-          </View>
+             {isOnline && (
+               <View className="rounded-full bg-success/10 px-sm py-xs">
+                 <Typography variant="caption" weight="semibold" className="text-success">
+                   Listening
+                 </Typography>
+               </View>
+             )}
+           </View>
 
-          {isOnline && (
-            <View className="mt-md flex-row items-center gap-sm rounded-lg bg-primary/5 px-sm py-sm">
-              <Typography variant="caption" className="text-primary">⏱</Typography>
-              <Typography variant="caption" className="text-primary">
-                Online today: 0 min
-              </Typography>
-            </View>
-          )}
-        </View>
+           {isOnline && (
+             <View className="mt-md flex-row items-center gap-sm rounded-lg bg-primary/5 px-sm py-sm">
+               <Icon name="clock" size={16} color="#2563EB" accessibilityLabel="Timer" />
+               <Typography variant="caption" className="text-primary">
+                 Online today: 0 min
+               </Typography>
+             </View>
+           )}
+         </View>
 
-        {/* ── Statistics Row ──────────────────────────────────────── */}
-        <View className="px-screen-padding pt-xl">
-          <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
-            Overview
-          </Typography>
-          <View className="flex-row gap-sm">
-            {stats.map((stat) => (
-              <StatCard key={stat.id} icon={stat.icon} label={stat.label} value={stat.value} />
-            ))}
-          </View>
-        </View>
+         {/* ── Statistics Row ──────────────────────────────────────── */}
+         <View className="px-screen-padding pt-xl">
+           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
+             Overview
+           </Typography>
+           <View className="flex-row gap-sm">
+             {stats.map((stat) => (
+               <StatCard key={stat.id} icon={stat.icon} label={stat.label} value={stat.value} />
+             ))}
+           </View>
+         </View>
 
-        {/* ── Current Status ──────────────────────────────────────── */}
-        <View className="px-screen-padding pt-xl">
-          <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
-            Current Status
-          </Typography>
+         {/* ── Available Tasks ─────────────────────────────────────── */}
+         <View className="px-screen-padding pt-xl">
+           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
+             Available Tasks
+           </Typography>
 
-          <View className="items-center rounded-2xl border border-border bg-surface px-md py-xl">
-            <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Typography variant="h1">🎯</Typography>
-            </View>
-            <Typography variant="body" weight="semibold" className="text-center text-text-primary">
-              Waiting for tasks
-            </Typography>
-            <Typography
-              variant="caption"
-              color="secondary"
-              className="mt-sm max-w-xs text-center leading-relaxed"
-            >
-              {isOnline
-                ? 'You are online and visible to nearby customers. Task requests will appear here automatically.'
-                : 'Go online to start receiving task requests from customers in your area.'}
-            </Typography>
-
-            {!isOnline && (
-              <TouchableOpacity
-                accessibilityRole="button"
-                accessibilityLabel="Go Online"
-                onPress={toggleOnline}
-                activeOpacity={0.85}
-                testID="dashboard-go-online"
-                className="mt-lg flex-row items-center gap-sm rounded-full bg-primary px-xl py-md"
-                style={{
-                  shadowColor: '#2563EB',
-                  shadowOffset: { width: 0, height: 6 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: 12,
-                  elevation: 5,
-                }}
-              >
-                <Typography variant="body" className="text-background">🟢</Typography>
-                <Typography variant="body" weight="semibold" className="text-background">
-                  Go Online
-                </Typography>
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* ── Available Tasks Preview ─────────────────────────────── */}
-        <View className="px-screen-padding pt-xl">
-          <View className="mb-md flex-row items-center justify-between">
-            <Typography variant="body" weight="semibold" className="text-text-primary">
-              Available Tasks
-            </Typography>
-          </View>
-
-          {tasksLoading ? (
-            <View className="gap-sm">
-              {[1, 2, 3].map((i) => (
-                <View key={i} className="h-20 rounded-2xl border border-border bg-surface" />
-              ))}
-            </View>
-          ) : tasksError ? (
-            <View className="items-center rounded-2xl border border-border bg-surface px-lg py-xl">
-              <Typography variant="body" weight="semibold" className="text-center text-text-primary">
-                Failed to load tasks
-              </Typography>
-              <Typography variant="caption" color="secondary" className="mt-sm text-center">
-                {tasksError}
-              </Typography>
-              <TouchableOpacity
-                onPress={() => setIsOnline(true)}
-                className="mt-md rounded-full bg-primary px-lg py-sm"
-                activeOpacity={0.8}
-              >
-                <Typography variant="caption" weight="semibold" className="text-background">
-                  Retry
-                </Typography>
-              </TouchableOpacity>
-            </View>
-          ) : nearbyTasks.length === 0 ? (
-            <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-md py-xl">
-              <Typography variant="caption" color="secondary" className="text-center">
-                {isOnline
-                  ? 'No available tasks right now. Stay online to receive new requests.'
-                  : 'Go online to see available tasks'}
-              </Typography>
-            </View>
-          ) : (
-            nearbyTasks.map((task) => (
-              <NearbyTaskCard
-                key={task.id}
-                task={task}
-                onPress={() => {
-                  router.push(`/tasker-task-details?taskId=${task.id}`);
-                }}
-              />
-            ))
-          )}
-        </View>
+           {tasksLoading ? (
+             <View className="gap-sm">
+               {[1, 2, 3].map((i) => (
+                 <View key={i} className="h-20 rounded-2xl border border-border bg-surface" />
+               ))}
+             </View>
+           ) : tasksError ? (
+             <View className="items-center rounded-2xl border border-error/30 bg-error-light px-lg py-xl">
+               <View className="mb-md h-14 w-14 items-center justify-center rounded-full bg-error/10">
+                 <Icon name="alert" size={24} color="#EF4444" accessibilityLabel="Error" />
+               </View>
+               <Typography variant="body" weight="semibold" className="text-center text-text-primary">
+                 Failed to load tasks
+               </Typography>
+               <Typography variant="caption" color="secondary" className="mt-sm text-center">
+                 {tasksError}
+               </Typography>
+               <TouchableOpacity
+                 onPress={() => setIsOnline(true)}
+                 className="mt-md rounded-full bg-primary px-lg py-sm"
+                 activeOpacity={0.8}
+               >
+                 <Typography variant="caption" weight="semibold" className="text-background">
+                   Retry
+                 </Typography>
+               </TouchableOpacity>
+             </View>
+           ) : nearbyTasks.length === 0 ? (
+             <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-md py-xl">
+               <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                 <Icon name="tasks" size={32} color="#2563EB" accessibilityLabel="No tasks" />
+               </View>
+               <Typography variant="body" weight="semibold" className="text-center text-text-primary">
+                 No available tasks
+               </Typography>
+               <Typography variant="caption" color="secondary" className="mt-sm text-center leading-relaxed">
+                 {isOnline
+                   ? 'Stay online to receive new task requests from nearby customers.'
+                   : 'Go online to see available tasks in your area.'}
+               </Typography>
+             </View>
+           ) : (
+             nearbyTasks.map((task) => (
+               <NearbyTaskCard
+                 key={task.id}
+                 task={task}
+                 onPress={() => {
+                   router.push(`/tasker-task-details?taskId=${task.id}`);
+                 }}
+               />
+             ))
+           )}
+         </View>
 
         <View className="h-lg" />
       </ScrollView>

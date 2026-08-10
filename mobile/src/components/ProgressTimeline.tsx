@@ -1,5 +1,6 @@
 import { View } from 'react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from './Icon';
 
 export interface TimelineStep {
   key: string;
@@ -54,7 +55,7 @@ export function ProgressTimeline({
         <View className="items-center" style={{ width: 28 }}>
           <View className="h-6 w-6 items-center justify-center rounded-full border-2 border-error bg-error/10">
             <Typography variant="caption" weight="bold" className="text-error" style={{ fontSize: 10 }}>
-              ✕
+              <Icon name="close" size={12} color="#EF4444" accessibilityLabel="Cancelled" />
             </Typography>
           </View>
         </View>
@@ -99,7 +100,7 @@ export function ProgressTimeline({
                     className="text-background"
                     style={{ fontSize: 10 }}
                   >
-                    ✓
+                    <Icon name="check" size={12} color="#FFFFFF" accessibilityLabel="Completed" />
                   </Typography>
                 ) : (
                   <View className="h-2 w-2 rounded-full bg-border" />

@@ -7,9 +7,10 @@ import { Button, Typography } from '@/components/ui';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
 import { createTask } from '@/services/task.service';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 interface SummaryRowProps {
-  icon: string;
+  icon: MobileIconName;
   label: string;
   value: string;
   editRoute?: string;
@@ -25,9 +26,7 @@ function SummaryRow({ icon, label, value, editRoute, testID }: SummaryRowProps) 
       className="flex-row items-center border-b border-border px-lg py-md last:border-b-0"
     >
       <View className="mr-md h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-        <Typography variant="body" className="text-primary">
-          {icon}
-        </Typography>
+        <Icon name={icon} size={20} color="#2563EB" accessibilityLabel="" />
       </View>
 
       <View className="flex-1">
@@ -156,28 +155,28 @@ export default function ConfirmTaskScreen() {
         <View className="flex-1 px-screen-padding pt-lg">
           <SummaryCard title="Task" testID="confirm-card-task">
             <SummaryRow
-              icon="📂"
+              icon="folder"
               label="Category"
               value={state.category?.title ?? 'Not selected'}
               editRoute="/choose-category"
               testID="confirm-row-category"
             />
             <SummaryRow
-              icon="📋"
+              icon="tasks"
               label="Task title"
               value={state.title || 'Not provided'}
               editRoute="/task-details"
               testID="confirm-row-task-title"
             />
             <SummaryRow
-              icon="🚗"
+              icon="car"
               label="Vehicle type"
               value={vehicleName}
               editRoute="/vehicle-type"
               testID="confirm-row-vehicle"
             />
             <SummaryRow
-              icon="🖼️"
+              icon="image"
               label="Photos"
               value={photoText}
               editRoute="/upload-photos"
@@ -187,14 +186,14 @@ export default function ConfirmTaskScreen() {
 
           <SummaryCard title="Location" testID="confirm-card-location">
             <SummaryRow
-              icon="📍"
+              icon="mapPin"
               label="Pickup location"
               value={state.pickup?.address ?? 'Not set'}
               editRoute="/location"
               testID="confirm-row-pickup"
             />
             <SummaryRow
-              icon="🏁"
+              icon="target"
               label="Drop-off location"
               value={state.dropoff?.address ?? 'Not set'}
               editRoute="/location"

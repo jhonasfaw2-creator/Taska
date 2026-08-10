@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import { Logo, Button, Typography, Link } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
 const APP_VERSION = (Constants.expoConfig?.version as string) ?? '1.0.0';
 
@@ -25,13 +26,13 @@ export default function AuthEntryScreen() {
     <SafeAreaView edges={['top', 'bottom']} className="flex-1 bg-background">
       <View className="flex-1 items-center justify-center px-screen-padding">
         <View className="items-center">
-          <View className="items-center justify-center rounded-2xl bg-surface p-xl shadow-lg">
-            <Logo size={104} />
+          <View className="items-center justify-center rounded-3xl bg-primary p-2xl shadow-xl">
+            <Logo size={96} />
           </View>
 
-          <View className="h-xl" />
+          <View className="h-2xl" />
 
-          <Typography variant="h1" weight="bold" className="text-center text-text-primary">
+          <Typography variant="display-sm" weight="bold" className="text-center text-text-primary">
             Welcome to Taska
           </Typography>
 
@@ -39,9 +40,19 @@ export default function AuthEntryScreen() {
 
           <Typography
             variant="body"
-            weight="regular"
+            weight="medium"
             color="secondary"
-            className="max-w-[320px] text-center"
+            className="max-w-[300px] text-center leading-relaxed"
+          >
+            Your time, your tasks, done.
+          </Typography>
+
+          <View className="h-xs" />
+
+          <Typography
+            variant="body-sm"
+            color="secondary"
+            className="max-w-[280px] text-center"
           >
             Get things done across Addis Ababa with trusted taskers.
           </Typography>
@@ -55,6 +66,11 @@ export default function AuthEntryScreen() {
           shadow="lg"
           onPress={handleContinueWithPhone}
           testID="continue-with-phone"
+          leftIcon={
+            <View style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="phone" size={20} color="#FFFFFF" accessibilityLabel="Phone" />
+            </View>
+          }
         />
 
         <View className="h-lg" />

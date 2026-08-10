@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { listAllPayments, refundPayment } from '@/services/payment.service';
 import type { Payment, RefundReason } from '@/types/payment';
@@ -258,7 +259,7 @@ export default function RefundManagementScreen() {
             </View>
           ) : paidPayments.length === 0 ? (
             <View className="items-center rounded-2xl border border-dashed border-border bg-surface px-lg py-xl">
-              <Typography variant="h1" className="mb-md">✅</Typography>
+              <Icon name="success" size={32} color="#22C55E" accessibilityLabel="Refund completed" />
               <Typography variant="body" weight="semibold" className="text-center text-text-primary">
                 No refundable payments
               </Typography>

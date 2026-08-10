@@ -8,13 +8,14 @@ import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { getTransactions, getBalanceSummary } from '@/services/wallet.service';
 import type { WalletTransaction, BalanceSummary } from '@/types/wallet';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
-const TX_ICONS: Record<string, string> = {
-  CREDIT: '💰',
-  DEBIT: '💳',
-  WITHDRAWAL: '🏦',
-  REFUND: '↩️',
-  FEE: '📋',
+const TX_ICONS: Record<string, MobileIconName> = {
+  CREDIT: 'banknote',
+  DEBIT: 'card',
+  WITHDRAWAL: 'landmark',
+  REFUND: 'refresh',
+  FEE: 'tasks',
 };
 
 function TransactionRow({ tx }: { tx: WalletTransaction }) {
@@ -24,7 +25,7 @@ function TransactionRow({ tx }: { tx: WalletTransaction }) {
       <View className="flex-row items-center gap-md flex-1">
         <View className="h-9 w-9 items-center justify-center rounded-full bg-primary/10">
           <Typography variant="body">
-            {TX_ICONS[tx.type] ?? '💳'}
+            <Icon name={TX_ICONS[tx.type] ?? 'card'} size={18} color="#2563EB" accessibilityLabel="" />
           </Typography>
         </View>
         <View className="flex-1">
@@ -172,7 +173,7 @@ export default function EarningsScreen() {
             </View>
           ) : transactions.length === 0 ? (
             <EmptyState
-              icon="💰"
+              icon="banknote"
               title="No earnings yet"
               subtitle="Complete tasks to start earning."
             />

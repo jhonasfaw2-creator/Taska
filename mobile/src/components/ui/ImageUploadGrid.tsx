@@ -2,6 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, Text, ActivityIndicator, ScrollView } from 'react-native';
 import { ImagePreview } from './ImagePreview';
 import { UploadProgress } from './UploadProgress';
+import { Icon } from '@/components/Icon';
 import type { ImagePickerAsset, UploadProgress as UploadProgressType } from '../../types/media';
 
 interface ImageUploadGridProps {
@@ -62,7 +63,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 accessibilityLabel="Add from gallery"
                 accessibilityRole="button"
               >
-                <Text style={{ fontSize: 24, color: '#9CA3AF', lineHeight: 28 }}>+</Text>
+                <Icon name="plus" size={24} color="#9CA3AF" accessibilityLabel="Add from gallery" />
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -82,7 +83,7 @@ export const ImageUploadGrid: React.FC<ImageUploadGridProps> = ({
                 accessibilityRole="button"
               >
                 <Text style={{ fontSize: 11, color: '#9CA3AF', textAlign: 'center', lineHeight: 14 }}>
-                  Camera
+                  <Icon name="camera" size={24} color="#9CA3AF" accessibilityLabel="Take a photo" />
                 </Text>
               </TouchableOpacity>
             </View>

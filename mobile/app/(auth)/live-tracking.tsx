@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
 // ── Mock Data ────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ function TripProgressBar({ currentStep }: { currentStep: TripStep }) {
               >
                 {isCompleted ? (
                   <Typography variant="caption" weight="bold" className="text-background" style={{ fontSize: 10 }}>
-                    ✓
+                    <Icon name="check" size={14} color="#FFFFFF" accessibilityLabel="Completed" />
                   </Typography>
                 ) : (
                   <View className={`h-2 w-2 rounded-full ${isCurrent ? 'bg-primary' : 'bg-border'}`} />
@@ -267,14 +268,14 @@ export default function LiveTrackingScreen() {
             {/* ── Tasker info card ──────────────────────────────────── */}
             <View className="mb-md flex-row items-center gap-md rounded-2xl border border-border bg-surface p-md">
               <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="h1">👤</Typography>
+                <Icon name="user" size={32} color="#2563EB" accessibilityLabel="Tasker" />
               </View>
               <View className="flex-1">
                 <Typography variant="body" weight="semibold" className="text-text-primary">
                   {MOCK_TASKER.name}
                 </Typography>
                 <View className="mt-0.5 flex-row items-center gap-1">
-                  <Typography variant="caption" className="text-warning">★</Typography>
+                  <Icon name="star" size={14} color="#F59E0B" fill="#F59E0B" accessibilityLabel="Rating" />
                   <Typography variant="caption" weight="semibold" className="text-text-primary">
                     {MOCK_TASKER.rating.toFixed(1)}
                   </Typography>
@@ -334,7 +335,7 @@ export default function LiveTrackingScreen() {
                 variant="outline"
                 radius="lg"
                 className="flex-1"
-                leftIcon={<Typography variant="body" className="text-primary">💬</Typography>}
+                leftIcon={<Icon name="message" size={20} color="#2563EB" accessibilityLabel="Message" />}
                 onPress={handleContactTasker}
                 testID="live-tracking-contact"
               />
@@ -343,7 +344,7 @@ export default function LiveTrackingScreen() {
                 variant="outline"
                 radius="lg"
                 className="flex-1"
-                leftIcon={<Typography variant="body" className="text-primary">📋</Typography>}
+                leftIcon={<Icon name="tasks" size={20} color="#2563EB" accessibilityLabel="Task details" />}
                 onPress={handleViewTaskDetails}
                 testID="live-tracking-details"
               />

@@ -10,6 +10,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { onSocketEvent, joinTaskRoom, leaveTaskRoom } from '@/services/socket.service';
 
 const PROGRESS_MESSAGES = [
@@ -232,7 +233,7 @@ export default function SearchingTaskerScreen() {
               }}
             >
               <Typography variant="h1" className="text-primary">
-                🔍
+                <Icon name="search" size={24} color="#2563EB" accessibilityLabel="Searching" />
               </Typography>
             </Animated.View>
           </Animated.View>

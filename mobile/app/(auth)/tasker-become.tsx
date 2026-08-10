@@ -3,12 +3,13 @@ import { View, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Typography } from '@/components/ui';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 const BENEFITS = [
-  { icon: '⏰', title: 'Flexible Schedule', desc: 'Work whenever you want — set your own hours and be your own boss.' },
-  { icon: '💰', title: 'Competitive Earnings', desc: 'Keep a large share of each task. Earn more as you complete more.' },
-  { icon: '📍', title: 'Local Tasks', desc: 'Get task requests near your current location. Minimize travel time.' },
-  { icon: '📈', title: 'Growth & Rewards', desc: 'Top-rated taskers unlock higher-paying tasks and exclusive benefits.' },
+  { icon: 'clock', title: 'Flexible Schedule', desc: 'Work whenever you want — set your own hours and be your own boss.' },
+  { icon: 'banknote', title: 'Competitive Earnings', desc: 'Keep a large share of each task. Earn more as you complete more.' },
+  { icon: 'mapPin', title: 'Local Tasks', desc: 'Get task requests near your current location. Minimize travel time.' },
+  { icon: 'reports', title: 'Growth & Rewards', desc: 'Top-rated taskers unlock higher-paying tasks and exclusive benefits.' },
 ];
 
 const REQUIREMENTS = [
@@ -40,7 +41,7 @@ export default function BecomeTaskerScreen() {
       >
         <View className="items-center bg-primary px-screen-padding pb-xl pt-lg">
           <View className="mb-md h-20 w-20 items-center justify-center rounded-full border-2 border-background/30 bg-background/20">
-            <Typography variant="display" className="text-background" style={{ fontSize: 40 }}>🛵</Typography>
+            <Icon name="bike" size={40} color="#FFFFFF" accessibilityLabel="Tasker" />
           </View>
           <Typography variant="h2" weight="bold" className="text-center text-background">
             Become a Tasker
@@ -52,7 +53,6 @@ export default function BecomeTaskerScreen() {
             Turn your free time into income. Help people in your community and earn on your own terms.
           </Typography>
         </View>
-
         <View className="px-screen-padding pt-xl">
           <Typography variant="body" weight="semibold" className="mb-md text-text-primary">
             Why become a Tasker?
@@ -63,7 +63,7 @@ export default function BecomeTaskerScreen() {
               className="mb-sm flex-row items-start rounded-2xl border border-border bg-surface p-lg"
             >
               <View className="mr-md h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="h2">{benefit.icon}</Typography>
+                <Icon name={benefit.icon as MobileIconName} size={24} color="#2563EB" accessibilityLabel={benefit.title} />
               </View>
               <View className="flex-1">
                 <Typography variant="body" weight="semibold" className="text-text-primary">
@@ -85,7 +85,7 @@ export default function BecomeTaskerScreen() {
             {REQUIREMENTS.map((req, i) => (
               <View key={i} className="flex-row items-center py-sm">
                 <View className="mr-md h-6 w-6 items-center justify-center rounded-full bg-success/20">
-                  <Typography variant="caption" className="text-success">✓</Typography>
+                  <Icon name="check" size={14} color="#22C55E" accessibilityLabel="Requirement met" />
                 </View>
                 <Typography variant="body" className="flex-1 text-text-primary">
                   {req}

@@ -6,9 +6,9 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Typography } from '@/components/ui';
-import Logo from '@/components/Logo';
+import { Logo } from '@/components/ui/Logo';
 
 interface SplashScreenProps {
   onAuthCheckComplete?: (isAuthenticated: boolean) => void;
@@ -22,6 +22,7 @@ const checkAuthentication = async (): Promise<boolean> => {
 const SplashScreen: React.FC<SplashScreenProps> = ({ onAuthCheckComplete }) => {
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets();
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -78,9 +79,9 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAuthCheckComplete }) => {
   }, [fadeAnim, scaleAnim, taglineFadeAnim, loaderFadeAnim, onAuthCheckComplete]);
 
   return (
-    <SafeAreaView
-      className={`flex-1 items-center justify-center ${isDark ? 'bg-background' : 'bg-background'}`}
-      edges={['top', 'bottom']}
+    <View
+      className="flex-1 items-center justify-center bg-background"
+      style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
     >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}
@@ -148,7 +149,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onAuthCheckComplete }) => {
           />
         </View>
       </Animated.View>
-    </SafeAreaView>
+    </View>
   );
 };
 

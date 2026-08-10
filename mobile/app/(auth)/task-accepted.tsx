@@ -6,6 +6,7 @@ import { Button, Typography } from '@/components/ui';
 import { ProgressTimeline } from '@/components/ProgressTimeline';
 import { getTaskById } from '@/services/task.service';
 import type { TaskResponse } from '@/types/task';
+import { Icon } from '@/components/Icon';
 
 export default function TaskAcceptedScreen() {
   const router = useRouter();
@@ -69,7 +70,7 @@ export default function TaskAcceptedScreen() {
       >
         <View className="items-center pt-xl">
           <View className="mb-md h-16 w-16 items-center justify-center rounded-full bg-success/20">
-            <Typography variant="h1" className="text-success">✓</Typography>
+            <Icon name="check" size={32} color="#22C55E" accessibilityLabel="Success" />
           </View>
           <Typography variant="h2" weight="bold" className="text-center text-text-primary">
             Task Accepted!
@@ -84,7 +85,7 @@ export default function TaskAcceptedScreen() {
         <View className="mx-screen-padding mt-lg overflow-hidden rounded-2xl border border-border bg-surface">
           <View className="flex-row items-center gap-md px-lg pt-lg pb-md">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-              <Typography variant="h1" className="text-primary">👤</Typography>
+              <Icon name="user" size={32} color="#2563EB" accessibilityLabel="Tasker" />
             </View>
             <View className="flex-1">
               <Typography variant="body" weight="semibold" className="text-text-primary">
@@ -98,7 +99,7 @@ export default function TaskAcceptedScreen() {
           <View className="mx-lg border-b border-border" />
           <View className="flex-row items-center gap-md px-lg py-md">
             <View className="h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Typography variant="body" className="text-primary">🚗</Typography>
+              <Icon name="car" size={20} color="#2563EB" accessibilityLabel="Vehicle" />
             </View>
             <View className="flex-1">
               <Typography variant="caption" color="secondary" className="uppercase tracking-wide">Vehicle</Typography>
@@ -128,7 +129,9 @@ export default function TaskAcceptedScreen() {
             onPress={handleChat}
             className="flex-1 items-center rounded-xl border border-border bg-surface px-md py-lg active:opacity-70"
           >
-            <Typography variant="body" className="mb-xs text-primary">💬</Typography>
+            <View className="mb-xs h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Icon name="message" size={18} color="#2563EB" accessibilityLabel="Chat" />
+            </View>
             <Typography variant="caption" weight="semibold" className="text-text-primary">Chat</Typography>
           </TouchableOpacity>
           <TouchableOpacity
@@ -136,7 +139,9 @@ export default function TaskAcceptedScreen() {
             onPress={handleCall}
             className="flex-1 items-center rounded-xl border border-border bg-surface px-md py-lg active:opacity-70"
           >
-            <Typography variant="body" className="mb-xs text-primary">📞</Typography>
+            <View className="mb-xs h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Icon name="phone" size={18} color="#2563EB" accessibilityLabel="Call" />
+            </View>
             <Typography variant="caption" weight="semibold" className="text-text-primary">Call</Typography>
           </TouchableOpacity>
           <TouchableOpacity
@@ -144,7 +149,9 @@ export default function TaskAcceptedScreen() {
             onPress={handleViewDetails}
             className="flex-1 items-center rounded-xl border border-border bg-surface px-md py-lg active:opacity-70"
           >
-            <Typography variant="body" className="mb-xs text-primary">📋</Typography>
+            <View className="mb-xs h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+              <Icon name="clipboardList" size={18} color="#2563EB" accessibilityLabel="Details" />
+            </View>
             <Typography variant="caption" weight="semibold" className="text-text-primary">Details</Typography>
           </TouchableOpacity>
         </View>
@@ -173,7 +180,7 @@ export default function TaskAcceptedScreen() {
           label="Track Live"
           radius="lg"
           shadow="lg"
-          leftIcon={<Typography variant="body" className="text-background">🗺️</Typography>}
+          leftIcon={<Icon name="map" size={20} color="#FFFFFF" accessibilityLabel="Map" />}
           onPress={handleTrackLive}
           testID="task-accepted-track-live"
         />

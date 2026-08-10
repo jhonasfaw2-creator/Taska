@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 
 const MOCK_CUSTOMER = {
   name: 'Sarah Mekonnen',
@@ -96,14 +97,14 @@ export default function PickupConfirmationScreen() {
 
             <View className="flex-row items-center gap-md px-lg py-lg">
               <View className="h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                <Typography variant="h1">👤</Typography>
+                <Icon name="user" size={32} color="#2563EB" accessibilityLabel="Tasker" />
               </View>
               <View className="flex-1">
                 <Typography variant="body" weight="semibold" className="text-text-primary">
                   {MOCK_CUSTOMER.name}
                 </Typography>
                 <View className="mt-1 flex-row items-center gap-1">
-                  <Typography variant="caption" className="text-warning">★</Typography>
+                  <Icon name="star" size={14} color="#F59E0B" fill="#F59E0B" accessibilityLabel="Rating" />
                   <Typography variant="caption" weight="semibold" className="text-text-primary">
                     {MOCK_CUSTOMER.rating.toFixed(1)}
                   </Typography>
@@ -117,7 +118,7 @@ export default function PickupConfirmationScreen() {
                   testID="pickup-confirm-call"
                   className="h-11 w-11 items-center justify-center rounded-full bg-success/20 active:opacity-70"
                 >
-                  <Typography variant="body" className="text-success">📞</Typography>
+                  <Icon name="phone" size={20} color="#22C55E" accessibilityLabel="Call" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   accessibilityRole="button"
@@ -125,7 +126,7 @@ export default function PickupConfirmationScreen() {
                   testID="pickup-confirm-chat"
                   className="h-11 w-11 items-center justify-center rounded-full bg-primary/10 active:opacity-70"
                 >
-                  <Typography variant="body" className="text-primary">💬</Typography>
+                  <Icon name="message" size={20} color="#2563EB" accessibilityLabel="Message" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -221,7 +222,7 @@ export default function PickupConfirmationScreen() {
               label="I've Arrived at Location"
               radius="lg"
               shadow="lg"
-              leftIcon={<Typography variant="body" className="text-background">📍</Typography>}
+              leftIcon={<Icon name="mapPin" size={20} color="#FFFFFF" accessibilityLabel="Location" />}
               onPress={handleArrived}
               testID="pickup-confirm-arrived"
             />
@@ -239,7 +240,7 @@ export default function PickupConfirmationScreen() {
               label="Confirm Item Picked Up"
               radius="lg"
               shadow="lg"
-              leftIcon={<Typography variant="body" className="text-background">✅</Typography>}
+              leftIcon={<Icon name="success" size={20} color="#FFFFFF" accessibilityLabel="Confirmed" />}
               onPress={handleConfirmPickup}
               testID="pickup-confirm-picked-up"
             />

@@ -17,15 +17,16 @@ import {
 } from '@/services/notification.service';
 import { onSocketEvent } from '@/services/socket.service';
 import type { AppNotification } from '@/types/notification';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 const TYPE_CONFIG: Record<
   string,
-  { icon: string; bg: string }
+  { icon: MobileIconName; bg: string }
 > = {
-  TASK_REQUEST: { icon: '📋', bg: 'bg-primary/10' },
-  TASK_UPDATE: { icon: '🔄', bg: 'bg-primary/10' },
-  PAYMENT: { icon: '💰', bg: 'bg-success/10' },
-  SYSTEM: { icon: '🔔', bg: 'bg-primary/10' },
+  TASK_REQUEST: { icon: 'tasks', bg: 'bg-primary/10' },
+  TASK_UPDATE: { icon: 'refresh', bg: 'bg-primary/10' },
+  PAYMENT: { icon: 'banknote', bg: 'bg-success/10' },
+  SYSTEM: { icon: 'bell', bg: 'bg-primary/10' },
 };
 
 function NotificationCard({
@@ -57,7 +58,7 @@ function NotificationCard({
             config.bg,
           ].join(' ')}
         >
-          <Typography variant="body">{config.icon}</Typography>
+          <Icon name={config.icon} size={20} color="#2563EB" accessibilityLabel="Notification type" />
         </View>
         <View className="flex-1">
           <View className="flex-row items-center gap-sm">
@@ -236,7 +237,7 @@ export default function NotificationsScreen() {
             </View>
           ) : notifications.length === 0 ? (
             <EmptyState
-              icon="🔔"
+              icon="bell"
               title="No notifications yet"
               subtitle="When you receive task updates, payment alerts, or system messages, they will appear here."
             />

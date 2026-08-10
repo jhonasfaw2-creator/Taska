@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '@/components/Icon';
 import { Button, Typography } from '@/components/ui';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { VEHICLES } from '@/data/vehicles';
@@ -128,7 +129,7 @@ export default function TaskerApplyScreen() {
                 {selected && (
                   <View className="ml-sm h-6 w-6 items-center justify-center rounded-full bg-primary">
                     <Typography variant="caption" weight="bold" className="text-background" style={{ fontSize: 11 }}>
-                      ✓
+                      <Icon name="check" size={14} color="#22C55E" accessibilityLabel="Selected" />
                     </Typography>
                   </View>
                 )}

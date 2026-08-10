@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ArrowLeft } from 'lucide-react-native';
 import { Typography } from '@/components/ui';
+import { Icon } from '@/components/Icon';
 import { EmptyState } from '@/components/EmptyState';
 import { SkeletonBlock } from '@/components/SkeletonLoader';
 import { getTransactions } from '@/services/wallet.service';
@@ -16,7 +17,7 @@ function WithdrawalCard({ tx }: { tx: WalletTransaction }) {
         <View className="flex-1">
           <View className="flex-row items-center gap-sm">
             <View className="h-9 w-9 items-center justify-center rounded-full bg-primary/10">
-              <Typography variant="body">🏦</Typography>
+              <Icon name="landmark" size={20} color="#2563EB" accessibilityLabel="Withdrawal" />
             </View>
             <View className="flex-1">
               <Typography variant="body" weight="medium" className="text-text-primary">
@@ -126,7 +127,7 @@ export default function WithdrawalHistoryScreen() {
             </View>
           ) : withdrawals.length === 0 ? (
             <EmptyState
-              icon="🏦"
+              icon="landmark"
               title="No withdrawals yet"
               subtitle="Withdraw your earnings to see history here."
             />

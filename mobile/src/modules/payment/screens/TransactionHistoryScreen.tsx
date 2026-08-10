@@ -10,14 +10,14 @@ import { listPayments } from '@/services/payment.service';
 import type { Payment } from '@/types/payment';
 
 const STATUS_META: Record<string, { icon: string; color: string }> = {
-  PENDING: { icon: '⏳', color: 'text-warning' },
-  PROCESSING: { icon: '🔄', color: 'text-primary' },
-  AUTHORIZED: { icon: '✓', color: 'text-primary' },
-  PAID: { icon: '✅', color: 'text-success' },
-  FAILED: { icon: '❌', color: 'text-error' },
-  CANCELLED: { icon: '↩️', color: 'text-text-secondary' },
-  REFUNDED: { icon: '💳', color: 'text-primary' },
-  PARTIALLY_REFUNDED: { icon: '💳', color: 'text-primary/70' },
+  PENDING: { icon: 'clock', color: 'text-warning' },
+  PROCESSING: { icon: 'refresh', color: 'text-primary' },
+  AUTHORIZED: { icon: 'check', color: 'text-primary' },
+  PAID: { icon: 'success', color: 'text-success' },
+  FAILED: { icon: 'error', color: 'text-error' },
+  CANCELLED: { icon: 'refresh', color: 'text-text-secondary' },
+  REFUNDED: { icon: 'card', color: 'text-primary' },
+  PARTIALLY_REFUNDED: { icon: 'card', color: 'text-primary/70' },
 };
 
 function PaymentCard({
@@ -27,7 +27,7 @@ function PaymentCard({
   payment: Payment;
   onPress: () => void;
 }) {
-  const meta = STATUS_META[payment.paymentStatus] ?? { icon: '❓', color: 'text-text-secondary' };
+  const meta = STATUS_META[payment.paymentStatus] ?? { icon: 'help', color: 'text-text-secondary' };
   return (
     <TouchableOpacity
       accessibilityRole="button"
@@ -154,7 +154,7 @@ export default function TransactionHistoryScreen() {
             </View>
           ) : payments.length === 0 ? (
             <EmptyState
-              icon="💳"
+              icon="card"
               title="No transactions yet"
               subtitle="When you make payments, they will appear here."
             />

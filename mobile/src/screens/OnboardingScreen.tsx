@@ -9,7 +9,9 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, OnboardingSlide, PaginationDots } from '@/components';
+import { Button } from '@/components/ui';
+import { OnboardingSlide, PaginationDots } from '@/components';
+import { Icon } from '@/components/Icon';
 import { ONBOARDING_SLIDES } from './onboarding/onboardingData';
 import { useOnboardingStorage } from './onboarding/useOnboardingStorage';
 
@@ -93,8 +95,8 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         <View style={{ width: 64 }} />
         {!isLastSlide && (
           <Button
-            title="Skip"
-            variant="text"
+            label="Skip"
+            variant="ghost"
             size="sm"
             onPress={handleSkip}
             testID="onboarding-skip"
@@ -135,11 +137,16 @@ const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onComplete }) => {
         />
 
         <Button
-          title={isLastSlide ? 'Get Started' : 'Next'}
+          label={isLastSlide ? 'Get Started' : 'Next'}
           variant="primary"
           fullWidth
           onPress={handleNext}
           testID="onboarding-next"
+          rightIcon={isLastSlide ? (
+            <View style={{ width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name="arrowRight" size={20} color="#FFFFFF" accessibilityLabel="Get started" />
+            </View>
+          ) : undefined}
         />
       </View>
     </SafeAreaView>

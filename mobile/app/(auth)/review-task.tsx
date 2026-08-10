@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
 import { createTask, updateTaskStatus } from '@/services/task.service';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 function SummaryCard({
   title,
@@ -43,7 +44,7 @@ function SummaryRow({
   editRoute,
   testID,
 }: {
-  icon: string;
+  icon: MobileIconName;
   label: string;
   value: string;
   editRoute?: string;
@@ -57,9 +58,7 @@ function SummaryRow({
       className="flex-row items-center border-b border-border px-lg py-md last:border-b-0"
     >
       <View className="mr-md h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-        <Typography variant="body" className="text-primary">
-          {icon}
-        </Typography>
+        <Icon name={icon} size={20} color="#2563EB" accessibilityLabel="" />
       </View>
 
       <View className="flex-1">
@@ -100,8 +99,8 @@ export default function ReviewTaskScreen() {
     : 'Not specified';
 
   const vehicleIcon = state.vehicleType
-    ? VEHICLES.find((v) => v.id === state.vehicleType)?.icon ?? '🚗'
-    : '—';
+    ? VEHICLES.find((v) => v.id === state.vehicleType)?.icon ?? 'car'
+    : 'car';
 
   const photoText =
     state.images.length === 0
@@ -151,21 +150,21 @@ export default function ReviewTaskScreen() {
         <View className="flex-1 px-screen-padding pt-lg">
           <SummaryCard title="Task" testID="review-card-task">
             <SummaryRow
-              icon="📂"
+              icon="folder"
               label="Category"
               value={state.category?.title ?? 'Not selected'}
               editRoute="/choose-category"
               testID="review-row-category"
             />
             <SummaryRow
-              icon="📋"
+              icon="tasks"
               label="Task title"
               value={state.title || 'Not provided'}
               editRoute="/task-details"
               testID="review-row-title"
             />
             <SummaryRow
-              icon="📝"
+              icon="document"
               label="Description"
               value={
                 state.description
@@ -179,7 +178,7 @@ export default function ReviewTaskScreen() {
             />
             {state.specialInstructions ? (
               <SummaryRow
-                icon="📌"
+                icon="pin"
                 label="Special instructions"
                 value={
                   state.specialInstructions.length > 80
@@ -198,7 +197,7 @@ export default function ReviewTaskScreen() {
               testID="review-row-vehicle"
             />
             <SummaryRow
-              icon="🖼️"
+              icon="image"
               label="Photos"
               value={photoText}
               editRoute="/upload-photos"
@@ -208,14 +207,14 @@ export default function ReviewTaskScreen() {
 
           <SummaryCard title="Location" testID="review-card-location">
             <SummaryRow
-              icon="📍"
+              icon="mapPin"
               label="Pickup location"
               value={state.pickup?.address ?? 'Not set'}
               editRoute="/location"
               testID="review-row-pickup"
             />
             <SummaryRow
-              icon="🏁"
+              icon="target"
               label="Drop-off location"
               value={state.dropoff?.address ?? 'Not set'}
               editRoute="/location"

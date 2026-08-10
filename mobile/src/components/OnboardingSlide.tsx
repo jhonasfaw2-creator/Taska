@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, ViewStyle } from 'react-native';
 import { Typography } from '@/components/ui';
-import NewLogo from '@/components/ui/Logo';
+import { Logo } from '@/components/ui/Logo';
+import { Icon, type MobileIconName } from '@/components/Icon';
 
 export interface OnboardingSlideData {
   id: string;
   title: string;
   description: string;
+  icon?: MobileIconName;
   illustration?: React.ReactNode;
 }
 
@@ -37,15 +39,23 @@ const OnboardingSlide: React.FC<OnboardingSlideProps> = ({
         className="mb-2xl items-center justify-center"
         style={illustrationStyle}
       >
-        {data.illustration ?? <NewLogo size={120} />}
+        {data.illustration ?? (
+          data.icon ? (
+            <View className="h-32 w-32 items-center justify-center rounded-full bg-primary/10">
+              <Icon name={data.icon} size={56} color="#2563EB" accessibilityLabel={data.title} />
+            </View>
+          ) : (
+            <Logo size={120} />
+          )
+        )}
       </View>
 
       <View style={[contentContainerStyle, { width: '100%' }]}>
-        <Typography variant="h2" weight="bold" className="mt-lg text-text-primary">
+        <Typography variant="h2" weight="bold" className="text-center text-text-primary">
           {data.title}
         </Typography>
 
-        <Typography variant="body" color="secondary" className="mt-md leading-relaxed">
+        <Typography variant="body" color="secondary" className="mt-md text-center leading-relaxed">
           {data.description}
         </Typography>
       </View>

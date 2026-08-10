@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react-native';
 import { Button, Typography } from '@/components/ui';
 import { useTaskContext } from '@/store/TaskContext';
 import { VEHICLES } from '@/data/vehicles';
+import { Icon } from '@/components/Icon';
 
 const PRICING = {
   baseFare: 5.00,
@@ -118,7 +119,7 @@ export default function PriceEstimateScreen() {
             <View className="flex-row items-center gap-md">
               <View className="h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
                 <Typography variant="h1" className="text-primary">
-                  {vehicle?.icon ?? '🚗'}
+                  <Icon name={vehicle?.icon ?? 'car'} size={24} color="#2563EB" accessibilityLabel="Vehicle" />
                 </Typography>
               </View>
               <View className="flex-1">
