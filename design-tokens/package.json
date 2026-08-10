@@ -25,5 +25,9 @@
     "prepublishOnly": "npm run build",
     "generate:css": "tsx scripts/generate-css.ts"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "devDependencies": {
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  }
 }

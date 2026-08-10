@@ -16,17 +16,17 @@ export const semanticColor = {
       primary: color.neutral[50],    // #F8FAFC — Main page background
       secondary: color.neutral[0],   // #FFFFFF — Card/surface background
       tertiary: color.neutral[100],  // #F1F5F9 — Subtle background
-      inverse: color.neutral[900],   // #0F172A — Inverse background
+      inverse: color.neutral[900],   // #111827 — Inverse background
     },
     surface: {
       primary: color.neutral[0],     // #FFFFFF — Primary surface
       secondary: color.neutral[50],  // #F8FAFC — Secondary surface
       tertiary: color.neutral[100],  // #F1F5F9 — Tertiary surface
       elevated: color.neutral[0],    // #FFFFFF — Elevated surface (cards, modals)
-      inverse: color.neutral[900],   // #0F172A — Inverse surface
+      inverse: color.neutral[900],   // #111827 — Inverse surface
     },
     text: {
-      primary: color.neutral[900],   // #0F172A — Primary text (#111827 mapped)
+      primary: color.neutral[900],   // #111827 — Primary text
       secondary: color.neutral[500], // #6B7280 — Secondary text
       tertiary: color.neutral[400],  // #94A3B8 — Tertiary/muted text
       inverse: color.neutral[0],     // #FFFFFF — Inverse text
@@ -35,7 +35,7 @@ export const semanticColor = {
       linkHover: color.primary.hover, // #1D4ED8 — Link hover
     },
     border: {
-      primary: color.neutral[200],   // #E2E8F0 — Default border
+      primary: color.neutral[200],   // #E5E7EB — Default border
       secondary: color.neutral[300], // #CBD5E1 — Stronger border
       focus: color.primary.base,     // #2563EB — Focus ring
       error: color.error.base,       // #EF4444 — Error border
@@ -91,7 +91,7 @@ export const semanticColor = {
    */
   dark: {
     background: {
-      primary: color.neutral[900],   // #0F172A
+      primary: color.neutral[900],   // #111827
       secondary: color.neutral[800], // #1E293B
       tertiary: color.neutral[700],  // #334155
       inverse: color.neutral[50],    // #F8FAFC
@@ -107,7 +107,7 @@ export const semanticColor = {
       primary: color.neutral[0],     // #FFFFFF
       secondary: color.neutral[400], // #94A3B8
       tertiary: color.neutral[500],  // #6B7280
-      inverse: color.neutral[900],   // #0F172A
+      inverse: color.neutral[900],   // #111827
       disabled: color.neutral[600],  // #475569
       link: color.primary[400],      // #60A5FA
       linkHover: color.neutral[200], // #E2E8F0

@@ -10,7 +10,29 @@
 import { writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { color, semanticColor, spacing, borderRadius, shadow, animation, opacity, zIndex, fontSize, fontWeight, fontFamily } from '../src/index.js';
+import {
+  color,
+  semanticColor,
+  spacing,
+  spacingSemantic,
+  borderRadius,
+  borderRadiusSemantic,
+  shadow,
+  elevation,
+  animation,
+  opacity,
+  zIndex,
+  fontSize,
+  heading,
+  body,
+  label,
+  code,
+  fontWeight,
+  fontFamily,
+  iconSize,
+  buttonSize,
+  inputSize,
+} from '../src/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT = resolve(__dirname, '..', 'dist', 'css', 'tokens.css');
@@ -53,12 +75,6 @@ flatten(semanticColor.light, '--');
 
 lines.push('');
 
-/* ── Dark overrides ────────────────────────────────────────── */
-lines.push('  /* ── Dark mode ── */');
-for (const [key, val] of Object.entries(Object(semanticColor).dark)) {
-  // Generate dark-specific overrides as separate selectors below
-}
-
 lines.push('}');
 lines.push('');
 
@@ -73,12 +89,18 @@ lines.push(':root {');
 for (const [key, val] of Object.entries(spacing)) {
   lines.push(`  --spacing-${key}: ${val}px;`);
 }
+for (const [key, val] of Object.entries(spacingSemantic)) {
+  lines.push(`  --spacing-${key}: ${val}px;`);
+}
 lines.push('}');
 lines.push('');
 
 /* ── Border radius ─────────────────────────────────────────── */
 lines.push(':root {');
 for (const [key, val] of Object.entries(borderRadius)) {
+  lines.push(`  --radius-${key}: ${val}px;`);
+}
+for (const [key, val] of Object.entries(borderRadiusSemantic)) {
   lines.push(`  --radius-${key}: ${val}px;`);
 }
 lines.push('}');
@@ -93,6 +115,14 @@ for (const [key, val] of Object.entries(fontSize)) {
   lines.push(`  --font-size-${key}: ${f.size}px;`);
   lines.push(`  --line-height-${key}: ${f.lineHeight};`);
   lines.push(`  --letter-spacing-${key}: ${f.letterSpacing};`);
+}
+for (const [groupName, group] of Object.entries({ heading, body, label, code })) {
+  for (const [key, val] of Object.entries(group)) {
+    const f = val as { size: number; lineHeight: number; letterSpacing: string };
+    lines.push(`  --font-size-${groupName}-${key}: ${f.size}px;`);
+    lines.push(`  --line-height-${groupName}-${key}: ${f.lineHeight};`);
+    lines.push(`  --letter-spacing-${groupName}-${key}: ${f.letterSpacing};`);
+  }
 }
 for (const [key, val] of Object.entries(fontWeight)) {
   lines.push(`  --font-weight-${key}: ${val};`);
@@ -110,6 +140,22 @@ for (const [key, val] of Object.entries(shadow)) {
   lines.push(`  --shadow-${key}-opacity: ${s.shadowOpacity};`);
   lines.push(`  --shadow-${key}-radius: ${s.shadowRadius}px;`);
   lines.push(`  --shadow-${key}-elevation: ${s.elevation};`);
+}
+for (const [key, val] of Object.entries(elevation)) {
+  lines.push(`  --elevation-${key}: ${val};`);
+}
+for (const [key, val] of Object.entries(iconSize)) {
+  lines.push(`  --icon-size-${key}: ${val}px;`);
+}
+for (const [sizeName, size] of Object.entries(buttonSize)) {
+  for (const [property, value] of Object.entries(size)) {
+    lines.push(`  --button-${sizeName}-${property}: ${typeof value === 'number' && property !== 'lineHeight' && property !== 'fontWeight' ? `${value}px` : value};`);
+  }
+}
+for (const [sizeName, size] of Object.entries(inputSize)) {
+  for (const [property, value] of Object.entries(size)) {
+    lines.push(`  --input-${sizeName}-${property}: ${typeof value === 'number' && property !== 'lineHeight' ? `${value}px` : value};`);
+  }
 }
 lines.push('}');
 lines.push('');
