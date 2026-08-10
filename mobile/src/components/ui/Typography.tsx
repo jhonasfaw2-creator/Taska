@@ -73,13 +73,13 @@ const VARIANT_CLASSES: Record<TypographyVariant, string> = {
   code: 'font-mono',
 
   // Legacy (mapped to new system)
-  display: 'text-display-lg',
-  headline: 'text-h2',
-  title: 'text-h2',
-  subtitle: 'text-h4',
-  body: 'text-body-md',
-  caption: 'text-body-xs',
-  button: 'text-label-md',
+  display: 'text-display',
+  headline: 'text-headline',
+  title: 'text-title',
+  subtitle: 'text-subtitle',
+  body: 'text-body',
+  caption: 'text-caption',
+  button: 'text-button',
 };
 
 // ─── Weight Classes ────────────────────────────────────────────────────────

@@ -68,6 +68,13 @@ export const fontSize = {
   'display-md': { size: 36, lineHeight: 1.2, letterSpacing: '-0.02em' },
   'display-sm': { size: 30, lineHeight: 1.25, letterSpacing: '-0.015em' },
   'display-xs': { size: 24, lineHeight: 1.3, letterSpacing: '-0.01em' },
+  display: { size: 48, lineHeight: 1.1, letterSpacing: '-0.025em' },
+  headline: { size: 32, lineHeight: 1.2, letterSpacing: '-0.02em' },
+  title: { size: 24, lineHeight: 1.3, letterSpacing: '-0.01em' },
+  subtitle: { size: 18, lineHeight: 1.5, letterSpacing: '0em' },
+  body: { size: 16, lineHeight: 1.625, letterSpacing: '0em' },
+  caption: { size: 12, lineHeight: 1.5, letterSpacing: '0.01em' },
+  button: { size: 14, lineHeight: 1.5, letterSpacing: '0.01em' },
 } as const;
 
 /**
@@ -140,8 +147,13 @@ export const hierarchy = {
   'label-xs': { ...label.xs, fontWeight: fontWeight.medium, fontFamily: fontFamily.sans.join(',') },
   'code-md': { ...code.md, fontWeight: fontWeight.regular, fontFamily: fontFamily.mono.join(',') },
   'code-sm': { ...code.sm, fontWeight: fontWeight.regular, fontFamily: fontFamily.mono.join(',') },
-  button: { size: 16, lineHeight: 1.5, letterSpacing: '0.01em', fontWeight: fontWeight.medium, fontFamily: fontFamily.sans.join(',') },
-  caption: { size: 12, lineHeight: 1.5, letterSpacing: '0.02em', fontWeight: fontWeight.medium, fontFamily: fontFamily.sans.join(',') },
+  display: { ...fontSize.display, fontWeight: fontWeight.bold, fontFamily: fontFamily.sans.join(',') },
+  headline: { ...fontSize.headline, fontWeight: fontWeight.bold, fontFamily: fontFamily.sans.join(',') },
+  title: { ...fontSize.title, fontWeight: fontWeight.semibold, fontFamily: fontFamily.sans.join(',') },
+  subtitle: { ...fontSize.subtitle, fontWeight: fontWeight.medium, fontFamily: fontFamily.sans.join(',') },
+  body: { ...fontSize.body, fontWeight: fontWeight.regular, fontFamily: fontFamily.sans.join(',') },
+  button: { ...fontSize.button, fontWeight: fontWeight.semibold, fontFamily: fontFamily.sans.join(',') },
+  caption: { ...fontSize.caption, fontWeight: fontWeight.medium, fontFamily: fontFamily.sans.join(',') },
   overline: { size: 11, lineHeight: 1.5, letterSpacing: '0.06em', fontWeight: fontWeight.semibold, fontFamily: fontFamily.sans.join(',') },
 } as const;
 

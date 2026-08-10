@@ -51,12 +51,12 @@ export default {
       },
       fontSize: {
         display: ['72px', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
-        headline: ['32px', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
-        title: ['24px', { lineHeight: '1.375', letterSpacing: '0em' }],
+        headline: ['32px', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        title: ['24px', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
         subtitle: ['18px', { lineHeight: '1.5', letterSpacing: '0em' }],
         body: ['16px', { lineHeight: '1.625', letterSpacing: '0em' }],
         caption: ['12px', { lineHeight: '1.5', letterSpacing: '0.025em' }],
-        button: ['16px', { lineHeight: '1.5', letterSpacing: '0em' }],
+        button: ['14px', { lineHeight: '1.5', letterSpacing: '0.01em' }],
       },
       borderRadius: {
         xs: '2px',

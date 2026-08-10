@@ -232,12 +232,12 @@ export const typography: ThemeTypography = {
 
     // Legacy (backward compatibility)
     display: 48,
-    headline: 24,
+    headline: 32,
     title: 24,
     subtitle: 18,
     body: 16,
     caption: 12,
-    button: 16,
+    button: 14,
   },
 
   fontWeight: {

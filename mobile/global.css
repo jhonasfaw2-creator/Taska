@@ -155,6 +155,20 @@
   --text-display-xs--line-height: 1.3;
   --text-display-xs--letter-spacing: -0.01em;
 
+  /* Shared product hierarchy */
+  --text-display: 48px;
+  --text-display--line-height: 1.1;
+  --text-display--letter-spacing: -0.025em;
+  --text-headline: 32px;
+  --text-headline--line-height: 1.2;
+  --text-headline--letter-spacing: -0.02em;
+  --text-title: 24px;
+  --text-title--line-height: 1.3;
+  --text-title--letter-spacing: -0.01em;
+  --text-subtitle: 18px;
+  --text-subtitle--line-height: 1.5;
+  --text-subtitle--letter-spacing: 0em;
+
   /* Headings */
   --text-h1: 30px;
   --text-h1--line-height: 1.25;
@@ -206,10 +220,11 @@
   /* Legacy (backward compatibility) */
   --text-body: 16px;
   --text-body--line-height: 1.625;
+  --text-body--letter-spacing: 0em;
   --text-caption: 12px;
   --text-caption--line-height: 1.5;
-  --text-caption--letter-spacing: 0.025em;
-  --text-button: 16px;
+  --text-caption--letter-spacing: 0.01em;
+  --text-button: 14px;
   --text-button--line-height: 1.5;
   --text-button--letter-spacing: 0.01em;
 
