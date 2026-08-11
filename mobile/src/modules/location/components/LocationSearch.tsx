@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { View, TextInput, TouchableOpacity, Keyboard } from 'react-native';
+import { View, TouchableOpacity, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Typography } from '@/components/ui';
+import { Input, Typography } from '@/components/ui';
 import { Icon } from '@/components/Icon';
 import { searchAddresses } from '../services/geocoding.service';
 import type { GeocodingSuggestion } from '../services/geocoding.service';
@@ -77,29 +77,19 @@ export default function LocationSearch({
   return (
     <View className="flex-1 bg-background" style={{ paddingTop: insets.top }}>
       <View className="px-screen-padding pt-lg">
-        <View className="overflow-hidden rounded-xl border border-border bg-surface">
-          <View className="flex-row items-center px-md">
-            <Icon name="search" size={20} color="#6B7280" />
-            <TextInput
-              value={query}
-              onChangeText={handleChangeText}
-              placeholder={placeholder}
-              placeholderTextColor="rgba(107, 114, 128, 0.5)"
-              autoComplete="off"
-              autoCorrect={false}
-              spellCheck={false}
-              returnKeyType="search"
-              className="flex-1 py-md text-body text-text-primary"
-              accessibilityLabel="Search location"
-              testID={testID}
-            />
-            {loading && (
-              <View className="h-4 w-4 items-center justify-center">
-                <View className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              </View>
-            )}
-          </View>
-        </View>
+        <Input
+          variant="search"
+          value={query}
+          onChangeText={handleChangeText}
+          placeholder={placeholder}
+          autoComplete="off"
+          autoCorrect={false}
+          spellCheck={false}
+          returnKeyType="search"
+          accessibilityLabel="Search location"
+          testID={testID}
+          helperText={loading ? 'Searching nearby locations...' : undefined}
+        />
 
         {suggestions.length > 0 && (
           <View className="mt-md overflow-hidden rounded-xl border border-border bg-surface">

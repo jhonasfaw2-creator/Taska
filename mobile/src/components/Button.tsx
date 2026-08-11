@@ -17,7 +17,7 @@ import { Typography } from '@/components/ui';
 
 interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'text';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'text' | 'danger';
   size?: 'sm' | 'md' | 'lg' | 'xl';
   loading?: boolean;
   fullWidth?: boolean;
@@ -32,13 +32,14 @@ const VARIANT_CLASSES: Record<string, { container: string; text: string }> = {
   outline: { container: 'bg-transparent border-primary', text: 'text-primary' },
   ghost: { container: 'bg-transparent', text: 'text-primary' },
   text: { container: 'bg-transparent', text: 'text-primary' },
+  danger: { container: 'bg-error', text: 'text-on-error' },
 };
 
 const SIZE_CLASSES: Record<string, string> = {
-  sm: 'h-9 px-3.5 py-1.5',
-  md: 'h-11 px-5 py-2',
-  lg: 'h-13 px-7 py-3',
-  xl: 'h-14 px-8 py-3.5',
+  sm: 'min-h-[44px] px-3.5 py-1.5',
+  md: 'min-h-[52px] px-5 py-2',
+  lg: 'min-h-[56px] px-7 py-3',
+  xl: 'min-h-[60px] px-8 py-3.5',
 };
 
 const TEXT_SIZE_CLASSES: Record<string, string> = {
@@ -78,11 +79,12 @@ const Button: React.FC<ButtonProps> = ({
       activeOpacity={0.8}
       accessibilityRole="button"
       accessibilityLabel={title}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       {...rest}
     >
       {loading ? (
         <ActivityIndicator
-          color={variant === 'primary' ? '#FFFFFF' : '#2563EB'}
+          color={variant === 'primary' || variant === 'danger' ? '#FFFFFF' : '#2563EB'}
           testID={`${testID ?? 'button'}-loader`}
         />
       ) : (

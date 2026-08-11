@@ -18,7 +18,7 @@ import { Typography } from './Typography';
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
-type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'warning' | 'error';
+type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'warning' | 'error' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg' | 'xl';
 type ButtonRadius = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 type ButtonShadow = 'none' | 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -84,6 +84,12 @@ const VARIANT_CLASSES: Record<ButtonVariant, { container: string; text: string; 
     disabledContainer: 'bg-error/60',
     disabledText: 'text-on-error/70',
   },
+  danger: {
+    container: 'bg-error',
+    text: 'text-on-error',
+    disabledContainer: 'bg-error/60',
+    disabledText: 'text-on-error/70',
+  },
 };
 
 // ─── Radius Classes ─────────────────────────────────────────────────────────
@@ -94,6 +100,13 @@ const RADIUS_CLASSES: Record<ButtonRadius, string> = {
   lg: 'rounded-xl',
   xl: 'rounded-2xl',
   full: 'rounded-full',
+};
+
+const SIZE_CLASSES: Record<ButtonSize, string> = {
+  sm: 'min-h-[44px] px-md py-sm',
+  md: 'min-h-[52px] px-lg py-md',
+  lg: 'min-h-[56px] px-xl py-md',
+  xl: 'min-h-[60px] px-2xl py-lg',
 };
 
 // ─── Shadow Styles ─────────────────────────────────────────────────────────
@@ -137,6 +150,17 @@ const SHADOW_STYLES: Record<ButtonShadow, ViewStyle> = {
   },
 };
 
+const LOADING_COLORS: Record<ButtonVariant, string> = {
+  primary: '#FFFFFF',
+  secondary: '#111827',
+  outline: '#2563EB',
+  ghost: '#2563EB',
+  success: '#FFFFFF',
+  warning: '#111827',
+  error: '#FFFFFF',
+  danger: '#FFFFFF',
+};
+
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export const Button: React.FC<ButtonProps> = ({
@@ -164,6 +188,7 @@ export const Button: React.FC<ButtonProps> = ({
   const containerClassName = [
     'flex-row items-center justify-center',
     variantClasses.container,
+    SIZE_CLASSES[size],
     isDisabled ? variantClasses.disabledContainer : '',
     radiusClass,
     fullWidth ? 'w-full' : '',
@@ -181,6 +206,7 @@ export const Button: React.FC<ButtonProps> = ({
     <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
       testID={testID}
@@ -190,7 +216,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...rest}
     >
       {loading ? (
-        <ActivityIndicator color={isDisabled ? 'rgba(255,255,255,0.7)' : '#FFFFFF'} />
+        <ActivityIndicator color={LOADING_COLORS[variant]} accessibilityLabel={`${label}, loading`} />
       ) : (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {leftIcon && <View>{leftIcon}</View>}
